@@ -166,6 +166,7 @@ export class NearPower10Method extends BaseMethod {
     // Step 3: Apply distributive property
     const powerProduct = power * other;
     const diffProduct = absDiff * other;
+    const absResult = diff >= 0 ? powerProduct + diffProduct : powerProduct - diffProduct;
 
     if (diff >= 0) {
       steps.push({
@@ -216,14 +217,14 @@ export class NearPower10Method extends BaseMethod {
       steps.push({
         expression: `${powerProduct} + ${diffProduct}`,
         result: finalResult,
-        explanation: `Add: ${powerProduct} + ${diffProduct} = ${finalResult}`,
+        explanation: `Add: ${powerProduct} + ${diffProduct} = ${absResult}`,
         depth: 0
       });
     } else {
       steps.push({
         expression: `${powerProduct} - ${diffProduct}`,
         result: finalResult,
-        explanation: `Subtract: ${powerProduct} - ${diffProduct} = ${finalResult}`,
+        explanation: `Subtract: ${powerProduct} - ${diffProduct} = ${absResult}`,
         depth: 0
       });
     }

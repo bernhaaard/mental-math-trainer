@@ -43,6 +43,10 @@ export interface CustomRange {
 /**
  * Maximum safe value for multiplication operands to prevent DoS.
  * Values larger than this may cause performance issues or overflow.
+ *
+ * WARNING: Multiplying two values near this limit (1e9 × 1e9 = 1e18)
+ * will exceed JavaScript's MAX_SAFE_INTEGER (9,007,199,254,740,991).
+ * For guaranteed precision, keep products below ~9e15.
  */
 export const ABSOLUTE_MAX_VALUE = 1_000_000_000;
 

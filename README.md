@@ -6,7 +6,7 @@ An educational web application that teaches computational mastery through deep m
 
 See comprehensive specifications and development workflow in:
 - `docs/PROJECT_REQUIREMENTS.md` - Complete technical specification
-- `docs/claude.md` - Development instructions and subagent workflow
+- `CLAUDE.md` - Development instructions and subagent workflow
 - `docs/OVERVIEW.md` - Quick start guide
 
 ## Development Workflow

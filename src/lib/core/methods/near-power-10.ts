@@ -171,7 +171,7 @@ export class NearPower10Method extends BaseMethod {
     if (diff >= 0) {
       steps.push({
         expression: `${power} * ${other} + ${diff} * ${other}`,
-        result: finalResult,
+        result: absResult,
         explanation: `Distribute: ${power} × ${other} + ${diff} × ${other}`,
         depth: 0,
         subSteps: [
@@ -192,7 +192,7 @@ export class NearPower10Method extends BaseMethod {
     } else {
       steps.push({
         expression: `${power} * ${other} - ${absDiff} * ${other}`,
-        result: finalResult,
+        result: absResult,
         explanation: `Distribute: ${power} × ${other} - ${absDiff} × ${other}`,
         depth: 0,
         subSteps: [
@@ -212,19 +212,29 @@ export class NearPower10Method extends BaseMethod {
       });
     }
 
-    // Step 4: Final calculation
+    // Step 4: Calculate absolute result
     if (diff >= 0) {
       steps.push({
         expression: `${powerProduct} + ${diffProduct}`,
-        result: finalResult,
+        result: absResult,
         explanation: `Add: ${powerProduct} + ${diffProduct} = ${absResult}`,
         depth: 0
       });
     } else {
       steps.push({
         expression: `${powerProduct} - ${diffProduct}`,
-        result: finalResult,
+        result: absResult,
         explanation: `Subtract: ${powerProduct} - ${diffProduct} = ${absResult}`,
+        depth: 0
+      });
+    }
+
+    // Step 5: Apply sign if needed
+    if (resultSign < 0) {
+      steps.push({
+        expression: `-${absResult}`,
+        result: finalResult,
+        explanation: `Apply negative sign: -${absResult} = ${finalResult}`,
         depth: 0
       });
     }

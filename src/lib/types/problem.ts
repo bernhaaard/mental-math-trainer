@@ -41,16 +41,29 @@ export interface CustomRange {
 }
 
 /**
+ * Maximum safe value for multiplication operands to prevent DoS.
+ * Values larger than this may cause performance issues or overflow.
+ */
+export const ABSOLUTE_MAX_VALUE = 1_000_000_000;
+
+/**
+ * Minimum safe value for multiplication operands.
+ */
+export const ABSOLUTE_MIN_VALUE = -1_000_000_000;
+
+/**
  * Predefined difficulty ranges mapping each level to number ranges.
  * These define the bounds for random number generation at each difficulty.
+ * Note: Ranges intentionally overlap to allow gradual difficulty progression.
+ * @readonly This object is deeply immutable.
  */
-export const DIFFICULTY_RANGES: Record<DifficultyLevel, DifficultyRange> = {
+export const DIFFICULTY_RANGES = {
   [DifficultyLevel.Beginner]: { min: 2, max: 100 },
   [DifficultyLevel.Intermediate]: { min: 20, max: 400 },
   [DifficultyLevel.Advanced]: { min: 100, max: 1000 },
   [DifficultyLevel.Expert]: { min: 500, max: 10000 },
   [DifficultyLevel.Mastery]: { min: 1000, max: 1000000 }
-};
+} as const satisfies Record<DifficultyLevel, DifficultyRange>;
 
 /**
  * A multiplication problem with metadata.

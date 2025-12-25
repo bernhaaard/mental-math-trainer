@@ -28,7 +28,12 @@ export interface Solution {
  * Steps can contain sub-steps for more detailed breakdowns.
  */
 export interface CalculationStep {
-  /** Mathematical expression for this step (e.g., "40 × 53") */
+  /**
+   * Mathematical expression for this step (e.g., "40 × 53").
+   * SECURITY: Must only contain: digits 0-9, operators +-* /(), decimal point, spaces.
+   * MUST be validated before any evaluation. Never use eval() or Function().
+   * Maximum length: 500 characters to prevent DoS.
+   */
   expression: string;
   /** Numerical result of this step */
   result: number;

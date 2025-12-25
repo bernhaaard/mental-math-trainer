@@ -11,16 +11,18 @@ import type { MethodStats } from './session';
  * Cumulative statistics for a user across all sessions.
  */
 export interface UserStatistics {
+  /** Unique identifier for this user */
+  userId: string;
   /** Total problems attempted across all sessions */
   totalProblems: number;
   /** Total number of practice sessions */
   totalSessions: number;
   /** Overall accuracy percentage (0-100) */
   overallAccuracy: number;
-  /** Cumulative stats for each calculation method */
-  methodStatistics: Record<MethodName, CumulativeMethodStats>;
-  /** Cumulative stats for each difficulty level */
-  difficultyStatistics: Record<DifficultyLevel, DifficultyStats>;
+  /** Cumulative stats for each calculation method (not all methods may have been practiced) */
+  methodStatistics: Partial<Record<MethodName, CumulativeMethodStats>>;
+  /** Cumulative stats for each difficulty level (not all levels may have been practiced) */
+  difficultyStatistics: Partial<Record<DifficultyLevel, DifficultyStats>>;
   /** Historical performance data points */
   timeSeriesData: TimeSeriesPoint[];
   /** Identified areas needing improvement */

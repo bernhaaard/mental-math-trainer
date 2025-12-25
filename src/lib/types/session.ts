@@ -25,6 +25,12 @@ export interface PracticeSession {
   statistics: SessionStatistics;
 }
 
+/** Maximum problems allowed in a single session to prevent DoS */
+export const MAX_SESSION_PROBLEMS = 1000;
+
+/** Maximum answer attempts per problem */
+export const MAX_ANSWER_ATTEMPTS = 10;
+
 /**
  * Configuration options for a practice session.
  */
@@ -33,7 +39,10 @@ export interface SessionConfig {
   difficulty: DifficultyLevel | CustomRange;
   /** Which calculation methods to practice (empty = all) */
   methods: MethodName[];
-  /** Number of problems or 'infinite' for continuous practice */
+  /**
+   * Number of problems (1-1000) or 'infinite' for continuous practice.
+   * SECURITY: Implementation must validate and cap at MAX_SESSION_PROBLEMS.
+   */
   problemCount: number | 'infinite';
   /** Whether to include negative numbers in problems */
   allowNegatives: boolean;
@@ -57,7 +66,7 @@ export interface ProblemAttempt {
   skipped: boolean;
   /** The solution shown to the user */
   solution: Solution;
-  /** Magnitude of error (0 if correct) */
+  /** Magnitude of error (always >= 0, 0 if correct) */
   errorMagnitude: number;
 }
 
@@ -75,8 +84,8 @@ export interface SessionStatistics {
   averageTime: number;
   /** Average error magnitude for incorrect answers */
   averageError: number;
-  /** Statistics broken down by method */
-  methodBreakdown: Record<MethodName, MethodStats>;
+  /** Statistics broken down by method (not all methods may have been practiced) */
+  methodBreakdown: Partial<Record<MethodName, MethodStats>>;
 }
 
 /**

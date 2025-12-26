@@ -305,7 +305,9 @@ export class FactorizationMethod extends BaseMethod {
         'When halving/doubling would simplify the problem'
       ],
       examples: [],
-      interactiveExercises: []
+      interactiveExercises: [],
+      prerequisites: [MethodName.Distributive],
+      nextMethods: []
     };
   }
 }

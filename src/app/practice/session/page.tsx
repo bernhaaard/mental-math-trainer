@@ -5,13 +5,15 @@
  * Handles the main practice loop: problem display, answer input, feedback, and navigation.
  */
 
-import { useState, useEffect, useCallback, useReducer } from 'react';
+import { useState, useEffect, useCallback, useReducer, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { ProblemDisplay } from '@/components/features/practice/ProblemDisplay';
 import { AnswerInput } from '@/components/features/practice/AnswerInput';
 import { FeedbackDisplay } from '@/components/features/practice/FeedbackDisplay';
 import { SolutionWalkthrough } from '@/components/features/practice/SolutionWalkthrough';
 import { ProgressBar } from '@/components/features/practice/ProgressBar';
+import { KeyboardShortcutHelp, KeyboardShortcut } from '@/components/ui';
+import { useKeyboardShortcuts, type ShortcutConfig } from '@/lib/hooks/useKeyboardShortcuts';
 import type { Problem, CustomRange } from '@/lib/types/problem';
 import { DifficultyLevel } from '@/lib/types/problem';
 import type { SessionConfig, ProblemAttempt, SessionStatistics, MethodStats } from '@/lib/types/session';
@@ -43,7 +45,8 @@ type SessionAction =
   | { type: 'NEXT_PROBLEM' }
   | { type: 'TOGGLE_PAUSE' }
   | { type: 'SHOW_ERROR' }
-  | { type: 'CLEAR_ERROR' };
+  | { type: 'CLEAR_ERROR' }
+  | { type: 'RESUME_FROM_PAUSE' };
 
 function sessionReducer(state: ActiveSessionState, action: SessionAction): ActiveSessionState {
   switch (action.type) {
@@ -130,6 +133,12 @@ function sessionReducer(state: ActiveSessionState, action: SessionAction): Activ
       return {
         ...state,
         phase: state.phase === 'paused' ? 'answering' : 'paused'
+      };
+
+    case 'RESUME_FROM_PAUSE':
+      return {
+        ...state,
+        phase: 'answering'
       };
 
     case 'SHOW_ERROR':
@@ -280,6 +289,12 @@ export default function ActiveSessionPage() {
   const [methodSelector] = useState(() => new MethodSelector());
   const [configLoaded, setConfigLoaded] = useState(false);
 
+  // Keyboard shortcuts help modal state
+  const [showShortcutHelp, setShowShortcutHelp] = useState(false);
+
+  // Screen reader announcement ref
+  const announcementRef = useRef<HTMLDivElement>(null);
+
   // Session configuration - loaded from sessionStorage
   const [config, setConfig] = useState<SessionConfig>(DEFAULT_CONFIG);
 
@@ -402,6 +417,159 @@ export default function ActiveSessionPage() {
     dispatch({ type: 'NEXT_PROBLEM' });
   }, []);
 
+  // Toggle shortcut help modal
+  const handleToggleShortcutHelp = useCallback(() => {
+    setShowShortcutHelp(prev => !prev);
+  }, []);
+
+  // Close shortcut help modal
+  const handleCloseShortcutHelp = useCallback(() => {
+    setShowShortcutHelp(false);
+  }, []);
+
+  // Screen reader announcement helper
+  const announceToScreenReader = useCallback((message: string) => {
+    if (announcementRef.current) {
+      announcementRef.current.textContent = message;
+    }
+  }, []);
+
+  // Keyboard shortcuts configuration
+  // These are memoized to prevent unnecessary re-renders
+  const keyboardShortcuts: ShortcutConfig[] = useMemo(() => {
+    const shortcuts: ShortcutConfig[] = [
+      // Navigation shortcuts
+      {
+        key: 'n',
+        action: () => {
+          if (state.phase === 'feedback' || state.phase === 'reviewing') {
+            handleNext();
+            announceToScreenReader('Moving to next problem');
+          }
+        },
+        description: 'Next problem',
+        category: 'navigation',
+        enabled: state.phase === 'feedback' || state.phase === 'reviewing'
+      },
+      {
+        key: 's',
+        action: () => {
+          if (state.phase === 'feedback') {
+            handleViewSolution();
+            announceToScreenReader('Viewing solution');
+          }
+        },
+        description: 'View solution',
+        category: 'navigation',
+        enabled: state.phase === 'feedback'
+      },
+
+      // Input shortcuts
+      {
+        key: 'Escape',
+        action: () => {
+          if (showShortcutHelp) {
+            handleCloseShortcutHelp();
+            announceToScreenReader('Closed keyboard shortcuts help');
+          } else if (state.phase === 'reviewing') {
+            handleCloseWalkthrough();
+            announceToScreenReader('Closed solution walkthrough');
+          } else if (state.phase === 'paused') {
+            dispatch({ type: 'RESUME_FROM_PAUSE' });
+            announceToScreenReader('Session resumed');
+          } else if (state.phase === 'answering') {
+            handleSkip();
+            announceToScreenReader('Problem skipped');
+          }
+        },
+        description: 'Skip problem / Close modal',
+        category: 'input',
+        allowInInput: true,
+        enabled: true
+      },
+      {
+        key: 'h',
+        action: () => {
+          if (state.phase === 'answering') {
+            handleRequestHint();
+            announceToScreenReader('Hint requested');
+          }
+        },
+        description: 'Request hint',
+        category: 'input',
+        enabled: state.phase === 'answering'
+      },
+
+      // Session shortcuts
+      {
+        key: ' ', // Space bar
+        action: () => {
+          if (state.phase !== 'reviewing' && !showShortcutHelp) {
+            handleTogglePause();
+            announceToScreenReader(state.phase === 'paused' ? 'Session resumed' : 'Session paused');
+          }
+        },
+        description: 'Pause/Resume session',
+        category: 'session',
+        enabled: state.phase !== 'reviewing' && !showShortcutHelp
+      },
+      {
+        key: 'q',
+        action: () => {
+          if (!showShortcutHelp) {
+            handleEndSession();
+            announceToScreenReader('Session ended');
+          }
+        },
+        description: 'End session',
+        category: 'session',
+        enabled: !showShortcutHelp
+      },
+      {
+        key: 'q',
+        ctrl: true,
+        action: () => {
+          handleEndSession();
+          announceToScreenReader('Session ended');
+        },
+        description: 'End session',
+        category: 'session',
+        enabled: true
+      },
+      {
+        key: '?',
+        action: () => {
+          handleToggleShortcutHelp();
+          announceToScreenReader(showShortcutHelp ? 'Closed keyboard shortcuts' : 'Opened keyboard shortcuts');
+        },
+        description: 'Show keyboard shortcuts',
+        category: 'session',
+        enabled: true
+      }
+    ];
+
+    return shortcuts;
+  }, [
+    state.phase,
+    showShortcutHelp,
+    handleNext,
+    handleViewSolution,
+    handleCloseShortcutHelp,
+    handleCloseWalkthrough,
+    handleSkip,
+    handleRequestHint,
+    handleTogglePause,
+    handleEndSession,
+    handleToggleShortcutHelp,
+    announceToScreenReader
+  ]);
+
+  // Initialize keyboard shortcuts hook
+  const { getGroupedShortcuts } = useKeyboardShortcuts(keyboardShortcuts, {
+    enabled: !isSessionEnded
+    // Note: Screen reader announcements are handled within individual shortcut actions
+  });
+
   // Format time
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -483,11 +651,24 @@ export default function ActiveSessionPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Keyboard Shortcuts Help Button */}
+          <button
+            onClick={handleToggleShortcutHelp}
+            className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            aria-label="Keyboard shortcuts"
+            title="Keyboard shortcuts (?)"
+          >
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </button>
+
           {/* Pause Button */}
           <button
             onClick={handleTogglePause}
             className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-            aria-label={state.phase === 'paused' ? 'Resume session' : 'Pause session'}
+            aria-label={state.phase === 'paused' ? 'Resume session (Space)' : 'Pause session (Space)'}
+            title={state.phase === 'paused' ? 'Resume (Space)' : 'Pause (Space)'}
           >
             {state.phase === 'paused' ? (
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -505,6 +686,7 @@ export default function ActiveSessionPage() {
           <button
             onClick={handleEndSession}
             className="px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+            title="End session (Q)"
           >
             End Session
           </button>
@@ -620,8 +802,29 @@ export default function ActiveSessionPage() {
             showError={state.showError}
             autoFocus={true}
           />
+
+          {/* Keyboard shortcuts hint */}
+          <div className="text-center text-sm text-gray-400 dark:text-gray-500">
+            Press <KeyboardShortcut keys={['?']} size="sm" /> for keyboard shortcuts
+          </div>
         </div>
       )}
+
+      {/* Keyboard Shortcuts Help Modal */}
+      <KeyboardShortcutHelp
+        isOpen={showShortcutHelp}
+        onClose={handleCloseShortcutHelp}
+        shortcuts={getGroupedShortcuts()}
+      />
+
+      {/* Screen Reader Announcements */}
+      <div
+        ref={announcementRef}
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+      />
     </div>
   );
 }

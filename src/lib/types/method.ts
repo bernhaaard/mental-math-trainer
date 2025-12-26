@@ -72,6 +72,10 @@ export interface StudyContent {
   examples: StudyExample[];
   /** Practice exercises for the learner */
   interactiveExercises: InteractiveExercise[];
+  /** Methods that should be learned before this one */
+  prerequisites: MethodName[];
+  /** Suggested methods to learn after mastering this one */
+  nextMethods: MethodName[];
 }
 
 /**
@@ -86,6 +90,8 @@ export interface StudyExample {
   solution: Solution;
   /** Teaching notes for this example */
   pedagogicalNotes: string[];
+  /** Common mistakes to avoid when using this method */
+  commonMistakes: string[];
 }
 
 /**

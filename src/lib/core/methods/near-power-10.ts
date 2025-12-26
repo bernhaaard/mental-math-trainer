@@ -9,7 +9,7 @@
  */
 
 import { BaseMethod } from './base-method';
-import type { MethodName, Solution, CalculationStep, StudyContent } from '../../types';
+import { MethodName, type Solution, type CalculationStep, type StudyContent } from '../../types';
 import { SolutionValidator } from '../validator';
 
 /**
@@ -328,7 +328,9 @@ export class NearPower10Method extends BaseMethod {
         'Ideal for problems like 99 × n, 101 × n, 998 × n, etc.'
       ],
       examples: [],
-      interactiveExercises: []
+      interactiveExercises: [],
+      prerequisites: [MethodName.Distributive],
+      nextMethods: [MethodName.Near100]
     };
   }
 }

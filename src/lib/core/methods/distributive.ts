@@ -390,7 +390,9 @@ as 47 × (30 - 2) than as 47 × (20 + 8).
         'When numbers are close to round values (use subtractive partition)'
       ],
       examples: [],
-      interactiveExercises: []
+      interactiveExercises: [],
+      prerequisites: [],
+      nextMethods: [MethodName.NearPower10, MethodName.Factorization]
     };
   }
 }

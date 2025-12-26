@@ -28,3 +28,13 @@ export type { ProgressProps } from './progress';
 
 export { Select } from './select';
 export type { SelectProps, SelectOption } from './select';
+
+export { KeyboardKey, KeyboardShortcut } from './KeyboardKey';
+export type {
+  KeyboardKeyProps,
+  KeyboardKeySize,
+  KeyboardShortcutProps
+} from './KeyboardKey';
+
+export { KeyboardShortcutHelp } from './KeyboardShortcutHelp';
+export type { KeyboardShortcutHelpProps } from './KeyboardShortcutHelp';

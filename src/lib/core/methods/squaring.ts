@@ -275,7 +275,9 @@ export class SquaringMethod extends BaseMethod {
         'For quick mental estimates (just use a²)'
       ],
       examples: [],
-      interactiveExercises: []
+      interactiveExercises: [],
+      prerequisites: [MethodName.Distributive, MethodName.DifferenceSquares],
+      nextMethods: []
     };
   }
 }

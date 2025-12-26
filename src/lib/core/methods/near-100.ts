@@ -263,7 +263,9 @@ export class Near100Method extends BaseMethod {
         'For quick estimation of products near 10000'
       ],
       examples: [],
-      interactiveExercises: []
+      interactiveExercises: [],
+      prerequisites: [MethodName.Distributive, MethodName.NearPower10],
+      nextMethods: []
     };
   }
 }

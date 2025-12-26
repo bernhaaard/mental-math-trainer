@@ -101,24 +101,42 @@ export const AnswerInput = forwardRef<AnswerInputHandle, AnswerInputProps>(
       }
     }, [autoFocus]);
 
-    // Reset input when resetKey changes (new problem)
+    // Track previous resetKey to detect changes and reset value
+    const prevResetKeyRef = useRef(resetKey);
     useEffect(() => {
-      if (resetKey !== undefined) {
+      // Only reset if resetKey actually changed (not on initial render)
+      if (prevResetKeyRef.current !== resetKey) {
+        prevResetKeyRef.current = resetKey;
+        // Use callback form and focus in same tick via ref
         setValue('');
         if (autoFocus && inputRef.current) {
           inputRef.current.focus();
         }
       }
-    }, [resetKey, autoFocus]);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [resetKey]);
 
-    // Trigger shake animation on error
+    // Track previous showError to trigger shake animation
+    const prevShowErrorRef = useRef(showError);
+    const shakeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
     useEffect(() => {
-      if (showError) {
+      // Trigger shake only when showError transitions from false to true
+      if (showError && !prevShowErrorRef.current) {
+        // Clear any existing timeout
+        if (shakeTimeoutRef.current) {
+          clearTimeout(shakeTimeoutRef.current);
+        }
         setIsShaking(true);
-        const timer = setTimeout(() => setIsShaking(false), 500);
-        return () => clearTimeout(timer);
+        shakeTimeoutRef.current = setTimeout(() => setIsShaking(false), 500);
       }
-      return undefined;
+      prevShowErrorRef.current = showError;
+
+      return () => {
+        if (shakeTimeoutRef.current) {
+          clearTimeout(shakeTimeoutRef.current);
+        }
+      };
     }, [showError]);
 
   /**

@@ -14,7 +14,7 @@
  */
 
 import { BaseMethod } from './base-method';
-import type { MethodName, Solution, CalculationStep, StudyContent } from '../../types';
+import { MethodName, type Solution, type CalculationStep, type StudyContent } from '../../types';
 import { SolutionValidator } from '../validator';
 
 /**
@@ -342,7 +342,9 @@ export class DifferenceSquaresMethod extends BaseMethod {
         'When you can quickly square the midpoint mentally'
       ],
       examples: [],
-      interactiveExercises: []
+      interactiveExercises: [],
+      prerequisites: [MethodName.Distributive],
+      nextMethods: [MethodName.Squaring]
     };
   }
 }

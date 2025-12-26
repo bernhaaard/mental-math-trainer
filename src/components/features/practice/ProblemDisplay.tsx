@@ -2,7 +2,7 @@
 
 import { Problem, DifficultyLevel } from '@/lib/types/problem';
 import { MethodName } from '@/lib/types/method';
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 
 /**
  * Props for ProblemDisplay component.
@@ -69,12 +69,8 @@ export function ProblemDisplay({
   optimalMethod,
   isActive = true
 }: ProblemDisplayProps) {
-  const [animationKey, setAnimationKey] = useState(0);
-
-  // Trigger animation when problem changes
-  useEffect(() => {
-    setAnimationKey(prev => prev + 1);
-  }, [problem.id]);
+  // Derive animation key from problem.id instead of using state + effect
+  const animationKey = useMemo(() => problem.id, [problem.id]);
 
   return (
     <div className="space-y-6">

@@ -62,7 +62,7 @@ function getSectionLabel(section: StudyTab): string {
 /**
  * Get status icon based on completion status
  */
-function getStatusIcon(status: SectionStatus, _percentComplete: number): React.ReactNode {
+function getStatusIcon(status: SectionStatus): React.ReactNode {
   if (status === 'completed') {
     return (
       <svg
@@ -292,7 +292,7 @@ function FullIndicator({
           >
             <div className="flex items-center gap-3">
               {/* Status icon */}
-              {getStatusIcon(section.status, section.percentComplete)}
+              {getStatusIcon(section.status)}
 
               {/* Section info */}
               <div className="flex-1 min-w-0">

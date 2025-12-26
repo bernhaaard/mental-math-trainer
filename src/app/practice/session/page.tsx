@@ -287,7 +287,9 @@ const DEFAULT_CONFIG: SessionConfig = {
 export default function ActiveSessionPage() {
   const router = useRouter();
   const [methodSelector] = useState(() => new MethodSelector());
-  const [configLoaded, setConfigLoaded] = useState(false);
+  // Config is loaded synchronously via lazy initialization, so we can start as true
+  // This flag is used to ensure we don't generate problems before hydration
+  const [configLoaded, setConfigLoaded] = useState(typeof window !== 'undefined');
 
   // Keyboard shortcuts help modal state
   const [showShortcutHelp, setShowShortcutHelp] = useState(false);
@@ -295,36 +297,41 @@ export default function ActiveSessionPage() {
   // Screen reader announcement ref
   const announcementRef = useRef<HTMLDivElement>(null);
 
-  // Session configuration - loaded from sessionStorage
-  const [config, setConfig] = useState<SessionConfig>(DEFAULT_CONFIG);
-
-  // Load config from sessionStorage on mount
-  useEffect(() => {
+  // Session configuration - loaded from sessionStorage using lazy initialization
+  const [config] = useState<SessionConfig>(() => {
     if (typeof window !== 'undefined') {
       const storedConfig = sessionStorage.getItem('practiceSessionConfig');
       if (storedConfig) {
         try {
-          const parsedConfig = JSON.parse(storedConfig) as SessionConfig;
-          setConfig(parsedConfig);
+          return JSON.parse(storedConfig) as SessionConfig;
         } catch (error) {
           console.error('Failed to parse session config:', error);
         }
       }
+    }
+    return DEFAULT_CONFIG;
+  });
+
+  // Mark config as loaded after hydration (for SSR compatibility)
+  useEffect(() => {
+    if (!configLoaded) {
       setConfigLoaded(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const [state, dispatch] = useReducer(sessionReducer, {
-    phase: 'answering',
+  const [state, dispatch] = useReducer(sessionReducer, undefined, () => ({
+    phase: 'answering' as SessionPhase,
     currentProblem: null,
     currentSolution: null,
     problems: [],
     currentProblemStartTime: Date.now(),
     hintsUsed: 0,
     showError: false
-  });
+  }));
 
   const [sessionTimer, setSessionTimer] = useState(0);
+  const [problemElapsedTime, setProblemElapsedTime] = useState(0);
   const [isSessionEnded, setIsSessionEnded] = useState(false);
 
   // Generate next problem
@@ -366,15 +373,27 @@ export default function ActiveSessionPage() {
     return () => clearInterval(interval);
   }, [state.phase, isSessionEnded]);
 
-  // Check if session should end
+  // Problem elapsed time tracker
+  // Uses interval callback (async) to update state, avoiding sync setState in effect
   useEffect(() => {
-    if (
-      config.problemCount !== 'infinite' &&
-      state.problems.length >= config.problemCount
-    ) {
-      setIsSessionEnded(true);
+    if (state.phase !== 'answering' || isSessionEnded) {
+      return;
     }
-  }, [state.problems.length, config.problemCount]);
+
+    // Start counting from the problem start time
+    const startTime = state.currentProblemStartTime;
+
+    const interval = setInterval(() => {
+      setProblemElapsedTime(Math.floor((Date.now() - startTime) / 1000));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [state.phase, state.currentProblemStartTime, isSessionEnded]);
+
+  // Derive whether session should end - computed during render, no effect needed
+  // The actual state update is handled in handleNext
+  const shouldEndSession = config.problemCount !== 'infinite' &&
+    state.problems.length >= config.problemCount;
 
   // Handlers
   const handleSubmitAnswer = useCallback((answer: number) => {
@@ -566,7 +585,7 @@ export default function ActiveSessionPage() {
 
   // Initialize keyboard shortcuts hook
   const { getGroupedShortcuts } = useKeyboardShortcuts(keyboardShortcuts, {
-    enabled: !isSessionEnded
+    enabled: !isSessionEnded && !shouldEndSession
     // Note: Screen reader announcements are handled within individual shortcut actions
   });
 
@@ -578,7 +597,7 @@ export default function ActiveSessionPage() {
   };
 
   // Session ended - redirect to summary
-  if (isSessionEnded) {
+  if (isSessionEnded || shouldEndSession) {
     // Store session data and redirect
     const statistics = calculateStatistics(state.problems);
 
@@ -784,7 +803,7 @@ export default function ActiveSessionPage() {
             problem={state.currentProblem}
             problemNumber={problemNumber}
             totalProblems={totalProblems}
-            timeElapsed={Math.floor((Date.now() - state.currentProblemStartTime) / 1000)}
+            timeElapsed={problemElapsedTime}
             showMethodHint={state.hintsUsed > 0}
             optimalMethod={state.currentSolution.optimal.method.name}
             isActive={state.phase === 'answering'}

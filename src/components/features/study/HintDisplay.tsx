@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState, useEffect, useRef, KeyboardEvent } from 'react';
+import { useRef, KeyboardEvent } from 'react';
 
 /**
  * A single hint with its content
@@ -41,24 +41,7 @@ export function HintDisplay({
   allRevealed = false,
   className = ''
 }: HintDisplayProps) {
-  const [animatingIndex, setAnimatingIndex] = useState<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-
-  // Track when a new hint is revealed to trigger animation
-  useEffect(() => {
-    if (revealedCount > 0) {
-      const newlyRevealedIndex = revealedCount - 1;
-      setAnimatingIndex(newlyRevealedIndex);
-
-      // Clear animation state after animation completes
-      const timer = setTimeout(() => {
-        setAnimatingIndex(null);
-      }, 500);
-
-      return () => clearTimeout(timer);
-    }
-    return undefined;
-  }, [revealedCount]);
 
   // Handle keyboard interaction for reveal button
   const handleKeyDown = (e: KeyboardEvent<HTMLButtonElement>) => {
@@ -94,19 +77,23 @@ export function HintDisplay({
       <div className="space-y-2">
         {hints.map((hint, index) => {
           const isRevealed = index < revealedCount;
-          const isAnimating = index === animatingIndex;
+          // Use the revealed count to trigger animation via key when a hint becomes newly revealed
+          // The most recently revealed hint is at index (revealedCount - 1)
+          const isNewlyRevealed = isRevealed && index === revealedCount - 1;
           const hintNumber = index + 1;
 
           return (
             <div
-              key={index}
+              // Use a composite key that changes when this specific hint becomes revealed
+              // This triggers CSS animation on the newly revealed hint
+              key={`${index}-${isRevealed ? 'revealed' : 'hidden'}`}
               className={`
                 relative rounded-lg border p-4 transition-all duration-300
                 ${isRevealed
                   ? 'border-accent/40 bg-accent/5'
                   : 'border-border bg-card/50'
                 }
-                ${isAnimating ? 'animate-fadeIn' : ''}
+                ${isNewlyRevealed ? 'animate-fadeIn' : ''}
               `}
               aria-hidden={!isRevealed}
             >

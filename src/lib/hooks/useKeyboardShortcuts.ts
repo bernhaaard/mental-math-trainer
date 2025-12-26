@@ -175,10 +175,13 @@ export function useKeyboardShortcuts(
 
   // Use ref to avoid stale closures
   const shortcutsRef = useRef(shortcuts);
-  shortcutsRef.current = shortcuts;
-
   const onShortcutTriggeredRef = useRef(onShortcutTriggered);
-  onShortcutTriggeredRef.current = onShortcutTriggered;
+
+  // Update refs in an effect to avoid accessing refs during render
+  useEffect(() => {
+    shortcutsRef.current = shortcuts;
+    onShortcutTriggeredRef.current = onShortcutTriggered;
+  });
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {

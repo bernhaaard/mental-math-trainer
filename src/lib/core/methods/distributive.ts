@@ -45,8 +45,8 @@ export class DistributiveMethod extends BaseMethod {
    * Distributive property is always applicable.
    * It's the foundational method that works for any multiplication.
    *
-   * @param _num1 - First multiplicand (unused)
-   * @param _num2 - Second multiplicand (unused)
+   * @param _num1 - First multiplicand (unused - always applicable)
+   * @param _num2 - Second multiplicand (unused - always applicable)
    * @returns Always true
    */
   isApplicable(_num1: number, _num2: number): boolean {
@@ -94,8 +94,8 @@ export class DistributiveMethod extends BaseMethod {
    * Distributive is general-purpose, so it gets an average quality score.
    * Specialized methods should score higher when applicable.
    *
-   * @param _num1 - First multiplicand (unused)
-   * @param _num2 - Second multiplicand (unused)
+   * @param _num1 - First multiplicand (unused - constant quality)
+   * @param _num2 - Second multiplicand (unused - constant quality)
    * @returns Quality score (0-1, higher is better)
    */
   qualityScore(_num1: number, _num2: number): number {

@@ -27,6 +27,35 @@ interface MethodComparisonProps {
 }
 
 /**
+ * Helper component to render score with visual indicator.
+ * Defined outside of MethodComparison to avoid creating a new component on each render.
+ */
+function ScoreIndicator({ score, label, optimal = false }: { score: number; label: string; optimal?: boolean }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-xs text-muted-foreground uppercase tracking-wide">
+        {label}:
+      </span>
+      <div className="flex items-center gap-2">
+        <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
+          <div
+            className={`h-full transition-all ${
+              optimal ? 'bg-success' : 'bg-warning'
+            }`}
+            style={{ width: `${Math.min(100, (score / 10) * 100)}%` }}
+          />
+        </div>
+        <span className={`text-sm font-mono font-semibold ${
+          optimal ? 'text-success' : 'text-foreground'
+        }`}>
+          {score.toFixed(1)}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/**
  * Displays a comparison between the optimal method and alternative methods,
  * showing why each alternative wasn't chosen and their relative cost/quality scores.
  */
@@ -60,30 +89,6 @@ export function MethodComparison({
     };
     return displayNames[methodName];
   };
-
-  // Helper to render score with visual indicator
-  const ScoreIndicator = ({ score, label, optimal = false }: { score: number; label: string; optimal?: boolean }) => (
-    <div className="flex items-center gap-2">
-      <span className="text-xs text-muted-foreground uppercase tracking-wide">
-        {label}:
-      </span>
-      <div className="flex items-center gap-2">
-        <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
-          <div
-            className={`h-full transition-all ${
-              optimal ? 'bg-success' : 'bg-warning'
-            }`}
-            style={{ width: `${Math.min(100, (score / 10) * 100)}%` }}
-          />
-        </div>
-        <span className={`text-sm font-mono font-semibold ${
-          optimal ? 'text-success' : 'text-foreground'
-        }`}>
-          {score.toFixed(1)}
-        </span>
-      </div>
-    </div>
-  );
 
   return (
     <div className="space-y-6">

@@ -2,7 +2,7 @@
 
 import type { CustomRange } from '@/lib/types/problem';
 import { ABSOLUTE_MAX_VALUE, ABSOLUTE_MIN_VALUE } from '@/lib/types/problem';
-import { useState, useEffect } from 'react';
+import { useMemo } from 'react';
 
 interface NumberRangeInputProps {
   value: CustomRange;
@@ -18,54 +18,49 @@ interface ValidationErrors {
 }
 
 /**
+ * Compute validation errors from props (pure function, no side effects)
+ */
+function computeErrors(value: CustomRange, absoluteMin: number, absoluteMax: number): ValidationErrors {
+  const errors: ValidationErrors = {};
+
+  // Validate num1 range
+  if (value.num1Min < absoluteMin) {
+    errors.num1Min = `Minimum must be at least ${absoluteMin}`;
+  }
+  if (value.num1Max > absoluteMax) {
+    errors.num1Max = `Maximum must be at most ${absoluteMax.toLocaleString()}`;
+  }
+  if (value.num1Min >= value.num1Max) {
+    errors.num1Min = 'Minimum must be less than maximum';
+  }
+
+  // Validate num2 range
+  if (value.num2Min < absoluteMin) {
+    errors.num2Min = `Minimum must be at least ${absoluteMin}`;
+  }
+  if (value.num2Max > absoluteMax) {
+    errors.num2Max = `Maximum must be at most ${absoluteMax.toLocaleString()}`;
+  }
+  if (value.num2Min >= value.num2Max) {
+    errors.num2Min = 'Minimum must be less than maximum';
+  }
+
+  return errors;
+}
+
+/**
  * NumberRangeInput - Custom number range configuration component
  * Allows users to specify min/max bounds for both operands independently
  */
 export function NumberRangeInput({ value, onChange, allowNegatives }: NumberRangeInputProps) {
-  const [errors, setErrors] = useState<ValidationErrors>({});
-
   const absoluteMin = allowNegatives ? ABSOLUTE_MIN_VALUE : 1;
   const absoluteMax = ABSOLUTE_MAX_VALUE;
 
-  useEffect(() => {
-    validateRange(value);
-  }, [value, allowNegatives]);
-
-  const validateRange = (range: CustomRange): boolean => {
-    const newErrors: ValidationErrors = {};
-    let isValid = true;
-
-    // Validate num1 range
-    if (range.num1Min < absoluteMin) {
-      newErrors.num1Min = `Minimum must be at least ${absoluteMin}`;
-      isValid = false;
-    }
-    if (range.num1Max > absoluteMax) {
-      newErrors.num1Max = `Maximum must be at most ${absoluteMax.toLocaleString()}`;
-      isValid = false;
-    }
-    if (range.num1Min >= range.num1Max) {
-      newErrors.num1Min = 'Minimum must be less than maximum';
-      isValid = false;
-    }
-
-    // Validate num2 range
-    if (range.num2Min < absoluteMin) {
-      newErrors.num2Min = `Minimum must be at least ${absoluteMin}`;
-      isValid = false;
-    }
-    if (range.num2Max > absoluteMax) {
-      newErrors.num2Max = `Maximum must be at most ${absoluteMax.toLocaleString()}`;
-      isValid = false;
-    }
-    if (range.num2Min >= range.num2Max) {
-      newErrors.num2Min = 'Minimum must be less than maximum';
-      isValid = false;
-    }
-
-    setErrors(newErrors);
-    return isValid;
-  };
+  // Derive errors from props instead of using state + effect
+  const errors = useMemo(
+    () => computeErrors(value, absoluteMin, absoluteMax),
+    [value, absoluteMin, absoluteMax]
+  );
 
   const handleChange = (field: keyof CustomRange, inputValue: string) => {
     const numValue = parseInt(inputValue, 10);

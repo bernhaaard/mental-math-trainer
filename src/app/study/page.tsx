@@ -391,6 +391,104 @@ export default function StudyPage(): React.ReactElement {
         </div>
       </section>
 
+      {/* Advanced Topics */}
+      <section className="mt-12">
+        <h2 className="text-xl font-semibold text-foreground mb-4">
+          Advanced Topics
+        </h2>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Link
+            href="/study/compare"
+            className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg"
+          >
+            <Card
+              variant="outlined"
+              className="h-full transition-all duration-200 hover:shadow-lg hover:border-primary/50 cursor-pointer"
+            >
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/20 text-accent-foreground">
+                    <svg
+                      className="h-6 w-6"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      aria-hidden="true"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg text-card-foreground">
+                      Compare Methods
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Side-by-side comparison with decision flowchart
+                    </p>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Learn when to use each method with our comparison table,
+                  decision flowchart, and method-vs-method breakdowns.
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link
+            href="/study/combining"
+            className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg"
+          >
+            <Card
+              variant="outlined"
+              className="h-full transition-all duration-200 hover:shadow-lg hover:border-primary/50 cursor-pointer"
+            >
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-warning/20 text-warning-foreground">
+                    <svg
+                      className="h-6 w-6"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      aria-hidden="true"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M13 10V3L4 14h7v7l9-11h-7z"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg text-card-foreground">
+                      Combining Techniques
+                    </h3>
+                    <Badge variant="warning" className="mt-1">
+                      Advanced
+                    </Badge>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Chain multiple methods together for complex problems.
+                  Includes worked examples and practice exercises.
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
+        </div>
+      </section>
+
       {/* Quick Start Tips */}
       <section className="mt-12 rounded-lg border border-border bg-card p-6">
         <h2 className="text-lg font-semibold text-card-foreground mb-4">

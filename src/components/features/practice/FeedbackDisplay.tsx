@@ -1,7 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-
 /**
  * Props for FeedbackDisplay component.
  */
@@ -47,20 +45,11 @@ export function FeedbackDisplay({
   onNext,
   disableViewSolution = false
 }: FeedbackDisplayProps) {
-  const [isVisible, setIsVisible] = useState(false);
-
-  // Animate in on mount
-  useEffect(() => {
-    setIsVisible(true);
-  }, []);
-
   const errorMagnitude = Math.abs(userAnswer - correctAnswer);
 
   return (
     <div
-      className={`space-y-6 transition-all duration-500 ${
-        isVisible ? 'animate-in fade-in slide-in-from-bottom-4' : 'opacity-0'
-      }`}
+      className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500"
     >
       {/* Main feedback card */}
       <div
@@ -123,7 +112,7 @@ export function FeedbackDisplay({
                     Not quite
                   </h3>
                   <p className="text-lg text-red-300/80">
-                    Let's review the solution
+                    Let&apos;s review the solution
                   </p>
                 </div>
               </div>

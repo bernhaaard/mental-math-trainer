@@ -96,7 +96,7 @@ function parseFormattedText(text: string): React.ReactNode[] {
  */
 function parseInlineFormatting(text: string, keyPrefix: number): React.ReactNode[] {
   const result: React.ReactNode[] = [];
-  let currentText = text;
+  const currentText = text;
   let partIndex = 0;
 
   // Pattern to match **bold**, *italic*, or `code`

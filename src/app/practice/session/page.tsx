@@ -17,10 +17,11 @@ import { KeyboardShortcutHelp, KeyboardShortcut } from '@/components/ui';
 import { useKeyboardShortcuts, type ShortcutConfig } from '@/lib/hooks/useKeyboardShortcuts';
 import type { Problem } from '@/lib/types/problem';
 import { DifficultyLevel } from '@/lib/types/problem';
-import type { SessionConfig, ProblemAttempt, SessionStatistics, MethodStats } from '@/lib/types/session';
+import type { SessionConfig, ProblemAttempt, SessionStatistics, MethodStats, PracticeSession } from '@/lib/types/session';
 import { MethodName } from '@/lib/types/method';
 import { MethodSelector, type MethodRanking } from '@/lib/core/methods/method-selector';
 import { generateMethodAwareProblem } from '@/lib/core/problem-generator';
+import { saveSession } from '@/lib/storage/statistics-store';
 
 // ============================================================================
 // Types and State Management
@@ -268,6 +269,12 @@ export default function ActiveSessionPage() {
   // Screen reader announcement ref
   const announcementRef = useRef<HTMLDivElement>(null);
 
+  // Track if session has been saved to prevent duplicate saves
+  const sessionSavedRef = useRef(false);
+
+  // Track session start time
+  const sessionStartTimeRef = useRef<Date>(new Date());
+
   // Session configuration - loaded from sessionStorage using lazy initialization
   const [config] = useState<SessionConfig>(() => {
     if (typeof window !== 'undefined') {
@@ -374,6 +381,27 @@ export default function ActiveSessionPage() {
   // The actual state update is handled in handleNext
   const shouldEndSession = config.problemCount !== 'infinite' &&
     state.problems.length >= config.problemCount;
+
+  // Save session to IndexedDB when it ends
+  useEffect(() => {
+    if ((isSessionEnded || shouldEndSession) && !sessionSavedRef.current && state.problems.length > 0) {
+      sessionSavedRef.current = true;
+
+      const session: PracticeSession = {
+        id: `session-${Date.now()}`,
+        startedAt: sessionStartTimeRef.current,
+        endedAt: new Date(),
+        configuration: config,
+        problems: state.problems,
+        statistics: calculateStatistics(state.problems)
+      };
+
+      // Save session to IndexedDB (fire and forget)
+      saveSession(session).catch(err => {
+        console.error('Failed to save session:', err);
+      });
+    }
+  }, [isSessionEnded, shouldEndSession, state.problems, config]);
 
   // Handlers
   const handleSubmitAnswer = useCallback((answer: number) => {

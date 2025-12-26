@@ -15,11 +15,12 @@ import { SolutionWalkthrough } from '@/components/features/practice/SolutionWalk
 import { ProgressBar } from '@/components/features/practice/ProgressBar';
 import { KeyboardShortcutHelp, KeyboardShortcut } from '@/components/ui';
 import { useKeyboardShortcuts, type ShortcutConfig } from '@/lib/hooks/useKeyboardShortcuts';
-import type { Problem, CustomRange } from '@/lib/types/problem';
+import type { Problem } from '@/lib/types/problem';
 import { DifficultyLevel } from '@/lib/types/problem';
 import type { SessionConfig, ProblemAttempt, SessionStatistics, MethodStats } from '@/lib/types/session';
 import { MethodName } from '@/lib/types/method';
 import { MethodSelector, type MethodRanking } from '@/lib/core/methods/method-selector';
+import { generateMethodAwareProblem } from '@/lib/core/problem-generator';
 
 // ============================================================================
 // Types and State Management
@@ -157,50 +158,20 @@ function sessionReducer(state: ActiveSessionState, action: SessionAction): Activ
 // Helper Functions
 // ============================================================================
 
-function generateRandomNumber(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
+/**
+ * Generate a problem suitable for the selected methods.
+ * Uses the method-aware problem generator to create problems that
+ * will benefit from the user's selected calculation methods.
+ */
 function generateProblem(config: SessionConfig, problemNumber: number): Problem {
-  let num1: number;
-  let num2: number;
-  let difficulty: DifficultyLevel;
-
-  if (typeof config.difficulty === 'string') {
-    // Predefined difficulty level
-    difficulty = config.difficulty;
-    const ranges: Record<DifficultyLevel, { min: number; max: number }> = {
-      [DifficultyLevel.Beginner]: { min: 2, max: 100 },
-      [DifficultyLevel.Intermediate]: { min: 20, max: 400 },
-      [DifficultyLevel.Advanced]: { min: 100, max: 1000 },
-      [DifficultyLevel.Expert]: { min: 500, max: 10000 },
-      [DifficultyLevel.Mastery]: { min: 1000, max: 1000000 }
-    };
-    const range = ranges[difficulty];
-    num1 = generateRandomNumber(range.min, range.max);
-    num2 = generateRandomNumber(range.min, range.max);
-  } else {
-    // Custom range
-    const customRange = config.difficulty as CustomRange;
-    difficulty = DifficultyLevel.Advanced; // Default for custom
-    num1 = generateRandomNumber(customRange.num1Min, customRange.num1Max);
-    num2 = generateRandomNumber(customRange.num2Min, customRange.num2Max);
-
-    if (config.allowNegatives) {
-      // Randomly make numbers negative
-      if (Math.random() < 0.3) num1 = -num1;
-      if (Math.random() < 0.3) num2 = -num2;
-    }
-  }
-
-  return {
-    id: `problem-${problemNumber}-${Date.now()}`,
-    num1,
-    num2,
-    answer: num1 * num2,
-    difficulty,
-    generatedAt: new Date()
-  };
+  return generateMethodAwareProblem(
+    {
+      difficulty: config.difficulty,
+      allowNegatives: config.allowNegatives
+    },
+    config.methods,
+    problemNumber
+  );
 }
 
 function calculateStatistics(problems: ProblemAttempt[]): SessionStatistics {
@@ -340,14 +311,23 @@ export default function ActiveSessionPage() {
     const problem = generateProblem(config, problemNumber);
 
     try {
-      const solution = methodSelector.selectOptimalMethod(problem.num1, problem.num2);
+      // Pass config.methods to restrict method selection to user's chosen methods
+      const solution = methodSelector.selectOptimalMethod(
+        problem.num1,
+        problem.num2,
+        config.methods
+      );
       dispatch({ type: 'SET_PROBLEM', problem, solution });
     } catch (error) {
       console.error('Failed to generate solution:', error);
       // Try again with new numbers
       const newProblem = generateProblem(config, problemNumber);
       try {
-        const solution = methodSelector.selectOptimalMethod(newProblem.num1, newProblem.num2);
+        const solution = methodSelector.selectOptimalMethod(
+          newProblem.num1,
+          newProblem.num2,
+          config.methods
+        );
         dispatch({ type: 'SET_PROBLEM', problem: newProblem, solution });
       } catch (retryError) {
         console.error('Failed to generate solution on retry:', retryError);

@@ -531,6 +531,144 @@ describe('MethodSelector', () => {
     });
   });
 
+  describe('selectOptimalMethod - allowedMethods filtering', () => {
+    it('should only use allowed methods when specified', () => {
+      // 47 × 53 would normally select DifferenceSquares as optimal
+      // Force it to use only Distributive
+      const result = selector.selectOptimalMethod(47, 53, [MethodName.Distributive]);
+
+      expect(result.optimal.method.name).toBe(MethodName.Distributive);
+      expect(result.optimal.solution.validated).toBe(true);
+
+      // Verify final answer is still correct
+      const finalResult = result.optimal.solution.steps[
+        result.optimal.solution.steps.length - 1
+      ]?.result;
+      expect(finalResult).toBe(2491);
+    });
+
+    it('should use all methods when allowedMethods is empty array', () => {
+      // Empty array should behave the same as undefined
+      const resultWithEmpty = selector.selectOptimalMethod(47, 53, []);
+      const resultWithUndefined = selector.selectOptimalMethod(47, 53);
+
+      // Should select the same optimal method
+      expect(resultWithEmpty.optimal.method.name).toBe(
+        resultWithUndefined.optimal.method.name
+      );
+    });
+
+    it('should use all methods when allowedMethods is undefined', () => {
+      // 47 × 53 should select DifferenceSquares when all methods allowed
+      const result = selector.selectOptimalMethod(47, 53, undefined);
+
+      expect(result.optimal.method.name).toBe(MethodName.DifferenceSquares);
+    });
+
+    it('should filter to multiple allowed methods', () => {
+      // Allow only Distributive and Factorization
+      const result = selector.selectOptimalMethod(24, 35, [
+        MethodName.Distributive,
+        MethodName.Factorization
+      ]);
+
+      // Should select one of the allowed methods
+      expect([MethodName.Distributive, MethodName.Factorization]).toContain(
+        result.optimal.method.name
+      );
+
+      // Alternatives should also be from allowed methods
+      result.alternatives.forEach(alt => {
+        expect([MethodName.Distributive, MethodName.Factorization]).toContain(
+          alt.method.name
+        );
+      });
+    });
+
+    it('should fallback when allowed method is not applicable', () => {
+      // Squaring only applies when both numbers are identical
+      // 47 × 53 is not a squaring case, so Squaring won't be applicable
+      // Should fallback to any applicable method
+      const result = selector.selectOptimalMethod(47, 53, [MethodName.Squaring]);
+
+      // Should fallback to some applicable method since Squaring doesn't apply
+      expect(result.optimal.solution.validated).toBe(true);
+
+      // Verify final answer is still correct
+      const finalResult = result.optimal.solution.steps[
+        result.optimal.solution.steps.length - 1
+      ]?.result;
+      expect(finalResult).toBe(2491);
+    });
+
+    it('should use allowed method when it is applicable', () => {
+      // 73 × 73 is a squaring case, and we allow Squaring
+      const result = selector.selectOptimalMethod(73, 73, [MethodName.Squaring]);
+
+      expect(result.optimal.method.name).toBe(MethodName.Squaring);
+      expect(result.optimal.solution.validated).toBe(true);
+
+      const finalResult = result.optimal.solution.steps[
+        result.optimal.solution.steps.length - 1
+      ]?.result;
+      expect(finalResult).toBe(5329);
+    });
+
+    it('should limit alternatives to allowed methods', () => {
+      // Allow only DifferenceSquares and Distributive for a problem where both apply
+      const result = selector.selectOptimalMethod(47, 53, [
+        MethodName.DifferenceSquares,
+        MethodName.Distributive
+      ]);
+
+      // Optimal should be one of the allowed
+      expect([MethodName.DifferenceSquares, MethodName.Distributive]).toContain(
+        result.optimal.method.name
+      );
+
+      // All alternatives should also be from allowed methods
+      result.alternatives.forEach(alt => {
+        expect([MethodName.DifferenceSquares, MethodName.Distributive]).toContain(
+          alt.method.name
+        );
+      });
+    });
+
+    it('should handle single allowed method that applies', () => {
+      const result = selector.selectOptimalMethod(47, 53, [MethodName.DifferenceSquares]);
+
+      expect(result.optimal.method.name).toBe(MethodName.DifferenceSquares);
+      // With only one allowed method that applies, there should be no alternatives
+      expect(result.alternatives.length).toBe(0);
+    });
+
+    it('should produce correct answers regardless of method filtering', () => {
+      const testCases = [
+        { num1: 47, num2: 53, answer: 2491 },
+        { num1: 98, num2: 87, answer: 8526 },
+        { num1: 73, num2: 73, answer: 5329 },
+      ];
+
+      testCases.forEach(({ num1, num2, answer }) => {
+        // Test with different allowed methods
+        const resultDistributive = selector.selectOptimalMethod(
+          num1, num2, [MethodName.Distributive]
+        );
+        const resultAll = selector.selectOptimalMethod(num1, num2);
+
+        const answerDistributive = resultDistributive.optimal.solution.steps[
+          resultDistributive.optimal.solution.steps.length - 1
+        ]?.result;
+        const answerAll = resultAll.optimal.solution.steps[
+          resultAll.optimal.solution.steps.length - 1
+        ]?.result;
+
+        expect(answerDistributive).toBe(answer);
+        expect(answerAll).toBe(answer);
+      });
+    });
+  });
+
   describe('selectOptimalMethod - input validation', () => {
     it('should reject zero inputs', () => {
       expect(() => selector.selectOptimalMethod(0, 47)).toThrow(

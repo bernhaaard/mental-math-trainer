@@ -137,32 +137,60 @@ export class MethodSelector {
    *
    * Algorithm:
    * 1. Filter to applicable methods using isApplicable()
-   * 2. Calculate composite score: cost * 0.6 + (1 - quality) * 0.4
-   * 3. Sort by composite score (lower is better)
-   * 4. Generate solutions for top 3 methods
-   * 5. Cross-validate all solutions produce the same answer
-   * 6. Return optimal method with alternatives
+   * 2. Further filter by allowedMethods if specified
+   * 3. Calculate composite score: cost * 0.6 + (1 - quality) * 0.4
+   * 4. Sort by composite score (lower is better)
+   * 5. Generate solutions for top 3 methods
+   * 6. Cross-validate all solutions produce the same answer
+   * 7. Return optimal method with alternatives
    *
    * @param num1 - First multiplicand
    * @param num2 - Second multiplicand
+   * @param allowedMethods - Optional array of method names to restrict selection to.
+   *                         If empty or undefined, all methods are considered.
    * @returns Method ranking with optimal solution and alternatives
    * @throws Error if no applicable methods found or if solutions don't cross-validate
    */
-  selectOptimalMethod(num1: number, num2: number): MethodRanking {
+  selectOptimalMethod(
+    num1: number,
+    num2: number,
+    allowedMethods?: MethodName[]
+  ): MethodRanking {
     // Input validation - ensure we have valid, finite numbers within safe bounds
     this.validateInputs(num1, num2);
 
-    // Step 1: Filter to applicable methods
-    const applicable = this.methods.filter(method =>
-      method.isApplicable(num1, num2)
-    );
+    // Step 1: Filter to applicable methods (filtered by allowed if specified)
+    let applicable = this.methods.filter(method => {
+      const isApplicable = method.isApplicable(num1, num2);
+      // If allowedMethods is empty or undefined, allow all methods
+      // Otherwise, only allow methods in the allowedMethods array
+      const isAllowed = !allowedMethods || allowedMethods.length === 0 ||
+                        allowedMethods.includes(method.name);
+      return isApplicable && isAllowed;
+    });
 
+    // Handle edge case: no applicable methods after filtering
     if (applicable.length === 0) {
-      // This should never happen as Distributive is always applicable
-      throw new Error(
-        `Unable to find a calculation method for ${num1} × ${num2}. ` +
-        'Please try different numbers.'
+      // Fallback: if no filtered methods apply, try all methods
+      const anyApplicable = this.methods.filter(method =>
+        method.isApplicable(num1, num2)
       );
+
+      if (anyApplicable.length === 0) {
+        // This should never happen as Distributive is always applicable
+        throw new Error(
+          `Unable to find a calculation method for ${num1} × ${num2}. ` +
+          'Please try different numbers.'
+        );
+      }
+
+      // Use the first applicable method as fallback
+      // We know anyApplicable[0] exists since length > 0
+      const firstApplicable = anyApplicable[0];
+      if (!firstApplicable) {
+        throw new Error('Unexpected: first applicable method is undefined');
+      }
+      applicable = [firstApplicable];
     }
 
     // Step 2: Calculate composite scores for all applicable methods

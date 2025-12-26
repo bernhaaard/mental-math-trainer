@@ -6,10 +6,11 @@
  */
 
 import { useState, useEffect, useCallback, useReducer, useMemo, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ProblemDisplay } from '@/components/features/practice/ProblemDisplay';
-import { AnswerInput } from '@/components/features/practice/AnswerInput';
+import { AnswerInput, type AnswerInputHandle } from '@/components/features/practice/AnswerInput';
 import { FeedbackDisplay } from '@/components/features/practice/FeedbackDisplay';
 import { SolutionWalkthrough } from '@/components/features/practice/SolutionWalkthrough';
 import { ProgressBar } from '@/components/features/practice/ProgressBar';
@@ -31,12 +32,29 @@ type SessionPhase = 'answering' | 'feedback' | 'reviewing' | 'paused';
 
 interface ActiveSessionState {
   phase: SessionPhase;
+  previousPhase: SessionPhase | null; // Track phase before pausing for proper resume
   currentProblem: Problem | null;
   currentSolution: MethodRanking | null;
   problems: ProblemAttempt[];
   currentProblemStartTime: number;
   hintsUsed: number;
   showError: boolean;
+}
+
+// Key for persisting session state in sessionStorage (Issue #37)
+const SESSION_STATE_STORAGE_KEY = 'practiceSessionState';
+
+// Interface for persisted session state (serializable version)
+interface PersistedSessionState {
+  phase: SessionPhase;
+  previousPhase: SessionPhase | null;
+  currentProblem: Problem | null;
+  currentSolution: MethodRanking | null;
+  problems: ProblemAttempt[];
+  hintsUsed: number;
+  sessionTimer: number;
+  sessionStartTime: string; // ISO string for Date serialization
+  config: SessionConfig;
 }
 
 type SessionAction =
@@ -49,7 +67,8 @@ type SessionAction =
   | { type: 'TOGGLE_PAUSE' }
   | { type: 'SHOW_ERROR' }
   | { type: 'CLEAR_ERROR' }
-  | { type: 'RESUME_FROM_PAUSE' };
+  | { type: 'RESUME_FROM_PAUSE' }
+  | { type: 'RESTORE_STATE'; restoredState: Partial<ActiveSessionState> };
 
 function sessionReducer(state: ActiveSessionState, action: SessionAction): ActiveSessionState {
   switch (action.type) {
@@ -133,15 +152,27 @@ function sessionReducer(state: ActiveSessionState, action: SessionAction): Activ
       };
 
     case 'TOGGLE_PAUSE':
-      return {
-        ...state,
-        phase: state.phase === 'paused' ? 'answering' : 'paused'
-      };
+      if (state.phase === 'paused') {
+        // Resuming: restore previous phase
+        return {
+          ...state,
+          phase: state.previousPhase || 'answering',
+          previousPhase: null
+        };
+      } else {
+        // Pausing: save current phase
+        return {
+          ...state,
+          previousPhase: state.phase,
+          phase: 'paused'
+        };
+      }
 
     case 'RESUME_FROM_PAUSE':
       return {
         ...state,
-        phase: 'answering'
+        phase: state.previousPhase || 'answering',
+        previousPhase: null
       };
 
     case 'SHOW_ERROR':
@@ -149,6 +180,12 @@ function sessionReducer(state: ActiveSessionState, action: SessionAction): Activ
 
     case 'CLEAR_ERROR':
       return { ...state, showError: false };
+
+    case 'RESTORE_STATE':
+      return {
+        ...state,
+        ...action.restoredState
+      };
 
     default:
       return state;
@@ -246,6 +283,15 @@ function calculateStatistics(problems: ProblemAttempt[]): SessionStatistics {
   };
 }
 
+/**
+ * Clear persisted session state from sessionStorage (Issue #37)
+ */
+function clearPersistedSessionState(): void {
+  if (typeof window !== 'undefined') {
+    sessionStorage.removeItem(SESSION_STATE_STORAGE_KEY);
+  }
+}
+
 // ============================================================================
 // Main Component
 // ============================================================================
@@ -258,16 +304,28 @@ const DEFAULT_CONFIG: SessionConfig = {
 };
 
 export default function ActiveSessionPage() {
+  const router = useRouter();
   const [methodSelector] = useState(() => new MethodSelector());
+
+  // Track whether we have a valid config from sessionStorage
+  // null = still checking, true = valid config found, false = no config (redirect needed)
+  const [hasValidConfig, setHasValidConfig] = useState<boolean | null>(null);
+
   // Config is loaded synchronously via lazy initialization, so we can start as true
   // This flag is used to ensure we don't generate problems before hydration
   const [configLoaded, setConfigLoaded] = useState(typeof window !== 'undefined');
+
+  // Track if state has been restored from sessionStorage (Issue #37)
+  const [stateRestored, setStateRestored] = useState(false);
 
   // Keyboard shortcuts help modal state
   const [showShortcutHelp, setShowShortcutHelp] = useState(false);
 
   // Screen reader announcement ref
   const announcementRef = useRef<HTMLDivElement>(null);
+
+  // Answer input ref for focus management
+  const answerInputRef = useRef<AnswerInputHandle>(null);
 
   // Track if session has been saved to prevent duplicate saves
   const sessionSavedRef = useRef(false);
@@ -298,8 +356,39 @@ export default function ActiveSessionPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Check for valid configuration and redirect if not found
+  // This handles direct navigation to /practice/session without going through configuration
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const storedConfig = sessionStorage.getItem('practiceSessionConfig');
+
+    if (!storedConfig) {
+      // No config found - redirect to practice configuration page
+      setHasValidConfig(false);
+      router.replace('/practice');
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(storedConfig) as SessionConfig;
+      // Validate that the config has required fields
+      if (!parsed.difficulty || !Array.isArray(parsed.methods)) {
+        setHasValidConfig(false);
+        router.replace('/practice');
+        return;
+      }
+      setHasValidConfig(true);
+    } catch {
+      // Invalid JSON - redirect
+      setHasValidConfig(false);
+      router.replace('/practice');
+    }
+  }, [router]);
+
   const [state, dispatch] = useReducer(sessionReducer, undefined, () => ({
     phase: 'answering' as SessionPhase,
+    previousPhase: null,
     currentProblem: null,
     currentSolution: null,
     problems: [],
@@ -311,6 +400,100 @@ export default function ActiveSessionPage() {
   const [sessionTimer, setSessionTimer] = useState(0);
   const [problemElapsedTime, setProblemElapsedTime] = useState(0);
   const [isSessionEnded, setIsSessionEnded] = useState(false);
+
+  // Restore session state from sessionStorage on mount (Issue #37)
+  useEffect(() => {
+    if (typeof window === 'undefined' || stateRestored || hasValidConfig !== true) return;
+
+    try {
+      const saved = sessionStorage.getItem(SESSION_STATE_STORAGE_KEY);
+      if (saved) {
+        const parsed: PersistedSessionState = JSON.parse(saved);
+
+        // Verify the config matches (don't restore if user started a new session with different config)
+        const configMatches =
+          JSON.stringify(parsed.config) === JSON.stringify(config);
+
+        if (configMatches && parsed.problems.length > 0) {
+          // Restore state
+          dispatch({
+            type: 'RESTORE_STATE',
+            restoredState: {
+              phase: parsed.phase,
+              previousPhase: parsed.previousPhase,
+              currentProblem: parsed.currentProblem,
+              currentSolution: parsed.currentSolution,
+              problems: parsed.problems,
+              hintsUsed: parsed.hintsUsed,
+              currentProblemStartTime: Date.now() // Reset to prevent time drift
+            }
+          });
+
+          // Restore timer
+          setSessionTimer(parsed.sessionTimer);
+
+          // Restore session start time
+          sessionStartTimeRef.current = new Date(parsed.sessionStartTime);
+
+          console.log('Session state restored from browser navigation');
+        }
+      }
+    } catch (error) {
+      console.error('Failed to restore session state:', error);
+      // Clear corrupted state
+      clearPersistedSessionState();
+    }
+
+    setStateRestored(true);
+  }, [config, stateRestored, hasValidConfig]);
+
+  // Persist session state to sessionStorage periodically (Issue #37)
+  useEffect(() => {
+    if (typeof window === 'undefined' || !stateRestored) return;
+    if (isSessionEnded) {
+      // Clear persisted state when session ends
+      clearPersistedSessionState();
+      return;
+    }
+
+    // Only persist if we have meaningful progress
+    if (state.problems.length === 0 && !state.currentProblem) return;
+
+    const stateToSave: PersistedSessionState = {
+      phase: state.phase,
+      previousPhase: state.previousPhase,
+      currentProblem: state.currentProblem,
+      currentSolution: state.currentSolution,
+      problems: state.problems,
+      hintsUsed: state.hintsUsed,
+      sessionTimer,
+      sessionStartTime: sessionStartTimeRef.current.toISOString(),
+      config
+    };
+
+    try {
+      sessionStorage.setItem(SESSION_STATE_STORAGE_KEY, JSON.stringify(stateToSave));
+    } catch (error) {
+      console.error('Failed to persist session state:', error);
+    }
+  }, [state, sessionTimer, config, isSessionEnded, stateRestored]);
+
+  // Warn about losing progress on beforeunload (Issue #37)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      // Only warn if there's progress to lose and session isn't ended
+      if (state.problems.length > 0 && !isSessionEnded) {
+        e.preventDefault();
+        // Modern browsers require returnValue to be set
+        e.returnValue = '';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [state.problems.length, isSessionEnded]);
 
   // Generate next problem
   const generateNextProblem = useCallback(() => {
@@ -342,16 +525,20 @@ export default function ActiveSessionPage() {
     }
   }, [config, methodSelector, state.problems.length]);
 
-  // Initialize first problem (only after config is loaded)
+  // Initialize first problem (only after config is loaded and state restoration is done)
   useEffect(() => {
-    if (configLoaded && !state.currentProblem && !isSessionEnded) {
+    if (configLoaded && stateRestored && !state.currentProblem && !isSessionEnded) {
       generateNextProblem();
     }
-  }, [configLoaded, state.currentProblem, isSessionEnded, generateNextProblem]);
+  }, [configLoaded, stateRestored, state.currentProblem, isSessionEnded, generateNextProblem]);
 
-  // Session timer
+  // Session timer - only runs during 'answering' phase
+  // Pauses during feedback, reviewing, and paused phases (Issue #30)
   useEffect(() => {
-    if (state.phase === 'paused' || isSessionEnded) return;
+    // Timer should only run when actively answering a problem
+    const isTimerActive = state.phase === 'answering' && !isSessionEnded;
+
+    if (!isTimerActive) return;
 
     const interval = setInterval(() => {
       setSessionTimer(prev => prev + 1);
@@ -382,10 +569,26 @@ export default function ActiveSessionPage() {
   const shouldEndSession = config.problemCount !== 'infinite' &&
     state.problems.length >= config.problemCount;
 
+  // Focus management: Return focus to input when entering 'answering' phase
+  // This ensures keyboard navigation flows properly between phases
+  useEffect(() => {
+    if (state.phase === 'answering' && state.currentProblem && !isSessionEnded) {
+      // Use a small delay to ensure the input is rendered and ready
+      const timeoutId = setTimeout(() => {
+        answerInputRef.current?.focus();
+      }, 100);
+      return () => clearTimeout(timeoutId);
+    }
+    return undefined;
+  }, [state.phase, state.currentProblem, isSessionEnded]);
+
   // Save session to IndexedDB when it ends
   useEffect(() => {
     if ((isSessionEnded || shouldEndSession) && !sessionSavedRef.current && state.problems.length > 0) {
       sessionSavedRef.current = true;
+
+      // Clear persisted session state when session ends (Issue #37)
+      clearPersistedSessionState();
 
       const session: PracticeSession = {
         id: `session-${Date.now()}`,
@@ -633,15 +836,33 @@ export default function ActiveSessionPage() {
     );
   }
 
-  // Loading state
+  // Show loading state while checking for config or if redirecting
+  if (hasValidConfig === null || hasValidConfig === false) {
+    return (
+      <div className="max-w-4xl mx-auto text-center py-12" role="status" aria-live="polite">
+        <div className="animate-pulse" aria-hidden="true">
+          <div className="h-8 bg-muted rounded w-48 mx-auto mb-4" />
+          <div className="h-24 bg-muted rounded w-full max-w-md mx-auto" />
+        </div>
+        <p className="text-muted-foreground mt-4">
+          {hasValidConfig === false ? 'Redirecting to configuration...' : 'Loading session...'}
+        </p>
+        <span className="sr-only">
+          {hasValidConfig === false ? 'No configuration found, redirecting' : 'Loading session, please wait'}
+        </span>
+      </div>
+    );
+  }
+
+  // Loading state for problem generation
   if (!state.currentProblem || !state.currentSolution) {
     return (
       <div className="max-w-4xl mx-auto text-center py-12" role="status" aria-live="polite">
         <div className="animate-pulse" aria-hidden="true">
-          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-48 mx-auto mb-4" />
-          <div className="h-24 bg-gray-200 dark:bg-gray-700 rounded w-full max-w-md mx-auto" />
+          <div className="h-8 bg-muted rounded w-48 mx-auto mb-4" />
+          <div className="h-24 bg-muted rounded w-full max-w-md mx-auto" />
         </div>
-        <p className="text-gray-500 dark:text-gray-400 mt-4">
+        <p className="text-muted-foreground mt-4">
           Generating problem...
         </p>
         <span className="sr-only">Loading next problem, please wait</span>
@@ -657,10 +878,10 @@ export default function ActiveSessionPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6" role="main" aria-label="Practice session">
       {/* Session Header with Controls */}
-      <div className="flex flex-wrap items-center justify-between gap-4 bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 bg-card rounded-lg shadow-md p-4">
         <div className="flex items-center gap-4">
           {/* Session Timer */}
-          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+          <div className="flex items-center gap-2 text-muted-foreground">
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -669,7 +890,7 @@ export default function ActiveSessionPage() {
 
           {/* Progress */}
           {totalProblems && (
-            <div className="text-sm text-gray-600 dark:text-gray-400">
+            <div className="text-sm text-muted-foreground">
               {state.problems.length} / {totalProblems} completed
             </div>
           )}
@@ -679,7 +900,7 @@ export default function ActiveSessionPage() {
           {/* Keyboard Shortcuts Help Button */}
           <button
             onClick={handleToggleShortcutHelp}
-            className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            className="p-2 rounded-lg bg-muted hover:bg-muted/80 transition-colors"
             aria-label="Keyboard shortcuts"
             title="Keyboard shortcuts (?)"
           >
@@ -691,7 +912,7 @@ export default function ActiveSessionPage() {
           {/* Pause Button */}
           <button
             onClick={handleTogglePause}
-            className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            className="p-2 rounded-lg bg-muted hover:bg-muted/80 transition-colors"
             aria-label={state.phase === 'paused' ? 'Resume session (Space)' : 'Pause session (Space)'}
             title={state.phase === 'paused' ? 'Resume (Space)' : 'Pause (Space)'}
           >
@@ -742,16 +963,16 @@ export default function ActiveSessionPage() {
           aria-modal="true"
           aria-labelledby="pause-dialog-title"
         >
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8 text-center">
-            <h2 id="pause-dialog-title" className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+          <div className="bg-card rounded-lg shadow-xl p-8 text-center">
+            <h2 id="pause-dialog-title" className="text-2xl font-bold text-foreground mb-4">
               Session Paused
             </h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
+            <p className="text-muted-foreground mb-6">
               Take a break! Your progress is saved.
             </p>
             <button
               onClick={handleTogglePause}
-              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="px-6 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
               autoFocus
             >
               Resume Session
@@ -788,7 +1009,7 @@ export default function ActiveSessionPage() {
         <div className="space-y-6">
           {/* Show the problem for context */}
           <div className="text-center">
-            <div className="text-3xl font-bold font-mono text-gray-900 dark:text-gray-100">
+            <div className="text-3xl font-bold font-mono text-foreground">
               {state.currentProblem.num1} × {state.currentProblem.num2}
             </div>
           </div>
@@ -800,6 +1021,7 @@ export default function ActiveSessionPage() {
             timeTaken={Math.floor(currentAttempt.timeTaken / 1000)}
             onViewSolution={handleViewSolution}
             onNext={handleNext}
+            autoFocus={true}
           />
         </div>
       ) : (
@@ -817,6 +1039,7 @@ export default function ActiveSessionPage() {
 
           {/* Answer Input */}
           <AnswerInput
+            ref={answerInputRef}
             onSubmit={handleSubmitAnswer}
             onSkip={handleSkip}
             onRequestHint={handleRequestHint}
@@ -826,10 +1049,11 @@ export default function ActiveSessionPage() {
             hintsUsed={state.hintsUsed}
             showError={state.showError}
             autoFocus={true}
+            resetKey={state.currentProblem?.id}
           />
 
           {/* Keyboard shortcuts hint */}
-          <div className="text-center text-sm text-gray-400 dark:text-gray-500">
+          <div className="text-center text-sm text-muted-foreground">
             Press <KeyboardShortcut keys={['?']} size="sm" /> for keyboard shortcuts
           </div>
         </div>

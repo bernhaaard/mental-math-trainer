@@ -28,13 +28,13 @@ export function Header() {
   };
 
   return (
-    <header className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950">
+    <header className="border-b border-border bg-card">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo and brand */}
           <Link
             href="/"
-            className="flex items-center space-x-2 text-xl font-bold text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            className="flex items-center space-x-2 text-xl font-bold text-foreground hover:text-primary transition-colors"
           >
             <span className="text-2xl">×</span>
             <span>Mental Math Mastery</span>
@@ -51,7 +51,7 @@ export function Header() {
                   ${
                     isActive(href)
                       ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-100'
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                   }
                 `}
               >
@@ -63,7 +63,7 @@ export function Header() {
           {/* Mobile menu button */}
           <button
             type="button"
-            className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+            className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-muted-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-expanded={mobileMenuOpen}
             aria-label="Toggle navigation menu"
@@ -92,7 +92,7 @@ export function Header() {
                   ${
                     isActive(href)
                       ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-100'
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                   }
                 `}
                 onClick={() => setMobileMenuOpen(false)}

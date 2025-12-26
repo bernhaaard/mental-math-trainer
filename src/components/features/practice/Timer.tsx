@@ -127,7 +127,7 @@ export function Timer({
             ? 'bg-red-500/20 text-red-400 ring-2 ring-red-500/50'
             : isWarning
             ? 'bg-orange-500/20 text-orange-400 ring-2 ring-orange-500/50 animate-pulse'
-            : 'bg-gray-800/50 text-gray-300'
+            : 'bg-card/50 text-foreground'
         } ${sizeClasses[size]}`}
       >
         {/* Clock icon */}
@@ -137,7 +137,7 @@ export function Timer({
               ? 'text-red-400'
               : isWarning
               ? 'text-orange-400'
-              : 'text-gray-400'
+              : 'text-muted-foreground'
           }`}
           fill="none"
           stroke="currentColor"
@@ -160,7 +160,7 @@ export function Timer({
       {showPauseButton && onPauseToggle && (
         <button
           onClick={onPauseToggle}
-          className="rounded-lg border border-gray-600 bg-gray-700/50 p-2 text-gray-300 transition-all duration-200 hover:border-gray-500 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+          className="rounded-lg border border-border bg-muted/50 p-2 text-foreground transition-all duration-200 hover:border-muted-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring/50"
           aria-label={isRunning ? 'Pause timer' : 'Resume timer'}
         >
           {isRunning ? (

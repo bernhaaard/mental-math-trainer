@@ -229,12 +229,12 @@ export function InteractiveExercise({
                 placeholder="Your answer"
                 aria-label="Your answer"
                 className={`
-                  w-full rounded-xl border-2 bg-gray-800/50 px-6 py-6 text-center font-mono text-4xl font-bold text-gray-100 placeholder-gray-600 backdrop-blur-sm transition-all duration-200
-                  focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20
+                  w-full rounded-xl border-2 bg-card/50 px-6 py-6 text-center font-mono text-4xl font-bold text-foreground placeholder-muted-foreground backdrop-blur-sm transition-all duration-200
+                  focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/20
                   disabled:cursor-not-allowed disabled:opacity-50
                   ${showError
                     ? 'animate-shake border-red-500 focus:border-red-500 focus:ring-red-500/20'
-                    : 'border-gray-700 hover:border-gray-600'
+                    : 'border-border hover:border-muted-foreground'
                   }
                 `}
               />
@@ -244,7 +244,7 @@ export function InteractiveExercise({
                 <button
                   type="button"
                   onClick={handleClear}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full p-2 text-gray-400 transition-colors hover:bg-gray-700 hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50"
                   aria-label="Clear input"
                 >
                   <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -271,8 +271,8 @@ export function InteractiveExercise({
             </div>
 
             {/* Keyboard hint */}
-            <p className="text-center text-sm text-gray-500">
-              Press <kbd className="rounded bg-gray-700 px-2 py-1 font-mono text-xs">Enter</kbd> to submit
+            <p className="text-center text-sm text-muted-foreground">
+              Press <kbd className="rounded bg-muted px-2 py-1 font-mono text-xs">Enter</kbd> to submit
             </p>
           </form>
         )}

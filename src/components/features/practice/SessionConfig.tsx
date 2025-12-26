@@ -8,8 +8,21 @@ import { DifficultySelector } from './DifficultySelector';
 import { NumberRangeInput } from './NumberRangeInput';
 import { MethodSelector } from './MethodSelector';
 
+/**
+ * Initial configuration values that can be passed from URL parameters.
+ * All fields are optional - any not provided will use defaults.
+ */
+export interface InitialConfigValues {
+  difficulty?: DifficultyLevel;
+  methods?: MethodName[];
+  problemCount?: number | 'infinite';
+  allowNegatives?: boolean;
+}
+
 interface SessionConfigProps {
   onStartSession: (config: SessionConfigType) => void;
+  /** Optional initial values from URL parameters */
+  initialValues?: InitialConfigValues;
 }
 
 type TimerMode = 'none' | 'per-problem' | 'session';
@@ -32,13 +45,21 @@ const PROBLEM_COUNT_OPTIONS = [
  * SessionConfig - Main configuration screen for practice sessions
  * Allows users to customize difficulty, methods, problem count, and other settings
  */
-export function SessionConfig({ onStartSession }: SessionConfigProps) {
-  // Core configuration state
-  const [difficultyType, setDifficultyType] = useState<DifficultyLevel | 'custom'>(DifficultyLevel.Beginner);
+export function SessionConfig({ onStartSession, initialValues }: SessionConfigProps) {
+  // Core configuration state - initialized from URL params if provided
+  const [difficultyType, setDifficultyType] = useState<DifficultyLevel | 'custom'>(
+    initialValues?.difficulty ?? DifficultyLevel.Beginner
+  );
   const [customRange, setCustomRange] = useState<CustomRange>(DEFAULT_CUSTOM_RANGE);
-  const [selectedMethods, setSelectedMethods] = useState<MethodName[]>([]);
-  const [problemCount, setProblemCount] = useState<number | 'infinite'>(25);
-  const [allowNegatives, setAllowNegatives] = useState(false);
+  const [selectedMethods, setSelectedMethods] = useState<MethodName[]>(
+    initialValues?.methods ?? []
+  );
+  const [problemCount, setProblemCount] = useState<number | 'infinite'>(
+    initialValues?.problemCount ?? 25
+  );
+  const [allowNegatives, setAllowNegatives] = useState(
+    initialValues?.allowNegatives ?? false
+  );
 
   // UI state
   const [showWalkthrough, setShowWalkthrough] = useState(true);

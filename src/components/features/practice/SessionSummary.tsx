@@ -52,27 +52,27 @@ export function SessionSummary({
     <div className="max-w-4xl mx-auto space-y-8">
       {/* Header */}
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+        <h1 className="text-3xl font-bold text-foreground mb-2">
           Session Complete!
         </h1>
-        <p className="text-gray-600 dark:text-gray-400">
+        <p className="text-muted-foreground">
           Here&apos;s how you performed
         </p>
       </div>
 
       {/* Overall Statistics */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+      <div className="bg-card rounded-lg shadow-md p-6">
+        <h2 className="text-xl font-semibold text-foreground mb-4">
           Overall Performance
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Total Problems */}
           <div className="text-center">
-            <div className="text-4xl font-bold text-blue-600 dark:text-blue-400">
+            <div className="text-4xl font-bold text-primary">
               {totalProblems}
             </div>
-            <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            <div className="text-sm text-muted-foreground mt-1">
               Problems Attempted
             </div>
           </div>
@@ -82,10 +82,10 @@ export function SessionSummary({
             <div className={`text-4xl font-bold ${getAccuracyColor(accuracy)}`}>
               {accuracy.toFixed(1)}%
             </div>
-            <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            <div className="text-sm text-muted-foreground mt-1">
               Accuracy
             </div>
-            <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+            <div className="text-xs text-muted-foreground mt-1">
               {correctAnswers} of {totalProblems} correct
             </div>
           </div>
@@ -95,7 +95,7 @@ export function SessionSummary({
             <div className="text-4xl font-bold text-purple-600 dark:text-purple-400">
               {formatTime(averageTime)}
             </div>
-            <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            <div className="text-sm text-muted-foreground mt-1">
               Avg. Time per Problem
             </div>
           </div>
@@ -105,7 +105,7 @@ export function SessionSummary({
             <div className="text-4xl font-bold text-orange-600 dark:text-orange-400">
               {problemsToReview.length}
             </div>
-            <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            <div className="text-sm text-muted-foreground mt-1">
               To Review
             </div>
           </div>
@@ -113,7 +113,7 @@ export function SessionSummary({
 
         {/* Accuracy Bar */}
         <div className="mt-6">
-          <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+          <div className="h-3 bg-muted rounded-full overflow-hidden">
             <div
               className={`h-full transition-all duration-500 ${
                 accuracy >= 90
@@ -130,8 +130,8 @@ export function SessionSummary({
 
       {/* Method Breakdown */}
       {methodStats.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+        <div className="bg-card rounded-lg shadow-md p-6">
+          <h2 className="text-xl font-semibold text-foreground mb-4">
             Performance by Method
           </h2>
 
@@ -139,14 +139,14 @@ export function SessionSummary({
             {sortedMethodStats.map((stat) => (
               <div
                 key={stat.method}
-                className="border border-gray-200 dark:border-gray-700 rounded-lg p-4"
+                className="border border-border rounded-lg p-4"
               >
                 <div className="flex justify-between items-start mb-2">
                   <div>
-                    <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                    <h3 className="font-medium text-foreground">
                       {stat.method}
                     </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <p className="text-sm text-muted-foreground">
                       {stat.problemsSolved} problem{stat.problemsSolved !== 1 ? 's' : ''}
                     </p>
                   </div>
@@ -154,14 +154,14 @@ export function SessionSummary({
                     <div className={`text-2xl font-bold ${getAccuracyColor(stat.accuracy)}`}>
                       {stat.accuracy.toFixed(0)}%
                     </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-500">
+                    <div className="text-xs text-muted-foreground">
                       {formatTime(stat.averageTime)} avg
                     </div>
                   </div>
                 </div>
 
                 {/* Method accuracy bar */}
-                <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                <div className="h-2 bg-muted rounded-full overflow-hidden">
                   <div
                     className={`h-full ${
                       stat.accuracy >= 90
@@ -181,8 +181,8 @@ export function SessionSummary({
 
       {/* Problems to Review */}
       {problemsToReview.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+        <div className="bg-card rounded-lg shadow-md p-6">
+          <h2 className="text-xl font-semibold text-foreground mb-4">
             Problems to Review ({problemsToReview.length})
           </h2>
 
@@ -190,21 +190,21 @@ export function SessionSummary({
             {problemsToReview.map((problem, index) => (
               <div
                 key={problem.problem.id}
-                className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg"
+                className="flex items-center justify-between p-3 bg-muted rounded-lg"
               >
                 <div className="flex items-center space-x-4">
-                  <div className="text-sm font-mono text-gray-600 dark:text-gray-400">
+                  <div className="text-sm font-mono text-muted-foreground">
                     #{index + 1}
                   </div>
-                  <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  <div className="text-lg font-semibold text-foreground">
                     {problem.problem.num1} × {problem.problem.num2}
                   </div>
                   {problem.skipped ? (
-                    <span className="px-2 py-1 text-xs font-medium bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">
+                    <span className="px-2 py-1 text-xs font-medium bg-muted text-muted-foreground rounded">
                       Skipped
                     </span>
                   ) : (
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                    <div className="text-sm text-muted-foreground">
                       Your answer: {problem.userAnswers[0]} (Correct: {problem.correctAnswer})
                     </div>
                   )}
@@ -219,14 +219,14 @@ export function SessionSummary({
       <div className="flex flex-col sm:flex-row gap-4 justify-center">
         <button
           onClick={onPracticeAgain}
-          className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+          className="px-6 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-lg shadow-md transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
         >
           Practice Again
         </button>
 
         <Link
           href="/"
-          className="px-6 py-3 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 font-medium rounded-lg shadow-md transition-colors text-center focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+          className="px-6 py-3 bg-secondary hover:bg-secondary/80 text-secondary-foreground font-medium rounded-lg shadow-md transition-colors text-center focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
         >
           Return Home
         </Link>

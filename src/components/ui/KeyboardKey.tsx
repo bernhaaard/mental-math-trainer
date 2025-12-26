@@ -54,14 +54,10 @@ export const KeyboardKey = React.forwardRef<HTMLElement, KeyboardKeyProps>(
       'font-mono font-medium',
       // Border and shape - creates keyboard key appearance
       'rounded-md',
-      // Light mode styling
-      'bg-gray-100 text-gray-700',
-      'border border-gray-300',
-      'border-b-2 border-b-gray-400',
-      // Dark mode styling
-      'dark:bg-gray-700 dark:text-gray-200',
-      'dark:border-gray-600',
-      'dark:border-b-gray-500',
+      // Themed styling using design tokens
+      'bg-muted text-foreground',
+      'border border-border',
+      'border-b-2 border-b-border',
       // Shadow for depth
       'shadow-sm',
       // Prevent text selection
@@ -124,7 +120,7 @@ export const KeyboardShortcut: React.FC<KeyboardShortcutProps> = ({
         <React.Fragment key={`${key}-${index}`}>
           <KeyboardKey size={size}>{key}</KeyboardKey>
           {index < keys.length - 1 && (
-            <span className="text-gray-400 dark:text-gray-500 text-xs mx-0.5">
+            <span className="text-muted-foreground text-xs mx-0.5">
               +
             </span>
           )}

@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
+
 /**
  * Props for FeedbackDisplay component.
  */
@@ -18,6 +20,8 @@ export interface FeedbackDisplayProps {
   onNext: () => void;
   /** Whether the view solution button should be disabled */
   disableViewSolution?: boolean;
+  /** Whether to auto-focus the primary action button on mount */
+  autoFocus?: boolean;
 }
 
 /**
@@ -43,9 +47,27 @@ export function FeedbackDisplay({
   timeTaken,
   onViewSolution,
   onNext,
-  disableViewSolution = false
+  disableViewSolution = false,
+  autoFocus = true
 }: FeedbackDisplayProps) {
   const errorMagnitude = Math.abs(userAnswer - correctAnswer);
+  const nextButtonRef = useRef<HTMLButtonElement>(null);
+  const viewSolutionButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Auto-focus the appropriate button on mount
+  useEffect(() => {
+    if (autoFocus) {
+      // For correct answers, focus the "Next Problem" button
+      // For incorrect answers, focus the "View Solution" button to encourage learning
+      if (isCorrect) {
+        nextButtonRef.current?.focus();
+      } else if (!disableViewSolution) {
+        viewSolutionButtonRef.current?.focus();
+      } else {
+        nextButtonRef.current?.focus();
+      }
+    }
+  }, [autoFocus, isCorrect, disableViewSolution]);
 
   return (
     <div
@@ -123,7 +145,7 @@ export function FeedbackDisplay({
           <div className="space-y-3 rounded-xl bg-black/20 p-6">
             {/* Your answer */}
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-400 uppercase tracking-wider">
+              <span className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
                 Your answer:
               </span>
               <span
@@ -139,7 +161,7 @@ export function FeedbackDisplay({
             {!isCorrect && (
               <>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-400 uppercase tracking-wider">
+                  <span className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
                     Correct answer:
                   </span>
                   <span className="font-mono text-2xl font-bold text-green-400">
@@ -149,7 +171,7 @@ export function FeedbackDisplay({
 
                 {/* Error magnitude */}
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-400 uppercase tracking-wider">
+                  <span className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
                     You were off by:
                   </span>
                   <span className="font-mono text-xl font-semibold text-orange-400">
@@ -161,8 +183,8 @@ export function FeedbackDisplay({
 
             {/* Time taken */}
             {timeTaken !== undefined && (
-              <div className="flex items-center justify-between border-t border-gray-700 pt-3">
-                <span className="text-sm font-medium text-gray-400 uppercase tracking-wider">
+              <div className="flex items-center justify-between border-t border-border pt-3">
+                <span className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
                   Time taken:
                 </span>
                 <span className="font-mono text-xl font-semibold text-blue-400">
@@ -178,9 +200,11 @@ export function FeedbackDisplay({
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {/* View Solution button */}
         <button
+          ref={viewSolutionButtonRef}
           onClick={onViewSolution}
           disabled={disableViewSolution}
           className="rounded-xl border-2 border-purple-500/30 bg-purple-500/10 px-6 py-4 font-semibold text-purple-300 transition-all duration-200 hover:border-purple-500/50 hover:bg-purple-500/20 focus:outline-none focus:ring-4 focus:ring-purple-500/50 disabled:cursor-not-allowed disabled:opacity-50"
+          aria-label="View solution walkthrough (Press S)"
         >
           <span className="flex items-center justify-center gap-2">
             <svg
@@ -202,8 +226,10 @@ export function FeedbackDisplay({
 
         {/* Next Problem button */}
         <button
+          ref={nextButtonRef}
           onClick={onNext}
           className="rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 px-6 py-4 font-semibold text-white shadow-lg transition-all duration-200 hover:from-blue-500 hover:to-blue-400 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-blue-500/50"
+          aria-label="Next problem (Press N)"
         >
           <span className="flex items-center justify-center gap-2">
             Next Problem

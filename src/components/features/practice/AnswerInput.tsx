@@ -219,10 +219,10 @@ export const AnswerInput = forwardRef<AnswerInputHandle, AnswerInputProps>(
             disabled={disabled}
             placeholder={placeholder}
             aria-label="Your answer"
-            className={`w-full rounded-xl border-2 bg-gray-800/50 px-6 py-6 text-center font-mono text-4xl font-bold text-gray-100 placeholder-gray-600 backdrop-blur-sm transition-all duration-200 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50 sm:text-5xl md:text-6xl ${
+            className={`w-full rounded-xl border-2 bg-card/50 px-6 py-6 text-center font-mono text-4xl font-bold text-foreground placeholder-muted-foreground backdrop-blur-sm transition-all duration-200 focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50 sm:text-5xl md:text-6xl ${
               showError
                 ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-                : 'border-gray-700 hover:border-gray-600'
+                : 'border-border hover:border-muted-foreground'
             } ${isShaking ? 'animate-shake' : ''}`}
           />
 
@@ -231,7 +231,7 @@ export const AnswerInput = forwardRef<AnswerInputHandle, AnswerInputProps>(
             <button
               type="button"
               onClick={handleClear}
-              className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full p-2 text-gray-400 transition-colors hover:bg-gray-700 hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+              className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50"
               aria-label="Clear input"
             >
               <svg
@@ -258,7 +258,7 @@ export const AnswerInput = forwardRef<AnswerInputHandle, AnswerInputProps>(
         <button
           onClick={(e) => handleSubmit(e as unknown as FormEvent)}
           disabled={!canSubmit}
-          className="rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 px-6 py-4 font-semibold text-white shadow-lg transition-all duration-200 hover:from-blue-500 hover:to-blue-400 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-blue-500/50 disabled:cursor-not-allowed disabled:from-gray-700 disabled:to-gray-700 disabled:opacity-50 disabled:shadow-none sm:col-span-2 lg:col-span-2"
+          className="rounded-xl bg-gradient-to-r from-primary to-primary/90 px-6 py-4 font-semibold text-primary-foreground shadow-lg transition-all duration-200 hover:from-primary/90 hover:to-primary/80 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-ring/50 disabled:cursor-not-allowed disabled:from-muted disabled:to-muted disabled:opacity-50 disabled:shadow-none sm:col-span-2 lg:col-span-2"
           aria-label="Submit answer"
         >
           <span className="flex items-center justify-center gap-2">
@@ -314,7 +314,7 @@ export const AnswerInput = forwardRef<AnswerInputHandle, AnswerInputProps>(
           <button
             onClick={onSkip}
             disabled={disabled}
-            className="rounded-xl border-2 border-gray-600 bg-gray-700/50 px-6 py-4 font-semibold text-gray-300 transition-all duration-200 hover:border-gray-500 hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-500/50 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-xl border-2 border-border bg-muted/50 px-6 py-4 font-semibold text-muted-foreground transition-all duration-200 hover:border-muted-foreground hover:bg-muted focus:outline-none focus:ring-4 focus:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
             aria-label="Skip this problem"
           >
             <span className="flex items-center justify-center gap-2">
@@ -338,8 +338,8 @@ export const AnswerInput = forwardRef<AnswerInputHandle, AnswerInputProps>(
       </div>
 
       {/* Keyboard hint */}
-      <p className="text-center text-sm text-gray-500">
-        Press <kbd className="rounded bg-gray-700 px-2 py-1 font-mono text-xs">Enter</kbd> to submit
+      <p className="text-center text-sm text-muted-foreground">
+        Press <kbd className="rounded bg-muted px-2 py-1 font-mono text-xs">Enter</kbd> to submit
       </p>
     </div>
   );

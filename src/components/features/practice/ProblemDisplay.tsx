@@ -77,7 +77,7 @@ export function ProblemDisplay({
       {/* Header with progress and metadata */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         {/* Problem counter */}
-        <div className="text-sm font-medium text-gray-400">
+        <div className="text-sm font-medium text-muted-foreground">
           Problem {problemNumber}
           {totalProblems !== undefined && ` of ${totalProblems}`}
         </div>
@@ -86,7 +86,7 @@ export function ProblemDisplay({
         <div className="flex items-center gap-3">
           {/* Timer */}
           {timeElapsed !== undefined && (
-            <div className="flex items-center gap-2 text-sm text-gray-400">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <svg
                 className="h-4 w-4"
                 fill="none"
@@ -119,7 +119,7 @@ export function ProblemDisplay({
       {/* Main problem display */}
       <div
         key={animationKey}
-        className={`rounded-2xl border border-gray-700 bg-gradient-to-br from-gray-800/50 to-gray-900/50 p-8 shadow-xl backdrop-blur-sm transition-all duration-500 ${
+        className={`rounded-2xl border border-border bg-gradient-to-br from-card/50 to-muted/50 p-8 shadow-xl backdrop-blur-sm transition-all duration-500 ${
           isActive
             ? 'animate-in fade-in slide-in-from-bottom-4'
             : 'opacity-50'
@@ -129,16 +129,16 @@ export function ProblemDisplay({
           <div className="space-y-4 text-center">
             {/* The multiplication expression */}
             <div className="flex items-center justify-center gap-6 font-mono">
-              <span className="text-6xl font-bold text-gray-100 sm:text-7xl md:text-8xl">
+              <span className="text-6xl font-bold text-foreground sm:text-7xl md:text-8xl">
                 {problem.num1.toLocaleString()}
               </span>
-              <span className="text-5xl font-light text-gray-400 sm:text-6xl md:text-7xl">
+              <span className="text-5xl font-light text-muted-foreground sm:text-6xl md:text-7xl">
                 ×
               </span>
-              <span className="text-6xl font-bold text-gray-100 sm:text-7xl md:text-8xl">
+              <span className="text-6xl font-bold text-foreground sm:text-7xl md:text-8xl">
                 {problem.num2.toLocaleString()}
               </span>
-              <span className="text-5xl font-light text-gray-400 sm:text-6xl md:text-7xl">
+              <span className="text-5xl font-light text-muted-foreground sm:text-6xl md:text-7xl">
                 =
               </span>
               <span className="text-6xl font-bold text-blue-400 sm:text-7xl md:text-8xl">

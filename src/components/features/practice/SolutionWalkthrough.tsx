@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { Solution } from '@/lib/types/solution';
 import type { MethodName } from '@/lib/types/method';
 import { CalculationStep } from './CalculationStep';
@@ -57,7 +57,18 @@ export function SolutionWalkthrough({
   const [autoAdvance, setAutoAdvance] = useState(false);
   const [showComparison, setShowComparison] = useState(false);
 
+  // Refs for focus management
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
   const totalSteps = solution.steps.length;
+
+  // Auto-focus the close button when the walkthrough opens for keyboard navigation
+  useEffect(() => {
+    if (closeButtonRef.current) {
+      closeButtonRef.current.focus();
+    }
+  }, []);
 
   // Auto-advance functionality
   useEffect(() => {
@@ -110,7 +121,12 @@ export function SolutionWalkthrough({
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div
+      ref={containerRef}
+      className="max-w-4xl mx-auto"
+      role="region"
+      aria-label="Solution walkthrough"
+    >
       {/* Header */}
       <div className="bg-card border border-border rounded-lg p-6 mb-6">
         <div className="flex items-start justify-between mb-4">
@@ -134,9 +150,10 @@ export function SolutionWalkthrough({
           </div>
           {onClose && (
             <button
+              ref={closeButtonRef}
               onClick={onClose}
               className="p-2 rounded-lg hover:bg-muted transition-colors focus:outline-none focus:ring-2 focus:ring-accent"
-              aria-label="Close walkthrough"
+              aria-label="Close walkthrough (Press Escape or N for next problem)"
             >
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

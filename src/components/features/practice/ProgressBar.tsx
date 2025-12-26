@@ -71,7 +71,7 @@ export function ProgressBar({
       <div className="space-y-2">
         {/* Header with completion count */}
         <div className="flex items-center justify-between text-sm">
-          <span className="font-medium text-gray-400">
+          <span className="font-medium text-muted-foreground">
             {total !== undefined ? (
               <>
                 Progress: {completed} / {total}
@@ -81,7 +81,7 @@ export function ProgressBar({
             )}
           </span>
           {total !== undefined && (
-            <span className="font-mono font-semibold text-gray-300">
+            <span className="font-mono font-semibold text-foreground">
               {Math.round(progressPercentage)}%
             </span>
           )}
@@ -89,7 +89,7 @@ export function ProgressBar({
 
         {/* Visual progress bar (only for finite sessions) */}
         {total !== undefined && (
-          <div className="h-3 overflow-hidden rounded-full bg-gray-800 shadow-inner">
+          <div className="h-3 overflow-hidden rounded-full bg-muted shadow-inner">
             <div
               className={`h-full bg-gradient-to-r ${getProgressGradient(accuracy)} transition-all duration-500 ease-out`}
               style={{ width: `${progressPercentage}%` }}
@@ -107,10 +107,10 @@ export function ProgressBar({
       {showDetails && hasStarted && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {/* Accuracy */}
-          <div className="rounded-lg border border-gray-700 bg-gray-800/50 p-3 backdrop-blur-sm">
+          <div className="rounded-lg border border-border bg-card/50 p-3 backdrop-blur-sm">
             <div className="flex items-center gap-2">
               <svg
-                className="h-4 w-4 text-gray-400"
+                className="h-4 w-4 text-muted-foreground"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -123,7 +123,7 @@ export function ProgressBar({
                   d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Accuracy
               </span>
             </div>
@@ -132,17 +132,17 @@ export function ProgressBar({
                 {Math.round(accuracy)}%
               </span>
             </div>
-            <div className="mt-1 text-xs text-gray-500">
+            <div className="mt-1 text-xs text-muted-foreground">
               {correct} / {completed} correct
             </div>
           </div>
 
           {/* Average time */}
           {averageTime !== undefined && (
-            <div className="rounded-lg border border-gray-700 bg-gray-800/50 p-3 backdrop-blur-sm">
+            <div className="rounded-lg border border-border bg-card/50 p-3 backdrop-blur-sm">
               <div className="flex items-center gap-2">
                 <svg
-                  className="h-4 w-4 text-gray-400"
+                  className="h-4 w-4 text-muted-foreground"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -155,7 +155,7 @@ export function ProgressBar({
                     d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Avg Time
                 </span>
               </div>
@@ -164,17 +164,17 @@ export function ProgressBar({
                   {formatCompactTime(averageTime)}
                 </span>
               </div>
-              <div className="mt-1 text-xs text-gray-500">
+              <div className="mt-1 text-xs text-muted-foreground">
                 per problem
               </div>
             </div>
           )}
 
           {/* Incorrect count */}
-          <div className="rounded-lg border border-gray-700 bg-gray-800/50 p-3 backdrop-blur-sm">
+          <div className="rounded-lg border border-border bg-card/50 p-3 backdrop-blur-sm">
             <div className="flex items-center gap-2">
               <svg
-                className="h-4 w-4 text-gray-400"
+                className="h-4 w-4 text-muted-foreground"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -187,16 +187,16 @@ export function ProgressBar({
                   d="M6 18L18 6M6 6l12 12"
                 />
               </svg>
-              <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Incorrect
               </span>
             </div>
             <div className="mt-1">
-              <span className="font-mono text-2xl font-bold text-gray-300">
+              <span className="font-mono text-2xl font-bold text-foreground">
                 {completed - correct}
               </span>
             </div>
-            <div className="mt-1 text-xs text-gray-500">
+            <div className="mt-1 text-xs text-muted-foreground">
               problems
             </div>
           </div>
@@ -205,7 +205,7 @@ export function ProgressBar({
 
       {/* No data message */}
       {!hasStarted && (
-        <div className="rounded-lg border border-gray-700 bg-gray-800/30 p-4 text-center text-sm text-gray-500">
+        <div className="rounded-lg border border-border bg-card/30 p-4 text-center text-sm text-muted-foreground">
           Start solving problems to see your progress
         </div>
       )}

@@ -11,7 +11,7 @@ interface MainLayoutProps {
 
 export function MainLayout({ children }: MainLayoutProps) {
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen flex flex-col bg-background">
       <Header />
 
       <main className="flex-1">
@@ -20,9 +20,9 @@ export function MainLayout({ children }: MainLayoutProps) {
         </div>
       </main>
 
-      <footer className="border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950">
+      <footer className="border-t border-border bg-card">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="text-center text-sm text-gray-600 dark:text-gray-400">
+          <div className="text-center text-sm text-muted-foreground">
             <p>Mental Math Mastery - Train your mental calculation skills</p>
             <p className="mt-1">
               Built with mathematically rigorous calculation methods

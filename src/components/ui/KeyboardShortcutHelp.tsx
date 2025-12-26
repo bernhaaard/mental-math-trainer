@@ -194,21 +194,21 @@ export const KeyboardShortcutHelp: React.FC<KeyboardShortcutHelpProps> = ({
     >
       <div
         ref={modalRef}
-        className="relative w-full max-w-lg max-h-[85vh] overflow-auto bg-white dark:bg-gray-800 rounded-xl shadow-2xl"
+        className="relative w-full max-w-lg max-h-[85vh] overflow-auto bg-card rounded-xl shadow-2xl"
         role="document"
       >
         {/* Header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+        <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b border-border bg-card">
           <h2
             id="keyboard-shortcuts-title"
-            className="text-xl font-semibold text-gray-900 dark:text-gray-100"
+            className="text-xl font-semibold text-foreground"
           >
             {title}
           </h2>
           <button
             ref={closeButtonRef}
             onClick={onClose}
-            className="p-2 rounded-lg text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+            className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
             aria-label="Close keyboard shortcuts"
           >
             <svg
@@ -230,7 +230,7 @@ export const KeyboardShortcutHelp: React.FC<KeyboardShortcutHelpProps> = ({
         {/* Content */}
         <div className="px-6 py-4 space-y-6">
           {activeCategories.length === 0 ? (
-            <p className="text-center text-gray-500 dark:text-gray-400 py-8">
+            <p className="text-center text-muted-foreground py-8">
               No keyboard shortcuts available.
             </p>
           ) : (
@@ -242,12 +242,12 @@ export const KeyboardShortcutHelp: React.FC<KeyboardShortcutHelpProps> = ({
                 <section key={category} aria-labelledby={`category-${category}`}>
                   {/* Category Header */}
                   <div className="flex items-center gap-2 mb-3">
-                    <span className="text-gray-500 dark:text-gray-400">
+                    <span className="text-muted-foreground">
                       {info.icon}
                     </span>
                     <h3
                       id={`category-${category}`}
-                      className="text-sm font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wide"
+                      className="text-sm font-semibold text-foreground uppercase tracking-wide"
                     >
                       {info.label}
                     </h3>
@@ -261,9 +261,9 @@ export const KeyboardShortcutHelp: React.FC<KeyboardShortcutHelpProps> = ({
                       return (
                         <li
                           key={`${shortcut.key}-${index}`}
-                          className="flex items-center justify-between py-2 px-3 rounded-lg bg-gray-50 dark:bg-gray-700/50"
+                          className="flex items-center justify-between py-2 px-3 rounded-lg bg-muted/50"
                         >
-                          <span className="text-sm text-gray-700 dark:text-gray-300">
+                          <span className="text-sm text-foreground">
                             {shortcut.description}
                           </span>
                           <KeyboardShortcut keys={keyParts} size="sm" />
@@ -278,8 +278,8 @@ export const KeyboardShortcutHelp: React.FC<KeyboardShortcutHelpProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="sticky bottom-0 px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/80">
-          <p className="text-xs text-center text-gray-500 dark:text-gray-400">
+        <div className="sticky bottom-0 px-6 py-4 border-t border-border bg-muted/50">
+          <p className="text-xs text-center text-muted-foreground">
             Press <KeyboardShortcut keys={['?']} size="sm" /> anytime to show
             this help
           </p>

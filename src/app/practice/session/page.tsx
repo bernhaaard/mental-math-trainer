@@ -6,7 +6,8 @@
  */
 
 import { useState, useEffect, useCallback, useReducer, useMemo, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 import { ProblemDisplay } from '@/components/features/practice/ProblemDisplay';
 import { AnswerInput } from '@/components/features/practice/AnswerInput';
 import { FeedbackDisplay } from '@/components/features/practice/FeedbackDisplay';
@@ -285,7 +286,6 @@ const DEFAULT_CONFIG: SessionConfig = {
 };
 
 export default function ActiveSessionPage() {
-  const router = useRouter();
   const [methodSelector] = useState(() => new MethodSelector());
   // Config is loaded synchronously via lazy initialization, so we can start as true
   // This flag is used to ensure we don't generate problems before hydration
@@ -603,25 +603,23 @@ export default function ActiveSessionPage() {
 
     return (
       <div className="max-w-4xl mx-auto text-center py-12">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+        <h1 className="text-3xl font-bold text-foreground mb-4">
           Session Complete!
         </h1>
-        <p className="text-gray-600 dark:text-gray-400 mb-8">
+        <p className="text-muted-foreground mb-8">
           You completed {state.problems.length} problems with {statistics.accuracy.toFixed(1)}% accuracy.
         </p>
-        <div className="space-x-4">
-          <button
-            onClick={() => router.push('/practice')}
-            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
-          >
-            Start New Session
-          </button>
-          <button
-            onClick={() => router.push('/')}
-            className="px-6 py-3 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 font-medium rounded-lg transition-colors"
-          >
-            Return Home
-          </button>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <Link href="/practice">
+            <Button variant="primary" size="lg">
+              Start New Session
+            </Button>
+          </Link>
+          <Link href="/">
+            <Button variant="outline" size="lg">
+              Return Home
+            </Button>
+          </Link>
         </div>
       </div>
     );

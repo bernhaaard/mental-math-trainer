@@ -149,9 +149,23 @@ function ComparisonTable(): React.ReactElement {
                 <td className="p-4 border-b border-border">
                   <Link
                     href={`/study/${method.name}`}
-                    className="font-medium text-primary hover:underline"
+                    className="inline-flex items-center gap-1 font-medium text-foreground hover:text-primary transition-colors group"
                   >
                     {method.displayName}
+                    <svg
+                      className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
                   </Link>
                   <p className="text-xs text-muted-foreground mt-1">
                     {method.keyPattern}
@@ -706,16 +720,6 @@ export default function MethodComparisonPage(): React.ReactElement {
           <Button variant="outline" size="lg">
             Practice with Problems
           </Button>
-        </Link>
-      </div>
-
-      {/* Back to Study */}
-      <div className="mt-8 text-center">
-        <Link
-          href="/study"
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          Back to all methods
         </Link>
       </div>
     </div>

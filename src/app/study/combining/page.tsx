@@ -714,16 +714,6 @@ export default function CombiningTechniquesPage(): React.ReactElement {
           </Button>
         </Link>
       </div>
-
-      {/* Back to Study */}
-      <div className="mt-8 text-center">
-        <Link
-          href="/study"
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          Back to all methods
-        </Link>
-      </div>
     </div>
   );
 }

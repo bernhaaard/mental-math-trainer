@@ -8,7 +8,7 @@
  * 3. Session summary and statistics
  */
 
-import { useReducer, useCallback, useMemo, Suspense } from 'react';
+import { useReducer, useCallback, useMemo, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type {
   SessionConfig as SessionConfigType,
@@ -189,6 +189,14 @@ function PracticePageContent() {
     return parseUrlParams(searchParams);
   }, [searchParams]);
 
+  // Handle redirect when session becomes active
+  // Using useEffect to avoid calling router.push during render
+  useEffect(() => {
+    if (state.status === 'active') {
+      router.push('/practice/session');
+    }
+  }, [state.status, router]);
+
   // Start session and redirect to active session page
   const handleStartSession = useCallback((config: SessionConfigType) => {
     dispatch({ type: 'START_SESSION', config });
@@ -310,10 +318,8 @@ function PracticePageContent() {
     );
   }
 
-  // Active session - should have been redirected to /practice/session
-  // If we get here, redirect
-  router.push('/practice/session');
-
+  // Active session - useEffect above handles the redirect to /practice/session
+  // Show loading state while redirect is in progress
   return (
     <div className="max-w-4xl mx-auto text-center py-12">
       <div className="animate-pulse">

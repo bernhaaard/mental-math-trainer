@@ -19,7 +19,7 @@ import { SolutionValidator } from '../validator';
 /**
  * Type of partition to use for a number
  */
-type PartitionType = 'additive' | 'subtractive';
+type PartitionType = 'additive' | 'subtractive' | 'multi-additive';
 
 /**
  * Partition of a number for distributive calculation
@@ -28,7 +28,9 @@ interface Partition {
   type: PartitionType;
   part1: number;
   part2: number;
-  displayText: string; // e.g., "(50 - 3)" or "(40 + 7)"
+  /** Additional parts for multi-additive partitions (Issue #33) */
+  additionalParts?: number[];
+  displayText: string; // e.g., "(50 - 3)" or "(40 + 7)" or "(300 + 40 + 7)"
 }
 
 /**
@@ -128,14 +130,25 @@ export class DistributiveMethod extends BaseMethod {
     // Choose optimal partition for the first number
     const partition = this.chooseOptimalPartition(absNum1);
 
-    // Calculate the products (with absolute values first)
-    const product1 = partition.part1 * absNum2;
-    const product2 = partition.part2 * absNum2;
+    // Get all parts for the partition
+    const allParts = partition.type === 'multi-additive'
+      ? [partition.part1, partition.part2, ...(partition.additionalParts || [])]
+      : [partition.part1, partition.part2];
+
+    // Calculate products for all parts
+    const products = allParts.map(part => part * absNum2);
 
     // Calculate the final result (accounting for signs)
-    const intermediateResult = partition.type === 'additive'
-      ? product1 + product2
-      : product1 - product2;
+    // Note: products always has at least 2 elements since partition has part1 and part2
+    const firstProduct = products[0] ?? 0;
+    const secondProduct = products[1] ?? 0;
+    let intermediateResult: number;
+    if (partition.type === 'subtractive') {
+      intermediateResult = firstProduct - secondProduct;
+    } else {
+      // additive or multi-additive: sum all products
+      intermediateResult = products.reduce((sum, p) => sum + p, 0);
+    }
     const finalResult = resultSign * intermediateResult;
 
     // Step 1: Show partition
@@ -147,35 +160,54 @@ export class DistributiveMethod extends BaseMethod {
     });
 
     // Step 2: Apply distributive property
-    const distributiveOp = partition.type === 'additive' ? '+' : '-';
-    steps.push({
-      expression: `${partition.part1} * ${absNum2} ${distributiveOp} ${partition.part2} * ${absNum2}`,
-      result: intermediateResult,
-      explanation: `Apply distributive property: a(b ${distributiveOp} c) = ab ${distributiveOp} ac`,
-      depth: 0
-    });
+    if (partition.type === 'multi-additive') {
+      // Multi-part distributive: (a + b + c) * d = a*d + b*d + c*d
+      const distributiveExpr = allParts.map(p => `${p} * ${absNum2}`).join(' + ');
+      steps.push({
+        expression: distributiveExpr,
+        result: intermediateResult,
+        explanation: `Apply distributive property to each place value`,
+        depth: 0
+      });
+    } else {
+      const distributiveOp = partition.type === 'additive' ? '+' : '-';
+      steps.push({
+        expression: `${partition.part1} * ${absNum2} ${distributiveOp} ${partition.part2} * ${absNum2}`,
+        result: intermediateResult,
+        explanation: `Apply distributive property: a(b ${distributiveOp} c) = ab ${distributiveOp} ac`,
+        depth: 0
+      });
+    }
 
     // Step 3: Calculate sub-products with sub-steps
-    steps.push({
-      expression: `${product1} ${distributiveOp} ${product2}`,
-      result: intermediateResult,
-      explanation: `Calculate each product separately`,
-      depth: 0,
-      subSteps: [
-        {
-          expression: `${partition.part1} * ${absNum2}`,
-          result: product1,
-          explanation: this.explainSubMultiplication(partition.part1, absNum2),
-          depth: 1
-        },
-        {
-          expression: `${partition.part2} * ${absNum2}`,
-          result: product2,
-          explanation: this.explainSubMultiplication(partition.part2, absNum2),
-          depth: 1
-        }
-      ]
-    });
+    // Note: products and allParts have the same length, so products[index] always exists
+    const subSteps: CalculationStep[] = allParts.map((part, index) => ({
+      expression: `${part} * ${absNum2}`,
+      result: products[index] ?? 0,
+      explanation: this.explainSubMultiplication(part, absNum2),
+      depth: 1
+    }));
+
+    if (partition.type === 'multi-additive') {
+      // Show sum of all products
+      const productsExpr = products.join(' + ');
+      steps.push({
+        expression: productsExpr,
+        result: intermediateResult,
+        explanation: `Calculate each product separately`,
+        depth: 0,
+        subSteps
+      });
+    } else {
+      const distributiveOp = partition.type === 'additive' ? '+' : '-';
+      steps.push({
+        expression: `${firstProduct} ${distributiveOp} ${secondProduct}`,
+        result: intermediateResult,
+        explanation: `Calculate each product separately`,
+        depth: 0,
+        subSteps
+      });
+    }
 
     // Step 4: Final calculation
     if (resultSign < 0) {
@@ -183,7 +215,7 @@ export class DistributiveMethod extends BaseMethod {
       steps.push({
         expression: `${intermediateResult}`,
         result: intermediateResult,
-        explanation: `${partition.type === 'additive' ? 'Add' : 'Subtract'} the partial products`,
+        explanation: partition.type === 'subtractive' ? 'Subtract the partial products' : 'Add the partial products',
         depth: 0
       });
 
@@ -197,7 +229,7 @@ export class DistributiveMethod extends BaseMethod {
       steps.push({
         expression: `${finalResult}`,
         result: finalResult,
-        explanation: `${partition.type === 'additive' ? 'Add' : 'Subtract'} the partial products`,
+        explanation: partition.type === 'subtractive' ? 'Subtract the partial products' : 'Add the partial products',
         depth: 0
       });
     }
@@ -244,6 +276,24 @@ export class DistributiveMethod extends BaseMethod {
    */
   private chooseOptimalPartition(n: number): Partition {
     const { tens, ones } = this.decompose(n);
+    const digitCount = this.countDigits(n);
+
+    // For 3+ digit numbers, use full place-value decomposition (Issue #33)
+    if (digitCount >= 3) {
+      const parts = this.decomposeFullPlaceValue(n);
+      const firstPart = parts[0];
+      const secondPart = parts[1];
+      if (parts.length >= 2 && firstPart !== undefined && secondPart !== undefined) {
+        const displayText = `(${parts.join(' + ')})`;
+        return {
+          type: 'multi-additive',
+          part1: firstPart,
+          part2: secondPart,
+          additionalParts: parts.slice(2),
+          displayText
+        };
+      }
+    }
 
     // Find nearest round number
     const lowerRound = Math.floor(n / 10) * 10;
@@ -289,7 +339,10 @@ export class DistributiveMethod extends BaseMethod {
    * @private
    */
   private explainPartition(n: number, partition: Partition): string {
-    if (partition.type === 'additive') {
+    if (partition.type === 'multi-additive') {
+      const allParts = [partition.part1, partition.part2, ...(partition.additionalParts || [])];
+      return `Partition ${n} by full place value into ${allParts.join(' + ')}`;
+    } else if (partition.type === 'additive') {
       if (partition.part1 % 10 === 0 && partition.part1 !== this.decompose(n).tens) {
         return `Partition ${n} as ${partition.part1} + ${partition.part2} (near round number)`;
       } else {

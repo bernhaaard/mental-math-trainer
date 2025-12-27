@@ -121,6 +121,47 @@ export abstract class BaseMethod {
   }
 
   /**
+   * Helper: Get full place-value decomposition for any number.
+   * Breaks number into individual place values (ones, tens, hundreds, etc.)
+   *
+   * @param n - Number to decompose (uses absolute value)
+   * @returns Array of place values from largest to smallest, excluding zeros
+   *
+   * @example
+   * ```typescript
+   * decomposeFullPlaceValue(347)  // returns [300, 40, 7]
+   * decomposeFullPlaceValue(1005) // returns [1000, 5]
+   * decomposeFullPlaceValue(50)   // returns [50]
+   * decomposeFullPlaceValue(7)    // returns [7]
+   * ```
+   */
+  protected decomposeFullPlaceValue(n: number): number[] {
+    const absN = Math.abs(n);
+    if (absN === 0) return [0];
+
+    const parts: number[] = [];
+    let remaining = absN;
+    let placeValue = 1;
+
+    // Find the highest place value
+    while (placeValue * 10 <= remaining) {
+      placeValue *= 10;
+    }
+
+    // Extract each place value
+    while (placeValue >= 1) {
+      const digit = Math.floor(remaining / placeValue);
+      if (digit > 0) {
+        parts.push(digit * placeValue);
+        remaining -= digit * placeValue;
+      }
+      placeValue = Math.floor(placeValue / 10);
+    }
+
+    return parts.length > 0 ? parts : [0];
+  }
+
+  /**
    * Helper: Find the nearest round number (multiple of 10).
    *
    * @param n - Number to find nearest round for

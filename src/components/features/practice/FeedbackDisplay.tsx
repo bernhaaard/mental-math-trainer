@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { memo, useEffect, useRef } from 'react';
 
 /**
  * Props for FeedbackDisplay component.
@@ -39,8 +39,9 @@ function formatTimeTaken(seconds: number): string {
 /**
  * FeedbackDisplay component shows feedback after user submits an answer.
  * Displays correct/incorrect status, error magnitude, time taken, and action buttons.
+ * Wrapped in React.memo to prevent unnecessary re-renders when props haven't changed.
  */
-export function FeedbackDisplay({
+export const FeedbackDisplay = memo(function FeedbackDisplay({
   isCorrect,
   userAnswer,
   correctAnswer,
@@ -259,4 +260,4 @@ export function FeedbackDisplay({
       </div>
     </div>
   );
-}
+});

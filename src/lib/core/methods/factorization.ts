@@ -32,14 +32,33 @@ export class FactorizationMethod extends BaseMethod {
   displayName = 'Factorization';
 
   /**
+   * Maximum number of entries to keep in the factorization cache.
+   * This prevents unbounded memory growth.
+   */
+  private static readonly MAX_CACHE_SIZE = 1000;
+
+  /**
+   * Cache for factorization results to avoid recomputation.
+   * Key is the absolute value of the number.
+   */
+  private factorizationCache = new Map<number, UsefulFactorization[]>();
+
+  /**
    * Find useful factorizations for a number.
    * Prefers factors that are powers of 2, 5, or single digits.
+   * Results are cached for performance.
    *
    * @param n - Number to factorize
    * @returns Array of useful factorizations sorted by score
    */
   private findUsefulFactorizations(n: number): UsefulFactorization[] {
     const abs = Math.abs(n);
+
+    // Check cache first
+    if (this.factorizationCache.has(abs)) {
+      return this.factorizationCache.get(abs)!;
+    }
+
     const factorizations: UsefulFactorization[] = [];
 
     for (let i = 2; i <= Math.sqrt(abs); i++) {
@@ -51,7 +70,20 @@ export class FactorizationMethod extends BaseMethod {
     }
 
     // Sort by score (lower is better)
-    return factorizations.sort((a, b) => a.score - b.score);
+    const sorted = factorizations.sort((a, b) => a.score - b.score);
+
+    // Evict oldest entry if cache is full (FIFO eviction)
+    if (this.factorizationCache.size >= FactorizationMethod.MAX_CACHE_SIZE) {
+      const firstKey = this.factorizationCache.keys().next().value;
+      if (firstKey !== undefined) {
+        this.factorizationCache.delete(firstKey);
+      }
+    }
+
+    // Cache the result
+    this.factorizationCache.set(abs, sorted);
+
+    return sorted;
   }
 
   /**

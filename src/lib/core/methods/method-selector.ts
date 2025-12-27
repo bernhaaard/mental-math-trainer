@@ -15,12 +15,7 @@
 
 import type { CalculationMethod, Solution } from '../../types';
 import { MethodName, ABSOLUTE_MAX_VALUE } from '../../types';
-import { DistributiveMethod } from './distributive';
-import { DifferenceSquaresMethod } from './difference-squares';
-import { NearPower10Method } from './near-power-10';
-import { FactorizationMethod } from './factorization';
-import { SquaringMethod } from './squaring';
-import { Near100Method } from './near-100';
+import { getMethodInstances } from './method-registry';
 import { SolutionValidator } from '../validator';
 
 // ============================================================================
@@ -120,16 +115,10 @@ export class MethodSelector {
 
   /**
    * Creates a new method selector with all available calculation methods.
+   * Uses singleton instances from the method registry for performance.
    */
   constructor() {
-    this.methods = [
-      new DistributiveMethod(),
-      new DifferenceSquaresMethod(),
-      new NearPower10Method(),
-      new FactorizationMethod(),
-      new SquaringMethod(),
-      new Near100Method()
-    ];
+    this.methods = getMethodInstances();
   }
 
   /**

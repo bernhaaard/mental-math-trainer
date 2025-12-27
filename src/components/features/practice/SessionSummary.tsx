@@ -8,6 +8,7 @@
 import Link from 'next/link';
 import type { SessionStatistics, ProblemAttempt } from '@/lib/types/session';
 import type { MethodName } from '@/lib/types/method';
+import { formatTimeSeconds } from '@/lib/utils';
 
 interface SessionSummaryProps {
   statistics: SessionStatistics;
@@ -32,11 +33,6 @@ export function SessionSummary({
     if (acc >= 90) return 'text-green-600 dark:text-green-400';
     if (acc >= 70) return 'text-yellow-600 dark:text-yellow-400';
     return 'text-red-600 dark:text-red-400';
-  };
-
-  // Format time in seconds
-  const formatTime = (ms: number) => {
-    return (ms / 1000).toFixed(1) + 's';
   };
 
   // Convert methodBreakdown to array for rendering
@@ -93,7 +89,7 @@ export function SessionSummary({
           {/* Average Time */}
           <div className="text-center">
             <div className="text-4xl font-bold text-purple-600 dark:text-purple-400">
-              {formatTime(averageTime)}
+              {formatTimeSeconds(averageTime)}
             </div>
             <div className="text-sm text-muted-foreground mt-1">
               Avg. Time per Problem
@@ -155,7 +151,7 @@ export function SessionSummary({
                       {stat.accuracy.toFixed(0)}%
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      {formatTime(stat.averageTime)} avg
+                      {formatTimeSeconds(stat.averageTime)} avg
                     </div>
                   </div>
                 </div>

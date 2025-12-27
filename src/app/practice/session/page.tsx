@@ -815,7 +815,7 @@ export default function ActiveSessionPage() {
     // Note: Screen reader announcements are handled within individual shortcut actions
   });
 
-  // Format time
+  // Format time (seconds to MM:SS)
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;

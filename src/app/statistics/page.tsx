@@ -27,6 +27,7 @@ import type {
 } from '@/lib/types/statistics';
 import { MethodName } from '@/lib/types/method';
 import { DifficultyLevel } from '@/lib/types/problem';
+import { formatTimeSeconds } from '@/lib/utils';
 
 /**
  * Display names for calculation methods.
@@ -83,22 +84,6 @@ function formatRelativeDate(date: Date): string {
     const months = Math.floor(diffDays / 30);
     return `${months} month${months > 1 ? 's' : ''} ago`;
   }
-}
-
-/**
- * Formats time in milliseconds to a readable string.
- */
-function formatTime(ms: number): string {
-  if (ms < 1000) {
-    return `${Math.round(ms)}ms`;
-  }
-  const seconds = ms / 1000;
-  if (seconds < 60) {
-    return `${seconds.toFixed(1)}s`;
-  }
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = Math.round(seconds % 60);
-  return `${minutes}m ${remainingSeconds}s`;
 }
 
 /**
@@ -331,7 +316,7 @@ function MethodCard({
             <div>
               <p className="text-muted-foreground">Avg. Time</p>
               <p className="font-medium text-foreground">
-                {formatTime(stats.averageTime)}
+                {formatTimeSeconds(stats.averageTime)}
               </p>
             </div>
             <div>

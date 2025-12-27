@@ -33,8 +33,10 @@ const methodInstances: CalculationMethod[] = [
  * These instances are reused across the application to avoid
  * unnecessary object creation and to benefit from internal caching.
  *
+ * Returns a defensive copy to prevent external mutation of the registry.
+ *
  * @returns Array of all calculation method instances
  */
 export function getMethodInstances(): CalculationMethod[] {
-  return methodInstances;
+  return [...methodInstances];
 }

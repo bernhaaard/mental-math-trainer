@@ -32,6 +32,12 @@ export class FactorizationMethod extends BaseMethod {
   displayName = 'Factorization';
 
   /**
+   * Maximum number of entries to keep in the factorization cache.
+   * This prevents unbounded memory growth.
+   */
+  private static readonly MAX_CACHE_SIZE = 1000;
+
+  /**
    * Cache for factorization results to avoid recomputation.
    * Key is the absolute value of the number.
    */
@@ -65,6 +71,14 @@ export class FactorizationMethod extends BaseMethod {
 
     // Sort by score (lower is better)
     const sorted = factorizations.sort((a, b) => a.score - b.score);
+
+    // Evict oldest entry if cache is full (FIFO eviction)
+    if (this.factorizationCache.size >= FactorizationMethod.MAX_CACHE_SIZE) {
+      const firstKey = this.factorizationCache.keys().next().value;
+      if (firstKey !== undefined) {
+        this.factorizationCache.delete(firstKey);
+      }
+    }
 
     // Cache the result
     this.factorizationCache.set(abs, sorted);

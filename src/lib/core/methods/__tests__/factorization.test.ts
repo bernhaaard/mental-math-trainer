@@ -165,4 +165,71 @@ describe('FactorizationMethod', () => {
       expect(content.whenToUse.length).toBeGreaterThan(0);
     });
   });
+
+  describe('memoization behavior', () => {
+    it('should return consistent results for cached computations', () => {
+      // Use a fresh instance to ensure clean cache state
+      const freshMethod = new FactorizationMethod();
+
+      // First call - will compute and cache
+      const result1 = freshMethod.isApplicable(24, 35);
+      const cost1 = freshMethod.computeCost(24, 35);
+      const quality1 = freshMethod.qualityScore(24, 35);
+
+      // Second call - should use cached factorizations
+      const result2 = freshMethod.isApplicable(24, 35);
+      const cost2 = freshMethod.computeCost(24, 35);
+      const quality2 = freshMethod.qualityScore(24, 35);
+
+      // Results should be identical
+      expect(result1).toBe(result2);
+      expect(cost1).toBe(cost2);
+      expect(quality1).toBe(quality2);
+    });
+
+    it('should produce identical solutions for same inputs (cached vs uncached)', () => {
+      const freshMethod = new FactorizationMethod();
+
+      // Generate solution (caches factorizations internally)
+      const solution1 = freshMethod.generateSolution(24, 35);
+
+      // Generate again (uses cached factorizations)
+      const solution2 = freshMethod.generateSolution(24, 35);
+
+      // Solutions should have same structure and results
+      expect(solution1.steps.length).toBe(solution2.steps.length);
+      expect(solution1.validated).toBe(solution2.validated);
+
+      const finalResult1 = solution1.steps[solution1.steps.length - 1]?.result;
+      const finalResult2 = solution2.steps[solution2.steps.length - 1]?.result;
+      expect(finalResult1).toBe(finalResult2);
+      expect(finalResult1).toBe(840);
+    });
+
+    it('should handle many different numbers efficiently', () => {
+      const freshMethod = new FactorizationMethod();
+
+      // Test with many different numbers to exercise caching
+      const testNumbers = [12, 15, 18, 24, 25, 32, 36, 48, 64, 72];
+
+      testNumbers.forEach(num => {
+        const applicable = freshMethod.isApplicable(num, 35);
+        if (applicable) {
+          const solution = freshMethod.generateSolution(num, 35);
+          expect(solution.validated).toBe(true);
+        }
+      });
+
+      // Re-test to verify cached results match
+      testNumbers.forEach(num => {
+        const applicable = freshMethod.isApplicable(num, 35);
+        if (applicable) {
+          const solution = freshMethod.generateSolution(num, 35);
+          expect(solution.validated).toBe(true);
+          const finalResult = solution.steps[solution.steps.length - 1]?.result;
+          expect(finalResult).toBe(num * 35);
+        }
+      });
+    });
+  });
 });

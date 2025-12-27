@@ -279,7 +279,6 @@ function DecisionFlowchart(): React.ReactElement {
                                                                         +---------------+  +-------------+`}
           </pre>
         </div>
-        </div>
 
         <div className="mt-6 p-4 rounded-lg bg-secondary/50">
           <h3 className="font-semibold text-foreground mb-2">How to Use This Flowchart</h3>

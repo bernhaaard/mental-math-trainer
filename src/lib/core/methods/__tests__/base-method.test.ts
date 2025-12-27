@@ -283,7 +283,7 @@ describe('BaseMethod utility functions', () => {
       expect(method.testNearestRound(99)).toBe(100);
     });
 
-    it('should round up on ties (exactly in the middle)', () => {
+    it('should round down on ties (exactly in the middle)', () => {
       // Note: The implementation uses <=, so ties go to lower
       // Testing the actual behavior: absN - lower <= upper - absN means ties go to lower
       expect(method.testNearestRound(45)).toBe(40);

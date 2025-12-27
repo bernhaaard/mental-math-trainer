@@ -229,3 +229,42 @@ body {
 .animate-progress-fill {
   animation: progressFill 0.5s ease-out forwards;
 }
+
+/* Reduced motion support for accessibility (Issue #35) */
+@media (prefers-reduced-motion: reduce) {
+  /* Disable all custom animations */
+  .animate-shake,
+  .animate-fade-in,
+  .animate-slide-in-bottom,
+  .animate-slide-in-top,
+  .animate-pulse-warning,
+  .animate-scale-in,
+  .animate-count-up,
+  .animate-progress-fill {
+    animation: none;
+  }
+
+  /* Ensure elements are visible without animation */
+  .animate-fade-in,
+  .animate-slide-in-bottom,
+  .animate-slide-in-top,
+  .animate-scale-in,
+  .animate-count-up {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Disable Tailwind's animate-pulse */
+  .animate-pulse {
+    animation: none;
+  }
+
+  /* Reduce transition durations */
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

@@ -21,8 +21,12 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Close mobile menu on route change (Issue #42)
+  // Only close if the menu is currently open to avoid unnecessary state updates
   useEffect(() => {
-    setMobileMenuOpen(false);
+    if (mobileMenuOpen) {
+      setMobileMenuOpen(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
   const isActive = (href: string) => {

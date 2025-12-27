@@ -526,16 +526,18 @@ export default function MethodStudyPage(): React.ReactElement {
     setActiveTab(tabId);
   }, []);
 
-  // Keyboard navigation for tabs
+  // Keyboard navigation for tabs (Issue #36: Move DOM focus to new tab)
   const handleTabKeyDown = useCallback(
     (event: React.KeyboardEvent, tabId: TabId) => {
       const currentTabIndex = TABS.findIndex((t) => t.id === tabId);
+      let newTabId: TabId | undefined;
 
       if (event.key === 'ArrowRight') {
         event.preventDefault();
         const nextIndex = (currentTabIndex + 1) % TABS.length;
         const nextTab = TABS[nextIndex];
         if (nextTab) {
+          newTabId = nextTab.id;
           setActiveTab(nextTab.id);
         }
       } else if (event.key === 'ArrowLeft') {
@@ -543,8 +545,20 @@ export default function MethodStudyPage(): React.ReactElement {
         const prevIndex = (currentTabIndex - 1 + TABS.length) % TABS.length;
         const prevTab = TABS[prevIndex];
         if (prevTab) {
+          newTabId = prevTab.id;
           setActiveTab(prevTab.id);
         }
+      }
+
+      // Move DOM focus to the newly selected tab button
+      if (newTabId) {
+        // Use requestAnimationFrame to ensure DOM has updated
+        requestAnimationFrame(() => {
+          const newTabElement = document.getElementById(`tab-${newTabId}`);
+          if (newTabElement) {
+            newTabElement.focus();
+          }
+        });
       }
     },
     []

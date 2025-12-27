@@ -3,11 +3,12 @@
 /**
  * Application header with navigation.
  * Provides consistent navigation across all pages with responsive design.
+ * Includes accessibility features like focus trap for mobile menu.
  */
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 const navigationLinks = [
   { href: '/', label: 'Home' },
@@ -20,6 +21,12 @@ export function Header() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  // Refs for focus management
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const mobileNavRef = useRef<HTMLElement>(null);
+  const firstMenuItemRef = useRef<HTMLAnchorElement>(null);
+  const lastMenuItemRef = useRef<HTMLAnchorElement>(null);
+
   // Close mobile menu on route change (Issue #42)
   // Only close if the menu is currently open to avoid unnecessary state updates
   useEffect(() => {
@@ -28,6 +35,69 @@ export function Header() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
+
+  // Handle Escape key to close menu
+  const handleKeyDown = useCallback((event: KeyboardEvent) => {
+    if (!mobileMenuOpen) return;
+
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      setMobileMenuOpen(false);
+      // Return focus to menu button
+      menuButtonRef.current?.focus();
+    }
+
+    // Focus trap: Tab and Shift+Tab handling
+    if (event.key === 'Tab') {
+      const focusableElements = mobileNavRef.current?.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled])'
+      );
+
+      if (!focusableElements || focusableElements.length === 0) return;
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+
+      // Guard against undefined elements
+      if (!firstElement || !lastElement) return;
+
+      if (event.shiftKey) {
+        // Shift+Tab: if on first element, move to last
+        if (document.activeElement === firstElement) {
+          event.preventDefault();
+          lastElement.focus();
+        }
+      } else {
+        // Tab: if on last element, move to first
+        if (document.activeElement === lastElement) {
+          event.preventDefault();
+          firstElement.focus();
+        }
+      }
+    }
+  }, [mobileMenuOpen]);
+
+  // Set up keyboard event listener for mobile menu
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+      // Focus first menu item when menu opens
+      // Use setTimeout to ensure the menu is rendered
+      setTimeout(() => {
+        firstMenuItemRef.current?.focus();
+      }, 0);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [mobileMenuOpen, handleKeyDown]);
+
+  // Handle menu close and return focus
+  const handleMenuClose = useCallback(() => {
+    setMobileMenuOpen(false);
+    menuButtonRef.current?.focus();
+  }, []);
 
   const isActive = (href: string) => {
     if (href === '/') {
@@ -72,10 +142,12 @@ export function Header() {
 
           {/* Mobile menu button */}
           <button
+            ref={menuButtonRef}
             type="button"
             className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-muted-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-menu"
             aria-label="Toggle navigation menu"
           >
             {mobileMenuOpen ? (
@@ -92,10 +164,22 @@ export function Header() {
 
         {/* Mobile navigation */}
         {mobileMenuOpen && (
-          <nav className="md:hidden py-4 space-y-1">
-            {navigationLinks.map(({ href, label }) => (
+          <nav
+            ref={mobileNavRef}
+            id="mobile-menu"
+            className="md:hidden py-4 space-y-1"
+            aria-label="Mobile navigation"
+          >
+            {navigationLinks.map(({ href, label }, index) => (
               <Link
                 key={href}
+                ref={
+                  index === 0
+                    ? firstMenuItemRef
+                    : index === navigationLinks.length - 1
+                    ? lastMenuItemRef
+                    : undefined
+                }
                 href={href}
                 aria-current={isActive(href) ? 'page' : undefined}
                 className={`
@@ -106,7 +190,7 @@ export function Header() {
                       : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                   }
                 `}
-                onClick={() => setMobileMenuOpen(false)}
+                onClick={handleMenuClose}
               >
                 {label}
               </Link>

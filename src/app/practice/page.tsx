@@ -130,7 +130,8 @@ function parseUrlParams(searchParams: URLSearchParams): InitialConfigValues {
   }
 
   // Parse methods parameter (comma-separated list)
-  const methodsParam = searchParams.get('methods');
+  // Also support 'method' (singular) as an alias for study page links
+  const methodsParam = searchParams.get('methods') || searchParams.get('method');
   if (methodsParam) {
     const methodNames = methodsParam.split(',').map(m => m.trim().toLowerCase());
     const validMethods: MethodName[] = [];
@@ -351,10 +352,13 @@ function PracticePageLoading() {
  * Supported URL Parameters:
  * - difficulty: beginner | intermediate | advanced | expert | mastery
  * - methods: comma-separated list (e.g., distributive,squaring,near-100)
+ * - method: single method (alias for methods, used by study page links)
  * - count: number (1-1000) or 'infinite'
  * - negatives: true | false
  *
- * Example: /practice?difficulty=intermediate&methods=squaring,distributive&count=15
+ * Examples:
+ * - /practice?difficulty=intermediate&methods=squaring,distributive&count=15
+ * - /practice?method=distributive (from study page link)
  */
 export default function PracticePage() {
   return (

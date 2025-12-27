@@ -39,6 +39,7 @@ interface ActiveSessionState {
   currentProblemStartTime: number;
   hintsUsed: number;
   showError: boolean;
+  generationError: boolean; // Issue #39: Track failed problem generation
 }
 
 // Key for persisting session state in sessionStorage (Issue #37)
@@ -68,7 +69,9 @@ type SessionAction =
   | { type: 'SHOW_ERROR' }
   | { type: 'CLEAR_ERROR' }
   | { type: 'RESUME_FROM_PAUSE' }
-  | { type: 'RESTORE_STATE'; restoredState: Partial<ActiveSessionState> };
+  | { type: 'RESTORE_STATE'; restoredState: Partial<ActiveSessionState> }
+  | { type: 'SET_GENERATION_ERROR' } // Issue #39: Handle failed generation
+  | { type: 'CLEAR_GENERATION_ERROR' };
 
 function sessionReducer(state: ActiveSessionState, action: SessionAction): ActiveSessionState {
   switch (action.type) {
@@ -186,6 +189,12 @@ function sessionReducer(state: ActiveSessionState, action: SessionAction): Activ
         ...state,
         ...action.restoredState
       };
+
+    case 'SET_GENERATION_ERROR':
+      return { ...state, generationError: true };
+
+    case 'CLEAR_GENERATION_ERROR':
+      return { ...state, generationError: false };
 
     default:
       return state;
@@ -394,7 +403,8 @@ export default function ActiveSessionPage() {
     problems: [],
     currentProblemStartTime: Date.now(),
     hintsUsed: 0,
-    showError: false
+    showError: false,
+    generationError: false
   }));
 
   const [sessionTimer, setSessionTimer] = useState(0);
@@ -497,6 +507,9 @@ export default function ActiveSessionPage() {
 
   // Generate next problem
   const generateNextProblem = useCallback(() => {
+    // Clear any previous generation error
+    dispatch({ type: 'CLEAR_GENERATION_ERROR' });
+
     const problemNumber = state.problems.length + 1;
     const problem = generateProblem(config, problemNumber);
 
@@ -521,6 +534,8 @@ export default function ActiveSessionPage() {
         dispatch({ type: 'SET_PROBLEM', problem: newProblem, solution });
       } catch (retryError) {
         console.error('Failed to generate solution on retry:', retryError);
+        // Issue #39: Show error state instead of infinite loading
+        dispatch({ type: 'SET_GENERATION_ERROR' });
       }
     }
   }, [config, methodSelector, state.problems.length]);
@@ -850,6 +865,50 @@ export default function ActiveSessionPage() {
         <span className="sr-only">
           {hasValidConfig === false ? 'No configuration found, redirecting' : 'Loading session, please wait'}
         </span>
+      </div>
+    );
+  }
+
+  // Issue #39: Error state for failed problem generation
+  if (state.generationError) {
+    return (
+      <div className="max-w-4xl mx-auto text-center py-12" role="alert" aria-live="assertive">
+        <div className="mb-6">
+          <svg
+            className="w-16 h-16 mx-auto text-destructive"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+            />
+          </svg>
+        </div>
+        <h2 className="text-xl font-semibold text-foreground mb-2">
+          Problem Generation Failed
+        </h2>
+        <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+          We couldn&apos;t generate a suitable problem for your selected methods.
+          This can happen with unusual method combinations.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <Button
+            variant="primary"
+            onClick={generateNextProblem}
+          >
+            Try Again
+          </Button>
+          <Link href="/practice">
+            <Button variant="secondary">
+              Change Settings
+            </Button>
+          </Link>
+        </div>
       </div>
     );
   }

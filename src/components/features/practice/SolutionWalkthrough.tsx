@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { memo, useState, useEffect, useRef } from 'react';
 import type { Solution } from '@/lib/types/solution';
 import type { MethodName } from '@/lib/types/method';
 import { CalculationStep } from './CalculationStep';
@@ -43,8 +43,9 @@ interface SolutionWalkthroughProps {
 /**
  * Displays a complete step-by-step walkthrough of a solution with navigation controls,
  * method comparison, and optional auto-advance mode.
+ * Wrapped in React.memo to prevent unnecessary re-renders when props haven't changed.
  */
-export function SolutionWalkthrough({
+export const SolutionWalkthrough = memo(function SolutionWalkthrough({
   problem,
   solution,
   optimalCost,
@@ -376,4 +377,4 @@ export function SolutionWalkthrough({
       )}
     </div>
   );
-}
+});

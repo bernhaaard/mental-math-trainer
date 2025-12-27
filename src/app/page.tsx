@@ -11,7 +11,7 @@ export default function Home() {
           Train your mental math skills with proven calculation methods.
           Master distributive property, difference of squares, and more.
         </p>
-        <div className="flex flex-col gap-4 sm:flex-row">
+        <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:justify-center">
           <Link
             href="/practice"
             className="rounded-lg bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
@@ -23,6 +23,12 @@ export default function Home() {
             className="rounded-lg border border-border bg-card px-6 py-3 font-medium text-card-foreground transition-colors hover:bg-secondary"
           >
             Study Methods
+          </Link>
+          <Link
+            href="/statistics"
+            className="rounded-lg border border-border bg-card px-6 py-3 font-medium text-card-foreground transition-colors hover:bg-secondary"
+          >
+            View Statistics
           </Link>
         </div>
         <div className="mt-8 grid gap-6 sm:grid-cols-3">

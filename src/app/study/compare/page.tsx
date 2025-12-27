@@ -215,8 +215,21 @@ function DecisionFlowchart(): React.ReactElement {
       </h2>
 
       <Card variant="outlined" className="p-6">
-        <div className="font-mono text-sm overflow-x-auto">
-          <pre className="text-muted-foreground whitespace-pre-wrap">
+        {/* Mobile: simplified text description */}
+        <div className="block sm:hidden text-sm text-muted-foreground space-y-3 mb-4">
+          <p className="font-medium text-foreground">Decision Order (simplified for mobile):</p>
+          <ol className="list-decimal list-inside space-y-2">
+            <li><strong>Squaring:</strong> Is a = b?</li>
+            <li><strong>Difference of Squares:</strong> Are numbers symmetric around a round number?</li>
+            <li><strong>Near Power of 10:</strong> Is one number near 10, 100, or 1000?</li>
+            <li><strong>Near 100:</strong> Are both numbers close to 100?</li>
+            <li><strong>Factorization:</strong> Does one number have nice factors?</li>
+            <li><strong>Distributive:</strong> Fallback for all other cases</li>
+          </ol>
+        </div>
+        {/* Desktop: full ASCII flowchart */}
+        <div className="hidden sm:block font-mono text-sm overflow-x-auto">
+          <pre className="text-muted-foreground whitespace-pre">
 {`                    Start: Given a x b
                            |
                            v
@@ -265,6 +278,7 @@ function DecisionFlowchart(): React.ReactElement {
                                                                         | Break & chain |  | (fallback)  |
                                                                         +---------------+  +-------------+`}
           </pre>
+        </div>
         </div>
 
         <div className="mt-6 p-4 rounded-lg bg-secondary/50">

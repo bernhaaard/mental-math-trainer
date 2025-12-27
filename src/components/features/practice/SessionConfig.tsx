@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { DifficultyLevel, type CustomRange } from '@/lib/types/problem';
 import { MethodName } from '@/lib/types/method';
 import type { SessionConfig as SessionConfigType } from '@/lib/types/session';
@@ -121,6 +122,22 @@ export function SessionConfig({ onStartSession, initialValues }: SessionConfigPr
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-8">
+      {/* Breadcrumb (Issue #38) */}
+      <nav aria-label="Breadcrumb">
+        <ol className="flex items-center gap-2 text-sm">
+          <li>
+            <Link
+              href="/"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Home
+            </Link>
+          </li>
+          <li className="text-muted-foreground">/</li>
+          <li className="text-foreground font-medium">Practice</li>
+        </ol>
+      </nav>
+
       {/* Header */}
       <div className="text-center space-y-2">
         <h1 className="text-3xl font-bold text-foreground">

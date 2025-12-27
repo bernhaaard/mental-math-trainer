@@ -936,6 +936,31 @@ export default function ActiveSessionPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6" role="main" aria-label="Practice session">
+      {/* Breadcrumb (Issue #38) */}
+      <nav aria-label="Breadcrumb">
+        <ol className="flex items-center gap-2 text-sm">
+          <li>
+            <Link
+              href="/"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Home
+            </Link>
+          </li>
+          <li className="text-muted-foreground">/</li>
+          <li>
+            <Link
+              href="/practice"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Practice
+            </Link>
+          </li>
+          <li className="text-muted-foreground">/</li>
+          <li className="text-foreground font-medium">Session</li>
+        </ol>
+      </nav>
+
       {/* Session Header with Controls */}
       <div className="flex flex-wrap items-center justify-between gap-4 bg-card rounded-lg shadow-md p-4">
         <div className="flex items-center gap-4">

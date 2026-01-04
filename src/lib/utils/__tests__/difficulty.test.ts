@@ -1,6 +1,8 @@
 /**
  * Difficulty Utilities Tests
  * @module utils/__tests__/difficulty.test
+ *
+ * Tests the design token-based difficulty color system.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -8,45 +10,52 @@ import { getDifficultyColor, DIFFICULTY_COLORS, DifficultyColors } from '../diff
 import { DifficultyLevel } from '../../types';
 
 describe('getDifficultyColor', () => {
-  describe('returns correct colors for each difficulty level', () => {
-    it('should return green colors for Beginner', () => {
+  describe('returns correct design token classes for each difficulty level', () => {
+    it('should return beginner design token classes for Beginner', () => {
       const colors = getDifficultyColor(DifficultyLevel.Beginner);
-      expect(colors.bg).toBe('bg-green-500/20');
-      expect(colors.text).toBe('text-green-300');
+      expect(colors.bg).toBe('bg-difficulty-beginner-muted');
+      expect(colors.text).toBe('text-difficulty-beginner');
+      expect(colors.border).toBe('border-difficulty-beginner/30');
     });
 
-    it('should return blue colors for Intermediate', () => {
+    it('should return intermediate design token classes for Intermediate', () => {
       const colors = getDifficultyColor(DifficultyLevel.Intermediate);
-      expect(colors.bg).toBe('bg-blue-500/20');
-      expect(colors.text).toBe('text-blue-300');
+      expect(colors.bg).toBe('bg-difficulty-intermediate-muted');
+      expect(colors.text).toBe('text-difficulty-intermediate');
+      expect(colors.border).toBe('border-difficulty-intermediate/30');
     });
 
-    it('should return purple colors for Advanced', () => {
+    it('should return advanced design token classes for Advanced', () => {
       const colors = getDifficultyColor(DifficultyLevel.Advanced);
-      expect(colors.bg).toBe('bg-purple-500/20');
-      expect(colors.text).toBe('text-purple-300');
+      expect(colors.bg).toBe('bg-difficulty-advanced-muted');
+      expect(colors.text).toBe('text-difficulty-advanced');
+      expect(colors.border).toBe('border-difficulty-advanced/30');
     });
 
-    it('should return red colors for Expert', () => {
+    it('should return expert design token classes for Expert', () => {
       const colors = getDifficultyColor(DifficultyLevel.Expert);
-      expect(colors.bg).toBe('bg-red-500/20');
-      expect(colors.text).toBe('text-red-300');
+      expect(colors.bg).toBe('bg-difficulty-expert-muted');
+      expect(colors.text).toBe('text-difficulty-expert');
+      expect(colors.border).toBe('border-difficulty-expert/30');
     });
 
-    it('should return orange colors for Mastery', () => {
+    it('should return mastery design token classes for Mastery', () => {
       const colors = getDifficultyColor(DifficultyLevel.Mastery);
-      expect(colors.bg).toBe('bg-orange-500/20');
-      expect(colors.text).toBe('text-orange-300');
+      expect(colors.bg).toBe('bg-difficulty-mastery-muted');
+      expect(colors.text).toBe('text-difficulty-mastery');
+      expect(colors.border).toBe('border-difficulty-mastery/30');
     });
   });
 
   describe('return type', () => {
-    it('should return an object with bg and text properties', () => {
+    it('should return an object with bg, text, and border properties', () => {
       const colors = getDifficultyColor(DifficultyLevel.Beginner);
       expect(colors).toHaveProperty('bg');
       expect(colors).toHaveProperty('text');
+      expect(colors).toHaveProperty('border');
       expect(typeof colors.bg).toBe('string');
       expect(typeof colors.text).toBe('string');
+      expect(typeof colors.border).toBe('string');
     });
   });
 
@@ -95,12 +104,14 @@ describe('DIFFICULTY_COLORS constant', () => {
     expect(Object.keys(DIFFICULTY_COLORS).length).toBe(5);
   });
 
-  it('each color entry should have bg and text properties', () => {
+  it('each color entry should have bg, text, and border properties using design tokens', () => {
     Object.values(DIFFICULTY_COLORS).forEach((colors: DifficultyColors) => {
       expect(colors).toHaveProperty('bg');
       expect(colors).toHaveProperty('text');
-      expect(colors.bg).toMatch(/^bg-/);
-      expect(colors.text).toMatch(/^text-/);
+      expect(colors).toHaveProperty('border');
+      expect(colors.bg).toMatch(/^bg-difficulty-/);
+      expect(colors.text).toMatch(/^text-difficulty-/);
+      expect(colors.border).toMatch(/^border-difficulty-/);
     });
   });
 
@@ -115,6 +126,12 @@ describe('DIFFICULTY_COLORS constant', () => {
       const textColors = Object.values(DIFFICULTY_COLORS).map((c) => c.text);
       const uniqueTextColors = new Set(textColors);
       expect(uniqueTextColors.size).toBe(5);
+    });
+
+    it('should use distinct border colors for each level', () => {
+      const borderColors = Object.values(DIFFICULTY_COLORS).map((c) => c.border);
+      const uniqueBorderColors = new Set(borderColors);
+      expect(uniqueBorderColors.size).toBe(5);
     });
   });
 });

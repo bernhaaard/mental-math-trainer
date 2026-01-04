@@ -130,7 +130,7 @@ export function Header() {
                   px-4 py-2 rounded-md text-sm font-medium transition-colors
                   ${
                     isActive(href)
-                      ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-100'
+                      ? 'bg-primary/10 text-primary'
                       : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                   }
                 `}
@@ -186,7 +186,7 @@ export function Header() {
                   block px-4 py-2 rounded-md text-base font-medium transition-colors
                   ${
                     isActive(href)
-                      ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-100'
+                      ? 'bg-primary/10 text-primary'
                       : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                   }
                 `}

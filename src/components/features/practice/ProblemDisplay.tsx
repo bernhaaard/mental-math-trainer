@@ -1,8 +1,9 @@
 'use client';
 
-import { Problem, DifficultyLevel } from '@/lib/types/problem';
+import { Problem } from '@/lib/types/problem';
 import { MethodName } from '@/lib/types/method';
 import { useMemo } from 'react';
+import { getDifficultyColor } from '@/lib/utils/difficulty';
 
 /**
  * Props for ProblemDisplay component.
@@ -34,17 +35,6 @@ const METHOD_DISPLAY_NAMES: Record<MethodName, string> = {
   [MethodName.Factorization]: 'Factorization',
   [MethodName.Squaring]: 'Squaring',
   [MethodName.Near100]: 'Near 100'
-};
-
-/**
- * Difficulty level color classes.
- */
-const DIFFICULTY_COLORS: Record<DifficultyLevel, string> = {
-  [DifficultyLevel.Beginner]: 'bg-green-500/20 text-green-300 border-green-500/30',
-  [DifficultyLevel.Intermediate]: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
-  [DifficultyLevel.Advanced]: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
-  [DifficultyLevel.Expert]: 'bg-orange-500/20 text-orange-300 border-orange-500/30',
-  [DifficultyLevel.Mastery]: 'bg-red-500/20 text-red-300 border-red-500/30'
 };
 
 /**
@@ -108,7 +98,9 @@ export function ProblemDisplay({
           {/* Difficulty badge */}
           <div
             className={`rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wider ${
-              DIFFICULTY_COLORS[problem.difficulty]
+              getDifficultyColor(problem.difficulty).bg
+            } ${getDifficultyColor(problem.difficulty).text} ${
+              getDifficultyColor(problem.difficulty).border
             }`}
           >
             {problem.difficulty}
@@ -141,7 +133,7 @@ export function ProblemDisplay({
               <span className="text-5xl font-light text-muted-foreground sm:text-6xl md:text-7xl">
                 =
               </span>
-              <span className="text-6xl font-bold text-blue-400 sm:text-7xl md:text-8xl">
+              <span className="text-6xl font-bold text-info sm:text-7xl md:text-8xl">
                 ?
               </span>
             </div>
@@ -149,7 +141,7 @@ export function ProblemDisplay({
             {/* Method hint (if enabled) */}
             {showMethodHint && optimalMethod && (
               <div className="animate-in fade-in slide-in-from-top-2 pt-4 duration-700">
-                <div className="inline-flex items-center gap-2 rounded-full bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-300 ring-1 ring-blue-500/20">
+                <div className="inline-flex items-center gap-2 rounded-full bg-info-muted px-4 py-2 text-sm font-medium text-info ring-1 ring-info/20">
                   <svg
                     className="h-4 w-4"
                     fill="none"

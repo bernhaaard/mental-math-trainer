@@ -124,9 +124,9 @@ export function Timer({
       <div
         className={`flex items-center gap-2 rounded-lg px-3 py-2 font-mono font-bold transition-all duration-200 ${
           isTimeUp
-            ? 'bg-red-500/20 text-red-400 ring-2 ring-red-500/50'
+            ? 'bg-error-muted text-error ring-2 ring-error/50'
             : isWarning
-            ? 'bg-orange-500/20 text-orange-400 ring-2 ring-orange-500/50 animate-pulse'
+            ? 'bg-warning-muted text-warning ring-2 ring-warning/50 animate-pulse'
             : 'bg-card/50 text-foreground'
         } ${sizeClasses[size]}`}
       >
@@ -134,9 +134,9 @@ export function Timer({
         <svg
           className={`${iconSizeClasses[size]} ${
             isTimeUp
-              ? 'text-red-400'
+              ? 'text-error'
               : isWarning
-              ? 'text-orange-400'
+              ? 'text-warning'
               : 'text-muted-foreground'
           }`}
           fill="none"

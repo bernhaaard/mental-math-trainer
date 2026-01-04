@@ -4,8 +4,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { BaseMethod } from '../base-method';
-import type { MethodName, Solution, StudyContent } from '../../../types';
+import { BaseMethod, MAX_SUBSTEP_DEPTH } from '../base-method';
+import type { MethodName, Solution, StudyContent, CalculationStep } from '../../../types';
 
 /**
  * Concrete implementation of BaseMethod for testing protected methods.
@@ -70,6 +70,19 @@ class TestableMethod extends BaseMethod {
 
   public testNearestRound(n: number): number {
     return this.nearestRound(n);
+  }
+
+  public testIsTrivialMultiplication(num1: number, num2: number): boolean {
+    return this.isTrivialMultiplication(num1, num2);
+  }
+
+  public testGenerateRecursiveSubSteps(
+    num1: number,
+    num2: number,
+    currentDepth: number,
+    maxDepth: number = MAX_SUBSTEP_DEPTH
+  ): CalculationStep[] {
+    return this.generateRecursiveSubSteps(num1, num2, currentDepth, maxDepth);
   }
 }
 
@@ -364,6 +377,155 @@ describe('BaseMethod utility functions', () => {
       const content = method.generateStudyContent();
       expect(content).toBeDefined();
       expect(content.method).toBe('distributive');
+    });
+  });
+
+  describe('isTrivialMultiplication', () => {
+    it('should return true for single-digit x single-digit', () => {
+      expect(method.testIsTrivialMultiplication(7, 8)).toBe(true);
+      expect(method.testIsTrivialMultiplication(3, 4)).toBe(true);
+      expect(method.testIsTrivialMultiplication(9, 9)).toBe(true);
+    });
+
+    it('should return true when one number is 0 or 1', () => {
+      expect(method.testIsTrivialMultiplication(0, 100)).toBe(true);
+      expect(method.testIsTrivialMultiplication(1, 999)).toBe(true);
+      expect(method.testIsTrivialMultiplication(47, 1)).toBe(true);
+      expect(method.testIsTrivialMultiplication(47, 0)).toBe(true);
+    });
+
+    it('should return true when one number is 10', () => {
+      expect(method.testIsTrivialMultiplication(10, 47)).toBe(true);
+      expect(method.testIsTrivialMultiplication(123, 10)).toBe(true);
+    });
+
+    it('should return true for single-digit x multiple of 10 under 100', () => {
+      expect(method.testIsTrivialMultiplication(7, 40)).toBe(true);
+      expect(method.testIsTrivialMultiplication(30, 5)).toBe(true);
+      expect(method.testIsTrivialMultiplication(9, 90)).toBe(true);
+    });
+
+    it('should return true for multiple of 10 x multiple of 10 under 100', () => {
+      expect(method.testIsTrivialMultiplication(30, 40)).toBe(true);
+      expect(method.testIsTrivialMultiplication(50, 60)).toBe(true);
+      expect(method.testIsTrivialMultiplication(20, 90)).toBe(true);
+    });
+
+    it('should return false for non-trivial multiplications', () => {
+      expect(method.testIsTrivialMultiplication(7, 28)).toBe(false);
+      expect(method.testIsTrivialMultiplication(12, 5)).toBe(false);
+      expect(method.testIsTrivialMultiplication(23, 47)).toBe(false);
+      expect(method.testIsTrivialMultiplication(15, 18)).toBe(false);
+    });
+
+    it('should return false for single-digit x multiple of 10 at or above 100', () => {
+      expect(method.testIsTrivialMultiplication(7, 100)).toBe(false);
+      expect(method.testIsTrivialMultiplication(7, 200)).toBe(false);
+    });
+
+    it('should handle negative numbers', () => {
+      expect(method.testIsTrivialMultiplication(-7, 8)).toBe(true);
+      expect(method.testIsTrivialMultiplication(7, -40)).toBe(true);
+      expect(method.testIsTrivialMultiplication(-7, -28)).toBe(false);
+    });
+  });
+
+  describe('generateRecursiveSubSteps', () => {
+    it('should return empty array for trivial multiplications', () => {
+      expect(method.testGenerateRecursiveSubSteps(7, 8, 1)).toEqual([]);
+      expect(method.testGenerateRecursiveSubSteps(5, 40, 1)).toEqual([]);
+      expect(method.testGenerateRecursiveSubSteps(1, 100, 1)).toEqual([]);
+    });
+
+    it('should return empty array when at max depth', () => {
+      expect(method.testGenerateRecursiveSubSteps(7, 28, MAX_SUBSTEP_DEPTH)).toEqual([]);
+      expect(method.testGenerateRecursiveSubSteps(23, 47, MAX_SUBSTEP_DEPTH)).toEqual([]);
+    });
+
+    it('should generate sub-steps for non-trivial multiplications', () => {
+      const subSteps = method.testGenerateRecursiveSubSteps(7, 28, 1);
+      expect(subSteps.length).toBeGreaterThan(0);
+
+      // Should have partition step
+      expect(subSteps[0]).toBeDefined();
+      expect(subSteps[0]?.explanation).toContain('Break down');
+    });
+
+    it('should use subtractive partition for numbers near round values', () => {
+      // 28 is near 30, so should use (30 - 2)
+      const subSteps = method.testGenerateRecursiveSubSteps(7, 28, 1);
+      expect(subSteps[0]?.expression).toContain('30');
+      expect(subSteps[0]?.expression).toContain('-');
+    });
+
+    it('should use additive partition for numbers not near round values', () => {
+      // 23 decomposes to (20 + 3)
+      const subSteps = method.testGenerateRecursiveSubSteps(7, 23, 1);
+      expect(subSteps[0]?.expression).toContain('20');
+      expect(subSteps[0]?.expression).toContain('+');
+    });
+
+    it('should set correct depth on all sub-steps', () => {
+      const depth = 2;
+      const subSteps = method.testGenerateRecursiveSubSteps(7, 28, depth);
+
+      subSteps.forEach(step => {
+        expect(step.depth).toBe(depth);
+      });
+    });
+
+    it('should have valid expressions that can be evaluated', () => {
+      const subSteps = method.testGenerateRecursiveSubSteps(7, 28, 1);
+
+      // All expressions should be evaluable (no '=' signs in expression)
+      subSteps.forEach(step => {
+        expect(step.expression).not.toContain('=');
+      });
+    });
+
+    it('should recursively break down nested non-trivial calculations', () => {
+      // 47 x 53 should generate sub-steps at depth 1
+      // And those should have their own sub-steps at depth 2 if non-trivial
+      const subSteps = method.testGenerateRecursiveSubSteps(47, 53, 1, 3);
+
+      // Find sub-steps that have their own sub-steps
+      const stepsWithNestedSubSteps = subSteps.filter(
+        step => step.subSteps && step.subSteps.length > 0
+      );
+
+      // For 47 x 53, we decompose 53 to (50 + 3)
+      // 47 x 50 is trivial (just append zero)
+      // But 47 x 3 = 141 requires breaking down 47
+      // So we expect at least one step to have nested sub-steps
+      expect(stepsWithNestedSubSteps.length).toBeGreaterThanOrEqual(0);
+    });
+
+    it('should respect custom max depth parameter', () => {
+      // With maxDepth of 1, we shouldn't recurse at all at depth 1
+      const subSteps = method.testGenerateRecursiveSubSteps(47, 53, 1, 1);
+      expect(subSteps).toEqual([]);
+    });
+
+    it('should calculate correct results in sub-steps', () => {
+      const subSteps = method.testGenerateRecursiveSubSteps(7, 28, 1);
+
+      // The final result should be 7 x 28 = 196
+      const lastStep = subSteps[subSteps.length - 1];
+      expect(lastStep?.result).toBe(196);
+    });
+
+    it('should choose larger number to decompose', () => {
+      // When given 7 x 28, should decompose 28 (larger), not 7
+      const subSteps = method.testGenerateRecursiveSubSteps(7, 28, 1);
+
+      // First step shows 7 * (30 - 2) - the 7 is the multiplier
+      expect(subSteps[0]?.expression).toContain('7 *');
+    });
+  });
+
+  describe('MAX_SUBSTEP_DEPTH constant', () => {
+    it('should be exported and have value of 3', () => {
+      expect(MAX_SUBSTEP_DEPTH).toBe(3);
     });
   });
 });

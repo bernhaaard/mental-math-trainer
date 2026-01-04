@@ -197,6 +197,104 @@ describe('DistributiveMethod', () => {
     });
   });
 
+  describe('generateSolution - recursive sub-steps (Issue #62)', () => {
+    it('should generate recursive sub-steps for non-trivial intermediate calculations', () => {
+      // 23 x 47: partitions 23 as (20 + 3)
+      // 20 x 47 and 3 x 47 are non-trivial (47 is two-digit)
+      // So each should have their own sub-steps breaking down 47
+      const solution = method.generateSolution(23, 47);
+
+      const stepWithSub = solution.steps.find(s => s.subSteps && s.subSteps.length > 0);
+      expect(stepWithSub).toBeDefined();
+
+      // Find sub-steps that themselves have sub-steps (nested breakdown)
+      const nestedSubSteps = stepWithSub!.subSteps!.filter(
+        s => s.subSteps && s.subSteps.length > 0
+      );
+
+      // At least one intermediate calculation should have recursive breakdown
+      // 20 x 47: needs to break down 47 (47 = 50 - 3)
+      // 3 x 47: needs to break down 47 (47 = 50 - 3)
+      expect(nestedSubSteps.length).toBeGreaterThan(0);
+    });
+
+    it('should not generate recursive sub-steps for trivial multiplications', () => {
+      // 7 x 8 is trivial (single digit x single digit)
+      const solution = method.generateSolution(7, 8);
+
+      // For single digit x single digit, there may not even be sub-steps at top level
+      const stepWithSub = solution.steps.find(s => s.subSteps && s.subSteps.length > 0);
+
+      if (stepWithSub) {
+        // If there are sub-steps, they shouldn't have their own sub-steps (trivial)
+        stepWithSub.subSteps!.forEach(subStep => {
+          expect(subStep.subSteps).toBeUndefined();
+        });
+      }
+    });
+
+    it('should have valid expressions at all recursion levels', () => {
+      const solution = method.generateSolution(47, 53);
+
+      // Helper to recursively check all expressions
+      const checkExpressions = (steps: typeof solution.steps) => {
+        steps.forEach(step => {
+          // Expressions should not contain '=' (result is stored separately)
+          expect(step.expression).not.toContain('=');
+          // Expression should be a valid math expression
+          expect(step.expression).toMatch(/^[0-9+\-*/()\s]+$/);
+
+          if (step.subSteps) {
+            checkExpressions(step.subSteps);
+          }
+        });
+      };
+
+      checkExpressions(solution.steps);
+    });
+
+    it('should respect maximum depth limit of 3', () => {
+      // Use a complex problem that could recurse deeply
+      const solution = method.generateSolution(123, 456);
+
+      // Helper to find max depth
+      const findMaxDepth = (steps: typeof solution.steps): number => {
+        let maxDepth = 0;
+        steps.forEach(step => {
+          maxDepth = Math.max(maxDepth, step.depth);
+          if (step.subSteps) {
+            maxDepth = Math.max(maxDepth, findMaxDepth(step.subSteps));
+          }
+        });
+        return maxDepth;
+      };
+
+      const maxDepth = findMaxDepth(solution.steps);
+
+      // Depth should not exceed 2 (0, 1, 2) since max recursion is 3
+      // depth 0 = main steps, depth 1 = first level sub-steps, depth 2 = second level
+      expect(maxDepth).toBeLessThanOrEqual(2);
+    });
+
+    it('should include explanatory text at each level', () => {
+      const solution = method.generateSolution(28, 47);
+
+      // Helper to check all explanations
+      const checkExplanations = (steps: typeof solution.steps) => {
+        steps.forEach(step => {
+          expect(step.explanation).toBeTruthy();
+          expect(step.explanation.length).toBeGreaterThan(0);
+
+          if (step.subSteps) {
+            checkExplanations(step.subSteps);
+          }
+        });
+      };
+
+      checkExplanations(solution.steps);
+    });
+  });
+
   describe('generateSolution - known solutions', () => {
     const knownSolutions = [
       { num1: 12, num2: 13, answer: 156 },

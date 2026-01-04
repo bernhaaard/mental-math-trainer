@@ -16,6 +16,25 @@ const STATS_STORE = 'statistics';
 const SESSIONS_STORE = 'sessions';
 
 /**
+ * Normalize a practice session loaded from IndexedDB to ensure backward compatibility.
+ * Adds default values for hint-related fields that may not exist in old sessions.
+ * @param session - The session loaded from storage
+ * @returns Normalized session with all required fields
+ */
+function normalizeSession(session: PracticeSession): PracticeSession {
+  return {
+    ...session,
+    statistics: {
+      ...session.statistics,
+      // Add defaults for hint statistics (Issue #70 backward compatibility)
+      totalHintsUsed: session.statistics.totalHintsUsed ?? 0,
+      problemsWithHints: session.statistics.problemsWithHints ?? 0,
+      averageHintsPerProblem: session.statistics.averageHintsPerProblem ?? 0
+    }
+  };
+}
+
+/**
  * Opens the IndexedDB database, creating stores if needed.
  */
 function openDatabase(): Promise<IDBDatabase> {
@@ -311,7 +330,8 @@ export async function getRecentSessions(
     request.onsuccess = () => {
       const cursor = request.result;
       if (cursor && sessions.length < limit) {
-        sessions.push(cursor.value as PracticeSession);
+        // Normalize session for backward compatibility with hint fields
+        sessions.push(normalizeSession(cursor.value as PracticeSession));
         cursor.continue();
       } else {
         resolve(sessions);

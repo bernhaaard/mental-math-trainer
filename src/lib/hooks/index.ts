@@ -16,3 +16,6 @@ export type {
   UseKeyboardShortcutsOptions,
   UseKeyboardShortcutsReturn
 } from './useKeyboardShortcuts';
+
+export { useGoals } from './useGoals';
+export type { UseGoalsReturn } from './useGoals';

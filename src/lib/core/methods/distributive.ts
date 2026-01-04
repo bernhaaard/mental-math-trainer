@@ -181,12 +181,21 @@ export class DistributiveMethod extends BaseMethod {
 
     // Step 3: Calculate sub-products with sub-steps
     // Note: products and allParts have the same length, so products[index] always exists
-    const subSteps: CalculationStep[] = allParts.map((part, index) => ({
-      expression: `${part} * ${absNum2}`,
-      result: products[index] ?? 0,
-      explanation: this.explainSubMultiplication(part, absNum2),
-      depth: 1
-    }));
+    // For non-trivial multiplications, generate recursive breakdowns
+    const subSteps: CalculationStep[] = allParts.map((part, index) => {
+      const productResult = products[index] ?? 0;
+
+      // Generate recursive sub-steps if this multiplication is non-trivial
+      const recursiveSubSteps = this.generateRecursiveSubSteps(part, absNum2, 2);
+
+      return {
+        expression: `${part} * ${absNum2}`,
+        result: productResult,
+        explanation: this.explainSubMultiplication(part, absNum2),
+        depth: 1,
+        subSteps: recursiveSubSteps.length > 0 ? recursiveSubSteps : undefined
+      };
+    });
 
     if (partition.type === 'multi-additive') {
       // Show sum of all products

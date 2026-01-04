@@ -144,7 +144,7 @@ export function Header() {
           <button
             ref={menuButtonRef}
             type="button"
-            className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-muted-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring"
+            className="md:hidden inline-flex items-center justify-center min-h-[44px] min-w-[44px] p-2 rounded-md text-muted-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-expanded={mobileMenuOpen}
             aria-controls="mobile-menu"
@@ -183,7 +183,7 @@ export function Header() {
                 href={href}
                 aria-current={isActive(href) ? 'page' : undefined}
                 className={`
-                  block px-4 py-2 rounded-md text-base font-medium transition-colors
+                  block px-4 py-3 min-h-[44px] rounded-md text-base font-medium transition-colors
                   ${
                     isActive(href)
                       ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-100'

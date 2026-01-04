@@ -94,12 +94,20 @@ export const AnswerInput = forwardRef<AnswerInputHandle, AnswerInputProps>(
       getValue: () => value
     }));
 
-    // Auto-focus on mount
+    // Auto-focus on mount and scroll into view on mobile
     useEffect(() => {
       if (autoFocus && inputRef.current) {
         inputRef.current.focus();
       }
     }, [autoFocus]);
+
+    // Handle focus event to scroll input into view on mobile when keyboard opens
+    const handleFocus = () => {
+      // Use a small delay to allow keyboard to open first
+      setTimeout(() => {
+        inputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 300);
+    };
 
     // Track previous resetKey to detect changes and reset value
     const prevResetKeyRef = useRef(resetKey);
@@ -213,9 +221,11 @@ export const AnswerInput = forwardRef<AnswerInputHandle, AnswerInputProps>(
             ref={inputRef}
             type="text"
             inputMode="numeric"
+            enterKeyHint="send"
             value={value}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
+            onFocus={handleFocus}
             disabled={disabled}
             placeholder={placeholder}
             aria-label="Your answer"
@@ -231,7 +241,7 @@ export const AnswerInput = forwardRef<AnswerInputHandle, AnswerInputProps>(
             <button
               type="button"
               onClick={handleClear}
-              className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50"
+              className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full p-2 min-h-[44px] min-w-[44px] flex items-center justify-center text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50"
               aria-label="Clear input"
             >
               <svg
@@ -259,7 +269,7 @@ export const AnswerInput = forwardRef<AnswerInputHandle, AnswerInputProps>(
         <button
           onClick={(e) => handleSubmit(e as unknown as FormEvent)}
           disabled={!canSubmit}
-          className="rounded-xl bg-gradient-to-r from-primary to-primary/90 px-6 py-4 font-semibold text-primary-foreground shadow-lg transition-all duration-200 hover:from-primary/90 hover:to-primary/80 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-ring/50 disabled:cursor-not-allowed disabled:from-muted disabled:to-muted disabled:opacity-50 disabled:shadow-none sm:col-span-2 lg:col-span-2"
+          className="rounded-xl bg-gradient-to-r from-primary to-primary/90 px-6 py-4 min-h-[44px] font-semibold text-primary-foreground shadow-lg transition-all duration-200 hover:from-primary/90 hover:to-primary/80 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-ring/50 disabled:cursor-not-allowed disabled:from-muted disabled:to-muted disabled:opacity-50 disabled:shadow-none sm:col-span-2 lg:col-span-2"
           aria-label="Submit answer"
         >
           <span className="flex items-center justify-center gap-2">
@@ -286,7 +296,7 @@ export const AnswerInput = forwardRef<AnswerInputHandle, AnswerInputProps>(
           <button
             onClick={handleHintRequest}
             disabled={disabled}
-            className="rounded-xl border-2 border-purple-500/30 bg-purple-500/10 px-6 py-4 font-semibold text-purple-300 transition-all duration-200 hover:border-purple-500/50 hover:bg-purple-500/20 focus:outline-none focus:ring-4 focus:ring-purple-500/50 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-xl border-2 border-purple-500/30 bg-purple-500/10 px-6 py-4 min-h-[44px] font-semibold text-purple-300 transition-all duration-200 hover:border-purple-500/50 hover:bg-purple-500/20 focus:outline-none focus:ring-4 focus:ring-purple-500/50 disabled:cursor-not-allowed disabled:opacity-50"
             aria-label={`Request hint (${hintsUsed} used)`}
           >
             <span className="flex items-center justify-center gap-2">
@@ -317,7 +327,7 @@ export const AnswerInput = forwardRef<AnswerInputHandle, AnswerInputProps>(
           <button
             onClick={onSkip}
             disabled={disabled}
-            className="rounded-xl border-2 border-border bg-muted/50 px-6 py-4 font-semibold text-muted-foreground transition-all duration-200 hover:border-muted-foreground hover:bg-muted focus:outline-none focus:ring-4 focus:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-xl border-2 border-border bg-muted/50 px-6 py-4 min-h-[44px] font-semibold text-muted-foreground transition-all duration-200 hover:border-muted-foreground hover:bg-muted focus:outline-none focus:ring-4 focus:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
             aria-label="Skip this problem"
           >
             <span className="flex items-center justify-center gap-2">
@@ -341,8 +351,8 @@ export const AnswerInput = forwardRef<AnswerInputHandle, AnswerInputProps>(
         )}
       </div>
 
-      {/* Keyboard hint */}
-      <p className="text-center text-sm text-muted-foreground">
+      {/* Keyboard hint - hidden on mobile */}
+      <p className="hidden text-center text-sm text-muted-foreground md:block">
         Press <kbd className="rounded bg-muted px-2 py-1 font-mono text-xs">Enter</kbd> to submit
       </p>
     </div>

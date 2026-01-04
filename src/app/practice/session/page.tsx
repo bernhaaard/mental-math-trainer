@@ -981,10 +981,10 @@ export default function ActiveSessionPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Keyboard Shortcuts Help Button */}
+          {/* Keyboard Shortcuts Help Button - hidden on mobile */}
           <button
             onClick={handleToggleShortcutHelp}
-            className="p-2 rounded-lg bg-muted hover:bg-muted/80 transition-colors"
+            className="hidden md:flex p-2 min-h-[44px] min-w-[44px] items-center justify-center rounded-lg bg-muted hover:bg-muted/80 transition-colors"
             aria-label="Keyboard shortcuts"
             title="Keyboard shortcuts (?)"
           >
@@ -996,7 +996,7 @@ export default function ActiveSessionPage() {
           {/* Pause Button */}
           <button
             onClick={handleTogglePause}
-            className="p-2 rounded-lg bg-muted hover:bg-muted/80 transition-colors"
+            className="flex p-2 min-h-[44px] min-w-[44px] items-center justify-center rounded-lg bg-muted hover:bg-muted/80 transition-colors"
             aria-label={state.phase === 'paused' ? 'Resume session (Space)' : 'Pause session (Space)'}
             title={state.phase === 'paused' ? 'Resume (Space)' : 'Pause (Space)'}
           >
@@ -1015,7 +1015,7 @@ export default function ActiveSessionPage() {
           {/* End Session Button */}
           <button
             onClick={handleEndSession}
-            className="px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+            className="px-4 py-2 min-h-[44px] text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
             title="End session (Q)"
           >
             End Session
@@ -1136,8 +1136,8 @@ export default function ActiveSessionPage() {
             resetKey={state.currentProblem?.id}
           />
 
-          {/* Keyboard shortcuts hint */}
-          <div className="text-center text-sm text-muted-foreground">
+          {/* Keyboard shortcuts hint - hidden on mobile */}
+          <div className="hidden text-center text-sm text-muted-foreground md:block">
             Press <KeyboardShortcut keys={['?']} size="sm" /> for keyboard shortcuts
           </div>
         </div>

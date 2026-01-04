@@ -60,9 +60,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     const sizeStyles: Record<ButtonSize, string> = {
-      sm: 'h-9 px-3 text-sm',
-      md: 'h-10 px-4 py-2',
-      lg: 'h-11 px-8 text-lg'
+      sm: 'min-h-[44px] h-9 px-3 text-sm',
+      md: 'min-h-[44px] h-10 px-4 py-2',
+      lg: 'min-h-[44px] h-11 px-8 text-lg'
     };
 
     const combinedClassName = `${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`.trim();

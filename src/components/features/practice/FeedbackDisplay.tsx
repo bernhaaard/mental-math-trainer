@@ -204,7 +204,7 @@ export const FeedbackDisplay = memo(function FeedbackDisplay({
           ref={viewSolutionButtonRef}
           onClick={onViewSolution}
           disabled={disableViewSolution}
-          className="rounded-xl border-2 border-purple-500/30 bg-purple-500/10 px-6 py-4 font-semibold text-purple-300 transition-all duration-200 hover:border-purple-500/50 hover:bg-purple-500/20 focus:outline-none focus:ring-4 focus:ring-purple-500/50 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-xl border-2 border-purple-500/30 bg-purple-500/10 px-6 py-4 min-h-[44px] font-semibold text-purple-300 transition-all duration-200 hover:border-purple-500/50 hover:bg-purple-500/20 focus:outline-none focus:ring-4 focus:ring-purple-500/50 disabled:cursor-not-allowed disabled:opacity-50"
           aria-label="View solution walkthrough (Press S)"
         >
           <span className="flex items-center justify-center gap-2">
@@ -229,7 +229,7 @@ export const FeedbackDisplay = memo(function FeedbackDisplay({
         <button
           ref={nextButtonRef}
           onClick={onNext}
-          className="rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 px-6 py-4 font-semibold text-white shadow-lg transition-all duration-200 hover:from-blue-500 hover:to-blue-400 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-blue-500/50"
+          className="rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 px-6 py-4 min-h-[44px] font-semibold text-white shadow-lg transition-all duration-200 hover:from-blue-500 hover:to-blue-400 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-blue-500/50"
           aria-label="Next problem (Press N)"
         >
           <span className="flex items-center justify-center gap-2">

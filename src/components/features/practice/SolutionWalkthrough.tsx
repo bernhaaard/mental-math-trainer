@@ -153,7 +153,7 @@ export const SolutionWalkthrough = memo(function SolutionWalkthrough({
             <button
               ref={closeButtonRef}
               onClick={onClose}
-              className="p-2 rounded-lg hover:bg-muted transition-colors focus:outline-none focus:ring-2 focus:ring-accent"
+              className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-muted transition-colors focus:outline-none focus:ring-2 focus:ring-accent"
               aria-label="Close walkthrough (Press Escape or N for next problem)"
             >
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -187,7 +187,7 @@ export const SolutionWalkthrough = memo(function SolutionWalkthrough({
             <button
               onClick={goToPreviousStep}
               disabled={currentStepIndex === 0 || showAllSteps}
-              className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-secondary/80 transition-colors focus:outline-none focus:ring-2 focus:ring-accent"
+              className="px-4 py-2 min-h-[44px] rounded-lg bg-secondary text-secondary-foreground font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-secondary/80 transition-colors focus:outline-none focus:ring-2 focus:ring-accent"
             >
               <span className="flex items-center gap-2">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -206,7 +206,7 @@ export const SolutionWalkthrough = memo(function SolutionWalkthrough({
             <button
               onClick={goToNextStep}
               disabled={currentStepIndex === totalSteps - 1 || showAllSteps}
-              className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-secondary/80 transition-colors focus:outline-none focus:ring-2 focus:ring-accent"
+              className="px-4 py-2 min-h-[44px] rounded-lg bg-secondary text-secondary-foreground font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-secondary/80 transition-colors focus:outline-none focus:ring-2 focus:ring-accent"
             >
               <span className="flex items-center gap-2">
                 Next
@@ -221,7 +221,7 @@ export const SolutionWalkthrough = memo(function SolutionWalkthrough({
           <div className="flex items-center gap-2">
             <button
               onClick={toggleShowAll}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-accent ${
+              className={`px-4 py-2 min-h-[44px] rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-accent ${
                 showAllSteps
                   ? 'bg-accent text-accent-foreground'
                   : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
@@ -233,7 +233,7 @@ export const SolutionWalkthrough = memo(function SolutionWalkthrough({
             <button
               onClick={toggleAutoAdvance}
               disabled={showAllSteps}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-accent disabled:opacity-50 disabled:cursor-not-allowed ${
+              className={`px-4 py-2 min-h-[44px] rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-accent disabled:opacity-50 disabled:cursor-not-allowed ${
                 autoAdvance
                   ? 'bg-accent text-accent-foreground'
                   : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
@@ -312,7 +312,7 @@ export const SolutionWalkthrough = memo(function SolutionWalkthrough({
         <div className="mb-6">
           <button
             onClick={() => setShowComparison(!showComparison)}
-            className="w-full px-6 py-4 bg-card border border-border rounded-lg hover:bg-muted/30 transition-colors focus:outline-none focus:ring-2 focus:ring-accent flex items-center justify-between"
+            className="w-full px-6 py-4 min-h-[44px] bg-card border border-border rounded-lg hover:bg-muted/30 transition-colors focus:outline-none focus:ring-2 focus:ring-accent flex items-center justify-between"
           >
             <span className="text-lg font-semibold text-foreground">
               Compare with Alternative Methods

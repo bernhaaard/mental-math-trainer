@@ -269,63 +269,132 @@ export class NearPower10Method extends BaseMethod {
     return {
       method: this.name,
       introduction: `
-        The Near Powers of 10 method exploits the cognitive ease of multiplying
-        by powers of 10 (10, 100, 1000, etc.). When one number is close to a
-        power of 10, we can rewrite it as (power ± small difference) and use
-        the distributive property.
+The Near Powers of 10 method exploits the cognitive ease of multiplying
+by powers of 10 (10, 100, 1000, etc.). When one number is close to a
+power of 10, we can rewrite it as (power +/- small difference) and use
+the distributive property.
 
-        This transforms a difficult multiplication into an easy one (by the power)
-        plus or minus a simpler correction term.
-      `,
+This transforms a difficult multiplication into an easy one (by the power)
+plus or minus a simpler correction term.
+
+Example: 98 x 47
+- 98 is just 2 away from 100
+- Rewrite as (100 - 2) x 47
+- Calculate: 100 x 47 - 2 x 47 = 4700 - 94 = 4606
+
+The trick: multiplying by 100 is instant (just append two zeros),
+and multiplying by 2 is trivial.
+      `.trim(),
       mathematicalFoundation: `
-        This method combines two fundamental properties:
+This method combines two fundamental properties:
 
-        1. Multiplying by powers of 10 is trivial in base-10 notation
-           (just shift the decimal point or append zeros)
+### 1. Powers of 10 in Base-10 Notation
 
-        2. The distributive property allows us to split multiplication:
-           (a ± b) × c = (a × c) ± (b × c)
+Multiplying by 10^k is a pure positional shift—no computation required:
+- n x 10 = n with one zero appended
+- n x 100 = n with two zeros appended
+- n x 1000 = n with three zeros appended
 
-        Algebraically: If n ≈ 10^k, write n = 10^k ± d where d is small.
-        Then: n × m = (10^k ± d) × m = (10^k × m) ± (d × m)
+This is why base-10 is so convenient: powers of the base are trivial.
 
-        The first term (10^k × m) is mentally trivial, and the second term
-        (d × m) involves a much smaller number d, making it easier.
-      `,
+### 2. The Distributive Property
+
+We can split multiplication across addition or subtraction:
+(a +/- b) x c = (a x c) +/- (b x c)
+
+### Combining These
+
+If one number n is close to a power of 10, write n = 10^k +/- d where d is small.
+Then: n x m = (10^k +/- d) x m = (10^k x m) +/- (d x m)
+
+- The first term (10^k x m) is mentally trivial
+- The second term (d x m) uses a small multiplier, making it easier
+
+### Calculating the Adjustment
+
+The adjustment calculation d x m is the key step. Keep these strategies in mind:
+- If d is 1-3, this is usually trivial (double, triple, etc.)
+- If d is 5, halve and shift: 5 x 47 = 47/2 x 10 = 23.5 x 10 (not ideal)
+- Better: 5 x 47 = (10-5) x 47/2... actually just compute 5 x 47 = 235
+      `.trim(),
       deepDiveContent: `
-        ### Why Powers of 10 Are Special
+### Why Powers of 10 Are Special
 
-        In base-10 positional notation, multiplying by 10^k is a pure
-        positional shift with no computation required. This is a structural
-        property of how we represent numbers, not a mathematical trick.
+In base-10 positional notation, multiplying by 10^k is a pure positional
+shift with no computation required. This is a structural property of how
+we represent numbers, not a mathematical trick.
 
-        ### Cognitive Load Analysis
+When you multiply 47 by 100, you're not calculating—you're repositioning
+digits: 47 becomes 4700.
 
-        This method minimizes cognitive load in two ways:
+### Choosing the Right Power
 
-        1. **Positional Shift**: Multiplying 47 × 100 = 4700 requires no
-           calculation—we simply recognize the pattern and append zeros.
+Always use the nearest power of 10:
+- Numbers 5-15: use 10
+- Numbers 85-115: use 100
+- Numbers 950-1050: use 1000
 
-        2. **Smaller Secondary Calculation**: The correction term uses a
-           small number (the difference from the power), which is easier
-           to work with mentally than the original.
+### Above vs. Below the Power
 
-        ### When Distance Matters
+The method works whether the number is above or below the power:
 
-        The method's efficiency degrades as the distance from the power
-        increases. Compare:
-        - 98 × 47: diff = 2, very efficient
-        - 93 × 47: diff = 7, less efficient
-        - 85 × 47: diff = 15, better to use another method
+**Below the power (subtractive):**
+98 x 47 = (100 - 2) x 47 = 4700 - 94 = 4606
 
-        The threshold depends on the other multiplicand's size, but generally
-        if diff > 10% of the power, other methods may be better.
-      `,
+**Above the power (additive):**
+102 x 47 = (100 + 2) x 47 = 4700 + 94 = 4794
+
+### Optimal Distance Thresholds
+
+The method becomes less efficient as distance increases:
+- Distance 1-3: Highly efficient (correction is trivial)
+- Distance 4-6: Still good (correction is manageable)
+- Distance 7-10: Borderline (may want another method)
+- Distance >10: Usually better to use distributive or factorization
+
+### Mental Calculation Tips
+
+1. Always compute the power multiplication first (it's free)
+2. For the correction term, think of it as "small number x other number"
+3. For subtraction (below power), you may need to borrow—plan ahead
+
+### Special Cases
+
+Numbers ending in 9 (19, 29, 99, 999) and 1 (11, 21, 101, 1001) are perfect:
+- The difference is just 1
+- The correction term equals the other number
+- 99 x 47 = 4700 - 47 = 4653
+- 101 x 47 = 4700 + 47 = 4747
+      `.trim(),
       whenToUse: [
         'When one number is within 10% of a power of 10 (10, 100, 1000)',
-        'Especially effective when difference is 1-5',
-        'Works for both slightly above and slightly below powers',
-        'Ideal for problems like 99 × n, 101 × n, 998 × n, etc.'
+        'Especially effective when the difference is 1-5',
+        'Works for both slightly above (101, 102) and slightly below (98, 99)',
+        'Perfect for problems like 99 x n, 101 x n, 998 x n, 1001 x n',
+        'When you only need to adjust one of the two numbers'
+      ],
+      whenNotToUse: [
+        'When neither number is close to a power of 10 (use distributive instead)',
+        'When the difference from the power is large (>10% of the power)',
+        'When both numbers are near 100 (use the Near-100 method instead)',
+        'When numbers are symmetric around a midpoint (use Difference of Squares)',
+        'When the correction calculation is harder than the original problem'
+      ],
+      commonMistakes: [
+        'Forgetting to add/subtract the correction term (getting just the power product)',
+        'Adding when you should subtract (or vice versa)—track the sign carefully',
+        'Using the wrong power of 10 (e.g., using 10 when 100 is closer)',
+        'Miscalculating the difference from the power (e.g., 98 is 2 from 100, not 2 from 10)',
+        'Errors in the correction multiplication (double-check d x m)',
+        'Not recognizing when this method applies—practice pattern recognition'
+      ],
+      practiceStrategies: [
+        'Start with numbers ending in 9 or 1 (99, 101) where correction equals the other number',
+        'Practice instant recognition: see 98 and immediately think "100 - 2"',
+        'Drill the power multiplication until it is automatic (47 x 100 = 4700, instant)',
+        'Practice the adjustment calculation separately: 2 x 47, 3 x 47, etc.',
+        'Work up from small differences (1, 2) to larger ones (5, 8, 10)',
+        'Time yourself and track improvement on problems like 99 x various numbers'
       ],
       examples: [],
       interactiveExercises: [],

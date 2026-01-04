@@ -269,77 +269,124 @@ export class DifferenceSquaresMethod extends BaseMethod {
     return {
       method: this.name,
       introduction: `
-        The difference of squares is one of the most elegant techniques in mental math.
-        It leverages a fundamental algebraic identity: (a - b)(a + b) = a² - b².
+The difference of squares is one of the most elegant techniques in mental math.
+It leverages a fundamental algebraic identity: (a - b)(a + b) = a^2 - b^2.
 
-        This method is perfect when you notice two numbers are symmetric around
-        a nice round number. Instead of multiplying directly, you square the
-        midpoint and subtract the square of the distance.
-      `,
+This method is perfect when you notice two numbers are symmetric around
+a nice round number. Instead of multiplying directly, you square the
+midpoint and subtract the square of the distance.
+
+Example: 47 x 53
+- Both numbers are 3 away from 50
+- Rewrite as (50 - 3)(50 + 3)
+- Apply identity: 50^2 - 3^2 = 2500 - 9 = 2491
+
+The magic: a potentially complex multiplication becomes squaring a round
+number (trivial) and subtracting a small square (also trivial).
+      `.trim(),
       mathematicalFoundation: `
-        The difference of squares identity is a cornerstone of algebra:
+The difference of squares identity is a cornerstone of algebra:
 
-        (a - b)(a + b) = a² - b²
+(a - b)(a + b) = a² - b²
 
-        Proof by expansion:
-        (a - b)(a + b) = a(a + b) - b(a + b)
-                       = a² + ab - ab - b²
-                       = a² - b²
+### Proof by Expansion
 
-        This identity is symmetric and reversible. When you see a multiplication
-        where the numbers are equidistant from a midpoint, you can always apply
-        this technique.
+(a - b)(a + b) = a(a + b) - b(a + b)
+               = a² + ab - ab - b²
+               = a² - b²
 
-        For mental math, we identify:
-        - a = (num1 + num2) / 2 (the midpoint)
-        - b = |num1 - num2| / 2 (the half-distance)
+The cross terms (+ab and -ab) cancel perfectly, leaving only squares.
 
-        Then: num1 × num2 = (a - b)(a + b) = a² - b²
-      `,
+### Visual Proof
+
+Imagine a square with side length 'a'. Its area is a².
+Now remove a corner square with side length 'b'. The remaining area
+can be rearranged into a rectangle with dimensions (a+b) by (a-b).
+
+This geometric interpretation shows why the identity holds.
+
+### For Mental Math
+
+We identify:
+- a = (num1 + num2) / 2 (the midpoint)
+- b = |num1 - num2| / 2 (the half-distance)
+
+Then: num1 x num2 = (a - b)(a + b) = a² - b²
+
+The identity works because any two numbers can be expressed as a midpoint
+plus and minus some distance.
+      `.trim(),
       deepDiveContent: `
-        ### Algebraic Structure
+### Recognizing the Pattern
 
-        The difference of squares is part of a family of polynomial identities.
-        It represents a factorization of the polynomial a² - b²:
+The key skill is pattern recognition. Train yourself to spot these clues:
 
-        a² - b² = (a - b)(a + b)
+### 1. Check for Symmetry
+When you see two numbers, immediately check:
+- What's their sum? If it's a nice round number, halve it for the midpoint.
+- 47 + 53 = 100 -> midpoint = 50
+- 23 + 27 = 50 -> midpoint = 25
+- 95 + 105 = 200 -> midpoint = 100
 
-        This is the simplest non-trivial factorization in algebra and appears
-        throughout mathematics:
-        - In calculus (limits and derivatives)
-        - In number theory (divisibility tests)
-        - In geometry (area calculations)
+### 2. Verify Equal Distance
+Both numbers must be the same distance from the midpoint:
+- 47 is 3 below 50, 53 is 3 above 50: distance = 3
+- 23 is 2 below 25, 27 is 2 above 25: distance = 2
 
-        ### Cognitive Efficiency
+### 3. Evaluate Squaring Difficulty
+This method only helps if:
+- The midpoint is easy to square (multiples of 5, 10, or small numbers)
+- The distance is small (ideally 1-5)
 
-        This method is cognitively efficient because:
-        1. Squaring round numbers is easy (50² = 2500, 100² = 10000)
-        2. Squaring small numbers is trivial (3² = 9, 5² = 25)
-        3. Subtraction is easier than multi-digit multiplication
+### Common Symmetric Patterns
 
-        ### Pattern Recognition
+Memorize these templates:
+- Around 50: 49x51, 48x52, 47x53, 46x54, 45x55
+- Around 100: 99x101, 98x102, 97x103, 95x105
+- Around 25: 24x26, 23x27, 22x28
+- Around 75: 74x76, 73x77, 72x78
 
-        Learning to spot symmetric pairs is key:
-        - 47 × 53: Notice both are 3 away from 50
-        - 95 × 105: Notice both are 5 away from 100
-        - 18 × 22: Notice both are 2 away from 20
+### Squares to Memorize
 
-        The "round" midpoint makes squaring trivial, and small distances
-        minimize the final subtraction.
+For quick application, know these squares:
+- 1^2=1, 2^2=4, 3^2=9, 4^2=16, 5^2=25
+- 6^2=36, 7^2=49, 8^2=64, 9^2=81, 10^2=100
+- 25^2=625, 50^2=2500, 75^2=5625, 100^2=10000
 
-        ### Bidirectional Thinking
+### Connection to Other Methods
 
-        You can work both forward and backward:
-        - Forward: Given 47 × 53, recognize the pattern
-        - Backward: To multiply near 50, look for symmetric pairs
-
-        This bidirectional thinking is what transforms technique into fluency.
-      `,
+This identity connects to the Near-100 method: when both numbers are near 100,
+you're applying difference of squares with midpoint 100.
+      `.trim(),
       whenToUse: [
-        'When numbers are symmetric around a multiple of 10 (e.g., 47 × 53 around 50)',
-        'When numbers are symmetric around a multiple of 5 (e.g., 23 × 27 around 25)',
-        'When the distance from midpoint is small (typically ≤ 10)',
-        'When you can quickly square the midpoint mentally'
+        'When numbers are symmetric around a multiple of 10 (e.g., 47 x 53 around 50)',
+        'When numbers are symmetric around a multiple of 5 (e.g., 23 x 27 around 25)',
+        'When the distance from midpoint is small (typically 1-10)',
+        'When the midpoint is easy to square (round numbers, known squares)',
+        'When you quickly notice the sum of the two numbers is a nice round number'
+      ],
+      whenNotToUse: [
+        'When numbers are not symmetric (e.g., 47 x 58 has no clean midpoint)',
+        'When the midpoint is awkward to square (e.g., 47 x 59 has midpoint 53)',
+        'When the distance is too large (>10 makes the subtraction harder)',
+        'When one number is much larger than the other (no meaningful midpoint)',
+        'When another method is clearly simpler (e.g., 99 x 47 is better with Near Power of 10)'
+      ],
+      commonMistakes: [
+        'Not checking that both numbers are equidistant from the midpoint',
+        'Miscalculating the midpoint (always verify: midpoint x 2 = sum of numbers)',
+        'Forgetting to square the distance before subtracting (subtract b^2, not b)',
+        'Confusing this with near-100: difference of squares needs BOTH numbers equidistant',
+        'Trying to force this method when numbers are not actually symmetric',
+        'Using this when the midpoint is hard to square (defeats the purpose)'
+      ],
+      practiceStrategies: [
+        'Drill instant recognition: see 48 x 52 and immediately think "around 50, distance 2"',
+        'Memorize squares 1-10 and key values: 25, 50, 75, 100',
+        'Practice computing sums quickly: 47 + 53 = 100, so midpoint = 50',
+        'Start with distance 1 (49x51, 99x101) then work up to larger distances',
+        'Create mental flash cards: given two numbers, identify if this method applies',
+        'Time yourself on symmetric pairs to build speed and confidence'
       ],
       examples: [],
       interactiveExercises: [],

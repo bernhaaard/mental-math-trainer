@@ -68,6 +68,12 @@ export interface StudyContent {
   deepDiveContent: string;
   /** List of scenarios where this method excels */
   whenToUse: string[];
+  /** List of scenarios where this method should NOT be used */
+  whenNotToUse: string[];
+  /** Common mistakes learners make and how to avoid them */
+  commonMistakes: string[];
+  /** Tips and strategies for effective practice */
+  practiceStrategies: string[];
   /** Worked examples demonstrating the method */
   examples: StudyExample[];
   /** Practice exercises for the learner */

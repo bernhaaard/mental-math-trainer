@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import Link from 'next/link';
 import { DifficultyLevel, type CustomRange } from '@/lib/types/problem';
 import { MethodName } from '@/lib/types/method';
@@ -8,6 +8,7 @@ import type { SessionConfig as SessionConfigType } from '@/lib/types/session';
 import { DifficultySelector } from './DifficultySelector';
 import { NumberRangeInput } from './NumberRangeInput';
 import { MethodSelector } from './MethodSelector';
+import { MethodRecommendations } from './MethodRecommendations';
 
 /**
  * Initial configuration values that can be passed from URL parameters.
@@ -74,6 +75,12 @@ export function SessionConfig({ onStartSession, initialValues }: SessionConfigPr
       setAllowNegatives(false);
     }
   };
+
+  // Handler for when a recommendation is selected
+  const handleSelectRecommendedMethod = useCallback((method: MethodName) => {
+    // Set only the recommended method as selected
+    setSelectedMethods([method]);
+  }, []);
 
   const handleStartSession = () => {
     const config: SessionConfigType = {
@@ -147,6 +154,12 @@ export function SessionConfig({ onStartSession, initialValues }: SessionConfigPr
           Customize your mental math training experience
         </p>
       </div>
+
+      {/* Method Recommendations - Based on user statistics */}
+      <MethodRecommendations
+        onSelectMethod={handleSelectRecommendedMethod}
+        className="mb-2"
+      />
 
       {/* Main configuration sections */}
       <div className="space-y-6">

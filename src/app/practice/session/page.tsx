@@ -18,7 +18,6 @@ import type { Problem } from '@/lib/types/problem';
 import type { SessionConfig } from '@/lib/types/session';
 import { MethodSelector } from '@/lib/core/methods/method-selector';
 import { generateMethodAwareProblem } from '@/lib/core/problem-generator';
-import { saveSession } from '@/lib/storage/statistics-store';
 import { recordProblemsCompleted } from '@/lib/storage/goals-store';
 
 // Import extracted hooks and utilities

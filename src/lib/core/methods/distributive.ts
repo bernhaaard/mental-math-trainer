@@ -386,61 +386,119 @@ It states that multiplication distributes over addition: a(b + c) = ab + ac.
 
 This property is not just a trick—it's one of the defining axioms of algebra.
 Every mental math technique ultimately relies on this principle.
+
+Think of it this way: when you need to calculate 47 x 8, you're not stuck
+doing complex multiplication. Instead, you can split 47 into 40 + 7, then
+calculate (40 x 8) + (7 x 8) = 320 + 56 = 376. The problem becomes two
+easier multiplications and one simple addition.
       `.trim(),
       mathematicalFoundation: `
 In abstract algebra, the distributive property is one of the axioms that
-define a ring structure. For integers (ℤ, +, ×), the distributive property
+define a ring structure. For integers (Z, +, x), the distributive property
 ensures that multiplication is a homomorphism with respect to addition.
 
 In concrete terms: when you split a number into parts and multiply each
 part separately, the sum of those products equals the product of the whole.
 This works because multiplication "respects" the additive structure of numbers.
 
-Algebraically: ∀ a, b, c ∈ ℤ: a(b + c) = ab + ac
-Also: ∀ a, b, c ∈ ℤ: a(b - c) = ab - ac
+Algebraically: For all a, b, c in Z: a(b + c) = ab + ac
+Also: For all a, b, c in Z: a(b - c) = ab - ac
+
+### Why This Works
+
+The distributive property is not arbitrary—it emerges from how multiplication
+is defined as repeated addition:
+
+5 x (3 + 2) = 5 + 5 + 5 + 5 + 5 (five times, each time adding 5)
+            = (5 + 5 + 5) + (5 + 5) (grouping first 3 and last 2)
+            = (5 x 3) + (5 x 2)
+            = 15 + 10 = 25
+
+This same logic extends to all integer multiplication.
       `.trim(),
       deepDiveContent: `
 ### Ring Theory Foundation
 
 The distributive property isn't an arbitrary rule—it's a structural
 requirement for any ring. When we work with integers under addition and
-multiplication (ℤ, +, ×), we're working within a ring structure.
+multiplication (Z, +, x), we're working within a ring structure.
 
 ### Base-10 Polynomial View
 
 Any integer in base-10 can be viewed as a polynomial:
-347 = 3(10²) + 4(10¹) + 7(10⁰) = 3x² + 4x + 7, where x = 10
+347 = 3(10^2) + 4(10^1) + 7(10^0) = 3x^2 + 4x + 7, where x = 10
 
 When you multiply two numbers, you're multiplying polynomials. The
 distributive property is what allows you to expand these polynomials
 term by term.
 
-### Why Place-Value Partition Works
+### Partition Strategies
 
-When you partition 347 as (300 + 40 + 7), you're decomposing the
-polynomial into its monomial basis. Each term (3x², 4x, 7) represents
-a single "power of ten" component.
+There are several ways to partition numbers for mental multiplication.
+We can partition in two ways: additive partitioning (breaking into sums)
+or subtractive partitioning (expressing as differences from round numbers).
 
-The distributive property guarantees that ANY additive decomposition
-works. We prefer partitions that align with round numbers because
-they minimize cognitive load.
+### 1. Additive Partitioning - Standard Place Value (Most Common)
+Split at the decimal boundaries:
+- 47 = 40 + 7 (tens + ones)
+- 347 = 300 + 40 + 7 (hundreds + tens + ones)
 
-### Bidirectional Partitioning
+### 2. Subtractive Partitioning
+When a number is close to a round value, subtract the difference:
+- 47 = 50 - 3 (easier for 47 x 6: 300 - 18 = 282)
+- 98 = 100 - 2 (much easier for 98 x 7: 700 - 14 = 686)
 
-We can partition numbers in two ways:
-- Additive: 28 = 20 + 8 (standard place value)
-- Subtractive: 28 = 30 - 2 (near round number)
+### 3. Friendly Number Partitioning
+Split to create easy multiplication:
+- 45 = 40 + 5 (both easy to multiply)
+- 25 = 20 + 5 (or 30 - 5)
 
-The subtractive form often simplifies mental calculation when the
-number is close to a round value. For example, 47 × 28 is easier
-as 47 × (30 - 2) than as 47 × (20 + 8).
+### Choosing the Right Partition
+
+Ask yourself:
+1. Is the number close to a round value? Use subtractive.
+2. Are all digits manageable? Use standard place value.
+3. For 3+ digit numbers, full place value decomposition often works best.
+
+### Memory Management
+
+The key challenge in mental math is working memory. Each intermediate
+result you hold consumes cognitive resources. Strategies to minimize load:
+
+1. Calculate and add as you go—don't try to remember all parts
+2. Round to simpler intermediate results when possible
+3. Use the larger number as the base when one is much bigger
       `.trim(),
       whenToUse: [
-        'When no other method applies efficiently',
-        'For numbers without special structure',
-        'As a fallback for any multiplication',
-        'To teach the fundamental principle behind all methods',
-        'When numbers are close to round values (use subtractive partition)'
+        'When no other specialized method applies efficiently',
+        'For numbers without special structure (not near powers of 10, not symmetric)',
+        'As a reliable fallback for any multiplication',
+        'When learning mental math fundamentals—master this first',
+        'When numbers are close to round values (use subtractive partition)',
+        'For 3+ digit multiplications using full place value decomposition'
+      ],
+      whenNotToUse: [
+        'When numbers are symmetric around a nice midpoint (use Difference of Squares instead)',
+        'When one number is very close to 10, 100, or 1000 (use Near Powers of 10)',
+        'When multiplying a number by itself (use Squaring method)',
+        'When both numbers are between 85-115 (use Near 100 method)',
+        'When one number has very convenient factors like 2, 4, 5 (consider Factorization)'
+      ],
+      commonMistakes: [
+        'Forgetting to add zeroes when multiplying by tens, hundreds, etc. (e.g., 40 x 8 = 320, not 32)',
+        'Losing track of intermediate results—write them down while learning',
+        'Using additive partition when subtractive would be much easier (47 = 50-3, not 40+7 for some cases)',
+        'Trying to hold too many intermediate values in memory at once',
+        'Partitioning the wrong number—usually partition the more complex number',
+        'Forgetting the sign when using subtractive partitions (e.g., 47 x (50-3) = 47x50 - 47x3)'
+      ],
+      practiceStrategies: [
+        'Start with single-digit multipliers (e.g., 47 x 8) before advancing to two-digit x two-digit',
+        'Practice recognizing when subtractive partitions are easier (numbers ending in 7, 8, 9)',
+        'Drill the basic products you will use repeatedly: 2x through 9x tables, multiples of 10',
+        'Time yourself and track improvement—speed comes with familiarity',
+        'Practice mental running totals: say each partial product, then immediately add it to your running sum',
+        'Use estimation first to verify your answer is in the right ballpark'
       ],
       examples: [],
       interactiveExercises: [],

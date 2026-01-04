@@ -197,70 +197,140 @@ export class Near100Method extends BaseMethod {
     return {
       method: this.name,
       introduction: `
-        The Near-100 method is a powerful technique for multiplying numbers
-        close to 100. By expressing numbers as (100 + a) where 'a' is the
-        deviation from 100, we can use a simple formula to find the answer.
+The Near-100 method is a powerful technique for multiplying numbers
+close to 100. By expressing numbers as (100 + a) where 'a' is the
+deviation from 100, we can use a simple formula to find the answer.
 
-        Formula: (100 + a)(100 + b) = 10000 + 100(a + b) + ab
+Formula: (100 + a)(100 + b) = 10000 + 100(a + b) + ab
 
-        Example: 97 * 103 = (100 - 3)(100 + 3)
-                         = 10000 + 100(0) + (-9)
-                         = 9991
+Example: 97 x 103
+- 97 = 100 - 3, so a = -3
+- 103 = 100 + 3, so b = +3
+- Apply: 10000 + 100(-3 + 3) + (-3)(+3)
+- Calculate: 10000 + 0 - 9 = 9991
+
+The magic: for symmetric pairs like 97 x 103, the middle term vanishes!
+You just compute 10000 minus the square of the deviation.
       `.trim(),
       mathematicalFoundation: `
-        The formula derives from FOIL expansion:
+The formula derives from FOIL expansion:
 
-        (100 + a)(100 + b) = 100*100 + 100*b + a*100 + a*b
-                          = 10000 + 100(a + b) + ab
+(100 + a)(100 + b) = 100 x 100 + 100 x b + a x 100 + a x b
+                   = 10000 + 100(a + b) + ab
 
-        The beauty is that:
-        - 10000 is trivial (just write it down)
-        - 100(a + b) is easy (add deviations, shift two places)
-        - ab is typically small (small numbers times small numbers)
+### Breaking Down the Three Terms
 
-        For symmetric cases like 97 * 103 where a = -3 and b = +3:
-        a + b = 0, so the middle term vanishes!
-        Result = 10000 + 0 + (-9) = 9991
+1. **10000**: This is 100^2, always the same base value
+2. **100(a + b)**: The sum of deviations, multiplied by 100
+3. **ab**: The product of the two deviations
+
+### Sign Rules for Deviations
+
+Numbers below 100 have negative deviations:
+- 97 has deviation a = -3
+- 94 has deviation a = -6
+
+Numbers above 100 have positive deviations:
+- 103 has deviation b = +3
+- 108 has deviation b = +8
+
+### Computing the Product of Deviations (ab)
+
+When both deviations have the same sign:
+- Both negative: (-6) x (-3) = +18 (positive product)
+- Both positive: (+4) x (+7) = +28 (positive product)
+
+When deviations have opposite signs:
+- (-3) x (+3) = -9 (negative product)
+- (-5) x (+2) = -10 (negative product)
       `.trim(),
       deepDiveContent: `
-        ### The Symmetric Case
+### Three Cases to Master
 
-        When numbers are symmetric around 100 (like 97 and 103):
-        - a + b = 0, eliminating the middle term
-        - This becomes difference of squares: 100² - d² = 10000 - d²
-        - 97 * 103 = 10000 - 9 = 9991
+### Case 1: Symmetric Around 100
 
-        ### The Same-Side Case
+When one number is above 100 and the other is below by the same amount:
+- 97 x 103: a = -3, b = +3, so a + b = 0
+- The middle term vanishes: 100(0) = 0
+- Result = 10000 + 0 + (-9) = 9991
 
-        When both are below 100 (like 94 and 97):
-        - a = -6, b = -3
-        - a + b = -9, so middle term = -900
-        - ab = 18 (positive!)
-        - 10000 - 900 + 18 = 9118
+This is actually difference of squares in disguise:
+97 x 103 = (100 - 3)(100 + 3) = 100^2 - 3^2 = 10000 - 9 = 9991
 
-        When both are above 100 (like 104 and 107):
-        - a = 4, b = 7
-        - a + b = 11, middle term = 1100
-        - ab = 28
-        - 10000 + 1100 + 28 = 11128
+### Case 2: Both Below 100
 
-        ### Mental Shortcut
+When both numbers are below 100:
+- 94 x 97: a = -6, b = -3
+- Sum: a + b = -9, so middle term = 100 x (-9) = -900
+- Product: (-6) x (-3) = +18 (positive!)
+- Result = 10000 - 900 + 18 = 9118
 
-        For numbers below 100:
-        1. Write down 100 plus the smaller deviation
-        2. Subtract the sum of deviations from 100
-        3. Append the product of deviations
+Shortcut: Take one number and subtract the other's deviation:
+- 94 - 3 = 91 (this gives 9100)
+- Add the product of deviations: 9100 + 18 = 9118
 
-        Example: 94 * 97
-        1. Take either number plus other's deviation: 94 + (-3) = 91
-        2. Product of deviations: 6 * 3 = 18
-        3. Answer: 9118
+### Case 3: Both Above 100
+
+When both numbers are above 100:
+- 104 x 107: a = +4, b = +7
+- Sum: a + b = 11, so middle term = 100 x 11 = 1100
+- Product: 4 x 7 = 28
+- Result = 10000 + 1100 + 28 = 11128
+
+Shortcut: Take one number and add the other's deviation:
+- 104 + 7 = 111 (this gives 11100)
+- Add the product of deviations: 11100 + 28 = 11128
+
+### The Mental Shortcut
+
+For any two numbers near 100:
+1. Add one number to the OTHER's deviation: num1 + deviation2
+2. Append the product of the deviations (as two digits)
+
+Examples:
+- 96 x 97: 96 + (-3) = 93 -> 93XX, then 4 x 3 = 12 -> 9312
+- 102 x 108: 102 + 8 = 110 -> 110XX, then 2 x 8 = 16 -> 11016
+
+### Handling Two-Digit Products
+
+When ab >= 100 or ab < 10, be careful:
+- If ab has only one digit, pad with leading zero: 9 becomes 09
+- If ab >= 100, you need to carry: 12 x 15 = 180, so carry 1
+
+Example: 88 x 85
+- 88 + (-15) = 73 -> base is 73XX
+- 12 x 15 = 180 -> but this is three digits!
+- Solution: 7300 + 180 = 7480
       `.trim(),
       whenToUse: [
-        'When both numbers are between 85 and 115',
-        'Especially powerful for symmetric pairs (like 97 * 103)',
-        'When deviations from 100 are single digits',
-        'For quick estimation of products near 10000'
+        'When BOTH numbers are between 85 and 115 (within 15 of 100)',
+        'Especially powerful for symmetric pairs around 100 (like 97 x 103)',
+        'When deviations from 100 are single digits (easiest case)',
+        'For quick estimation of products near 10000',
+        'When you recognize both numbers are "near 100" at a glance'
+      ],
+      whenNotToUse: [
+        'When only ONE number is near 100 (use Near Powers of 10 instead)',
+        'When numbers are far from 100 (more than 15 away)',
+        'When the product of deviations is hard to compute (>10 x >10)',
+        'When numbers are symmetric around a different midpoint like 50 (use Difference of Squares)',
+        'When another method is clearly simpler for the specific numbers'
+      ],
+      commonMistakes: [
+        'Forgetting the sign of deviations (below 100 = negative, above 100 = positive)',
+        'Errors in computing ab when signs differ (negative times positive = negative)',
+        'Forgetting that ab is ADDED for same-side cases (both below or both above)',
+        'Not padding the product when ab is single-digit (9 should be 09)',
+        'Confusing this with Near Powers of 10 (this requires BOTH numbers near 100)',
+        'Forgetting to carry when ab >= 100'
+      ],
+      practiceStrategies: [
+        'Start with symmetric pairs (97x103, 98x102) where the middle term is zero',
+        'Practice identifying deviations instantly: see 94 and think "-6"',
+        'Drill the three cases separately: symmetric, both-below, both-above',
+        'Practice the shortcut: "num + other deviation, then multiply deviations"',
+        'Master products of small numbers (2x3, 3x4, 4x5, etc.) for quick ab calculation',
+        'Time yourself on problems like 96x97, 94x98, 103x107 to build speed'
       ],
       examples: [],
       interactiveExercises: [],

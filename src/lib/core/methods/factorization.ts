@@ -297,44 +297,142 @@ export class FactorizationMethod extends BaseMethod {
     return {
       method: this.name,
       introduction: `
-        The Factorization method leverages the associative property of multiplication.
-        When one number has convenient factors, we can rearrange the calculation
-        to create easier intermediate products.
+The Factorization method leverages the associative property of multiplication.
+When one number has convenient factors, we can rearrange the calculation
+to create easier intermediate products.
 
-        For example: 24 * 35 = (6 * 4) * 35 = 6 * (4 * 35) = 6 * 140 = 840
+Example: 24 x 35
+- Factor 24 as 6 x 4
+- Regroup: (6 x 4) x 35 = 6 x (4 x 35)
+- Calculate: 4 x 35 = 140, then 6 x 140 = 840
+
+The insight: 4 x 35 = 140 is easy (just double 35 twice), and 6 x 140
+is also straightforward (6 x 14 = 84, append zero).
+
+This method transforms one harder multiplication into two easier ones.
       `.trim(),
       mathematicalFoundation: `
-        This method relies on the associative property of multiplication:
-        (a * b) * c = a * (b * c)
+This method relies on the associative property of multiplication:
+(a x b) x c = a x (b x c)
 
-        Combined with factorization:
-        If n = f * g, then n * m = (f * g) * m = f * (g * m)
+### Factorization Principle
 
-        We choose the regrouping that minimizes cognitive load, typically
-        pairing factors to create round numbers or single-digit intermediate products.
+If n = f x g (where f and g are factors of n), then:
+n x m = (f x g) x m = f x (g x m)
+
+We can compute g x m first, then multiply by f.
+
+### Why This Works
+
+Multiplication is associative—the grouping doesn't change the result.
+This means we're free to regroup factors in whatever way minimizes
+cognitive load.
+
+### Optimal Regrouping
+
+The goal is to create intermediate products that are:
+1. Round numbers (easy to work with)
+2. Small enough to multiply easily
+3. Convenient for the final step
+
+Example Analysis:
+24 x 35 could be factored as:
+- (3 x 8) x 35: gives 8 x 35 = 280, then 3 x 280 = 840
+- (4 x 6) x 35: gives 6 x 35 = 210, then 4 x 210 = 840
+- (2 x 12) x 35: gives 12 x 35 = 420, then 2 x 420 = 840
+
+Different factorizations lead to different intermediate calculations.
+Choose the one that feels easiest mentally.
       `.trim(),
       deepDiveContent: `
-        ### Strategic Factor Selection
+### Finding Good Factors
 
-        Not all factorizations are equally useful. We prefer:
+The key skill is recognizing useful factorizations quickly.
 
-        1. **Single-digit factors** (2, 3, 4, 5, 6, 7, 8, 9)
-        2. **Powers of 2** (2, 4, 8, 16) - easy to double/halve
-        3. **Multiples of 5** - create nice intermediate products
-        4. **Round numbers** - end in zero for easy mental tracking
+### 1. Look for Small Factors First
 
-        ### The Halving-Doubling Variant
+Check divisibility in this order:
+- Is it even? Factor of 2
+- Does it end in 0 or 5? Factor of 5
+- Do the digits sum to a multiple of 3? Factor of 3
+- Is it a quarter of 100? Factor of 4 (e.g., 24, 48, 72, 96)
 
-        A special case of factorization is halving one number while doubling another:
-        24 * 35 = 12 * 70 = 6 * 140 = 3 * 280 = 840
+### 2. Preferred Factor Types
 
-        This works because (a/2) * (b*2) = a * b
+**Powers of 2: 2, 4, 8, 16**
+- Multiplying/dividing by 2 is just doubling/halving
+- 4 = double twice, 8 = double three times
+- Example: 8 x 47 = 2 x 2 x 2 x 47 = 94 x 2 x 2 = 188 x 2 = 376
+
+**Factors of 5 and 10:**
+- Lead to round intermediate products
+- 5 x anything ends in 0 or 5
+- 10 x anything just appends a zero
+
+**Single-digit factors: 2-9**
+- These are the building blocks of mental multiplication
+- Master your times tables through 9
+
+### 3. The Halving-Doubling Trick
+
+A special case: repeatedly halve one number while doubling the other:
+24 x 35 = 12 x 70 = 6 x 140 = 3 x 280 = 840
+
+This continues until one factor becomes awkward (like 1.5) or until
+the other factor is convenient to multiply.
+
+### 4. Factorization Table
+
+Numbers with the best factorizations:
+- 12 = 3 x 4 = 2 x 6 = 2 x 2 x 3
+- 15 = 3 x 5
+- 16 = 2 x 8 = 4 x 4 = 2 x 2 x 2 x 2
+- 18 = 2 x 9 = 3 x 6
+- 20 = 4 x 5 = 2 x 10
+- 24 = 3 x 8 = 4 x 6 = 2 x 12
+- 25 = 5 x 5
+- 32 = 4 x 8 = 2 x 16
+- 36 = 4 x 9 = 6 x 6
+- 48 = 6 x 8 = 4 x 12
+
+### 5. Creating Round Products
+
+The best factorizations create round intermediate products:
+- 35 x 4 = 140 (round number!)
+- 25 x 4 = 100 (perfect!)
+- 15 x 6 = 90 (nice!)
+
+Look for factor pairs where one factor times the other number gives a multiple of 10.
       `.trim(),
       whenToUse: [
-        'When one number has obvious small factors (especially 2, 4, 5)',
-        'When factoring creates round intermediate products',
-        'For numbers like 12, 15, 18, 24, 25, 32, 36, 48',
-        'When halving/doubling would simplify the problem'
+        'When one number has obvious small factors (especially 2, 4, 5, or 8)',
+        'When factoring creates round intermediate products (multiples of 10)',
+        'For highly composite numbers like 12, 16, 18, 24, 25, 32, 36, 48',
+        'When halving/doubling would simplify the problem',
+        'When the other number multiplies nicely with one of the factors'
+      ],
+      whenNotToUse: [
+        'When numbers are prime or have only large factors',
+        'When another method is more direct (e.g., 99 x 47 uses Near Power of 10)',
+        'When the intermediate products are not simpler than the original',
+        'When both numbers are odd primes (e.g., 37 x 43)',
+        'When you cannot quickly identify useful factors'
+      ],
+      commonMistakes: [
+        'Choosing factors that do not simplify the calculation (factoring for its own sake)',
+        'Forgetting which intermediate product you calculated (memory overload)',
+        'Incorrect factorization (always verify: factors should multiply back to the original)',
+        'Not recognizing when another method would be simpler',
+        'Getting confused about which factor to multiply by which number',
+        'Halving a number that becomes fractional (e.g., halving an odd number)'
+      ],
+      practiceStrategies: [
+        'Memorize useful factorizations for numbers 10-50 (especially composite numbers)',
+        'Practice instant factor recognition: see 24 and think "3 x 8" or "4 x 6"',
+        'Drill the halving-doubling technique until it becomes automatic',
+        'Work through examples focusing on creating round intermediate products',
+        'Compare different factorizations of the same number to find the easiest path',
+        'Build speed by practicing with numbers you factor frequently (12, 15, 18, 24, 36, 48)'
       ],
       examples: [],
       interactiveExercises: [],

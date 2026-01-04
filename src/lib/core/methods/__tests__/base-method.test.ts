@@ -32,6 +32,7 @@ class TestableMethod extends BaseMethod {
       method: this.name,
       steps: [],
       optimalReason: 'Test',
+      alternatives: [],
       validated: true,
       validationErrors: []
     };
@@ -44,6 +45,9 @@ class TestableMethod extends BaseMethod {
       mathematicalFoundation: '',
       deepDiveContent: '',
       whenToUse: [],
+      whenNotToUse: [],
+      commonMistakes: [],
+      practiceStrategies: [],
       examples: [],
       interactiveExercises: [],
       prerequisites: [],

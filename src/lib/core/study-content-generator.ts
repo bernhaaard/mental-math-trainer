@@ -242,6 +242,22 @@ In the mid-20th century, Jakow Trachtenberg developed a system of rapid mental c
       'For problems like 23 × 45: decompose as (20 + 3) × 45 = 900 + 135 = 1035',
       'When subtractive decomposition helps: 89 × 12 = (90 - 1) × 12 = 1080 - 12 = 1068'
     ],
+    whenNotToUse: [
+      'When both numbers are symmetric around a nice midpoint (use Difference of Squares)',
+      'When one number is very close to a power of 10 (use Near Powers of 10)',
+      'When multiplying a number by itself (use Squaring method)',
+      'When both numbers are near 100 (use Near-100 method)'
+    ],
+    commonMistakes: [
+      'Forgetting to add trailing zeros when multiplying by tens/hundreds',
+      'Losing track of intermediate results when computing multiple partial products',
+      'Using additive partition when subtractive would be easier'
+    ],
+    practiceStrategies: [
+      'Start with single-digit multipliers before advancing to two-digit by two-digit',
+      'Practice recognizing when subtractive partitions are easier',
+      'Drill basic products until they become automatic'
+    ],
 
     prerequisites: [],
     nextMethods: [MethodName.NearPower10, MethodName.Factorization]
@@ -516,6 +532,21 @@ The difference of squares wins when:
       '**Verification**: Answer must be less than midpoint squared (since we subtract)',
       '**Mental Process**: Average → Square → Deviation → Square → Subtract'
     ],
+    whenNotToUse: [
+      'When numbers are not symmetric around any clean midpoint',
+      'When the midpoint is awkward to square (like 47)',
+      'When the distance from midpoint is too large (>10)'
+    ],
+    commonMistakes: [
+      'Not verifying that both numbers are equidistant from the midpoint',
+      'Forgetting to square the distance before subtracting',
+      'Confusing this with Near-100 method'
+    ],
+    practiceStrategies: [
+      'Drill instant recognition of symmetric pairs',
+      'Memorize squares 1-10 and key values: 25, 50, 75, 100',
+      'Practice computing sums quickly to find midpoints'
+    ],
 
     prerequisites: [MethodName.Distributive],
     nextMethods: [MethodName.Squaring]
@@ -750,6 +781,21 @@ The sign of the correction (add vs. subtract) depends on whether the number is a
       '**Avoid When**: Both numbers are near 100 (use Near-100 method instead)',
       '**Avoid When**: Numbers are symmetric around a midpoint (use Difference of Squares)',
       '**Best Performance**: When the offset × other_number is easy (e.g., 2 × anything, 5 × anything, 3 × small number)'
+    ],
+    whenNotToUse: [
+      'When neither number is close to a power of 10',
+      'When both numbers are near 100 (use Near-100 method)',
+      'When numbers are symmetric around a midpoint (use Difference of Squares)'
+    ],
+    commonMistakes: [
+      'Forgetting to add/subtract the correction term',
+      'Adding when you should subtract (or vice versa)',
+      'Using the wrong power of 10'
+    ],
+    practiceStrategies: [
+      'Start with numbers ending in 9 or 1 where correction equals the other number',
+      'Practice instant recognition: see 98 and think "100 - 2"',
+      'Drill the power multiplication until automatic'
     ],
 
     prerequisites: [MethodName.Distributive],
@@ -1172,6 +1218,20 @@ The goal is **flexibility**: for any number, recognize multiple approaches and c
       '**As a Building Block**: Quarter-square identity enables any multiplication via squaring',
       '**Ideal Examples**: 35², 47², 73², 85², 99², 48×52 (via midpoint 50), 67×69 (via 68² - 1)'
     ],
+    whenNotToUse: [
+      'When multiplying two different numbers (use other methods)',
+      'When the number is far from any convenient round number'
+    ],
+    commonMistakes: [
+      'Forgetting the 2 in the 2ab term',
+      'Getting the sign wrong in the 2ab term',
+      'Forgetting that b² is always added'
+    ],
+    practiceStrategies: [
+      'Memorize squares 1-10 until they are instant',
+      'Memorize squares of multiples of 10',
+      'Practice the "ends in 5" pattern'
+    ],
 
     prerequisites: [MethodName.Distributive, MethodName.DifferenceSquares],
     nextMethods: []
@@ -1506,6 +1566,21 @@ Example: 103 × 105:
       '**Avoid When**: Only one number is near 100 (use Near Powers of 10 instead)',
       '**Extends To**: Numbers near 50 (47×48), near 1000 (997×994), or any convenient base',
       '**Special Case**: Numbers symmetric around 100 (e.g., 103×97) reduce to difference of squares'
+    ],
+    whenNotToUse: [
+      'When only one number is near 100 (use Near Powers of 10)',
+      'When numbers are far from 100 (more than 15 away)',
+      'When the product of deviations is hard to compute'
+    ],
+    commonMistakes: [
+      'Forgetting the sign of deviations',
+      'Errors computing ab when signs differ',
+      'Not padding single-digit products'
+    ],
+    practiceStrategies: [
+      'Start with symmetric pairs where the middle term is zero',
+      'Practice identifying deviations instantly',
+      'Drill the three cases: symmetric, both-below, both-above'
     ],
 
     prerequisites: [MethodName.Distributive, MethodName.NearPower10],
@@ -1975,6 +2050,21 @@ The best mental calculators fluidly combine methods, choosing the approach that 
       '**Good Numbers**: Any pair where 5s and 2s can pair to make 10s (35×18, 15×24)',
       '**Suboptimal Numbers**: Numbers with no common factor structure (37×41)—use distributive instead',
       '**Key Factor Pairs**: 2×5=10, 4×25=100, 8×125=1000, 25×4=100, 50×2=100, 20×5=100'
+    ],
+    whenNotToUse: [
+      'When numbers are prime or have only large factors',
+      'When another method is more direct',
+      'When the intermediate products are not simpler'
+    ],
+    commonMistakes: [
+      'Choosing factors that do not simplify the calculation',
+      'Forgetting which intermediate product you calculated',
+      'Incorrect factorization'
+    ],
+    practiceStrategies: [
+      'Memorize useful factorizations for numbers 10-50',
+      'Practice instant factor recognition',
+      'Drill the halving-doubling technique'
     ],
 
     prerequisites: [MethodName.Distributive],

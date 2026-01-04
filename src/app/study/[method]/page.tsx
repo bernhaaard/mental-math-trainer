@@ -28,7 +28,7 @@ import { FactorizationMethod } from '@/lib/core/methods/factorization';
 /**
  * Tab identifiers for navigation.
  */
-type TabId = 'introduction' | 'foundation' | 'deep-dive' | 'examples' | 'practice';
+type TabId = 'introduction' | 'foundation' | 'deep-dive' | 'tips' | 'examples' | 'practice';
 
 /**
  * Tab configuration interface.
@@ -46,6 +46,7 @@ const TABS: Tab[] = [
   { id: 'introduction', label: 'Introduction', shortLabel: 'Intro' },
   { id: 'foundation', label: 'Mathematical Foundation', shortLabel: 'Foundation' },
   { id: 'deep-dive', label: 'Deep Dive', shortLabel: 'Deep Dive' },
+  { id: 'tips', label: 'Tips & Mistakes', shortLabel: 'Tips' },
   { id: 'examples', label: 'Examples', shortLabel: 'Examples' },
   { id: 'practice', label: 'Practice', shortLabel: 'Practice' }
 ];
@@ -297,10 +298,12 @@ function TabButton({
  */
 function IntroductionTab({
   content,
-  whenToUse
+  whenToUse,
+  whenNotToUse
 }: {
   content: StudyContent;
   whenToUse: string[];
+  whenNotToUse: string[];
 }): React.ReactElement {
   return (
     <div>
@@ -334,6 +337,35 @@ function IntroductionTab({
           </ul>
         </div>
       )}
+
+      {whenNotToUse.length > 0 && (
+        <div className="mt-8">
+          <h3 className="text-lg font-semibold text-foreground mb-4">
+            When NOT to Use This Method
+          </h3>
+          <ul className="space-y-3">
+            {whenNotToUse.map((item, index) => (
+              <li key={index} className="flex items-start gap-3">
+                <svg
+                  className="h-5 w-5 text-error flex-shrink-0 mt-0.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+                <span className="text-muted-foreground">{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
@@ -356,6 +388,100 @@ function DeepDiveTab({ content }: { content: string }): React.ReactElement {
   return (
     <div className="prose prose-invert max-w-none">
       <ContentRenderer content={content} />
+    </div>
+  );
+}
+
+/**
+ * Tips & Mistakes tab content.
+ * Displays common mistakes and practice strategies.
+ */
+function TipsTab({
+  commonMistakes,
+  practiceStrategies
+}: {
+  commonMistakes: string[];
+  practiceStrategies: string[];
+}): React.ReactElement {
+  return (
+    <div>
+      {/* Common Mistakes Section */}
+      {commonMistakes.length > 0 && (
+        <div className="mb-8">
+          <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+            <svg
+              className="h-5 w-5 text-error"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+            Common Mistakes to Avoid
+          </h3>
+          <div className="space-y-3">
+            {commonMistakes.map((mistake, index) => (
+              <div
+                key={index}
+                className="flex items-start gap-3 p-3 rounded-lg bg-error/5 border border-error/20"
+              >
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-error/10 text-error text-sm font-medium flex items-center justify-center">
+                  {index + 1}
+                </span>
+                <span className="text-muted-foreground">{mistake}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Practice Strategies Section */}
+      {practiceStrategies.length > 0 && (
+        <div>
+          <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+            <svg
+              className="h-5 w-5 text-success"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+              />
+            </svg>
+            Practice Strategies
+          </h3>
+          <div className="space-y-3">
+            {practiceStrategies.map((strategy, index) => (
+              <div
+                key={index}
+                className="flex items-start gap-3 p-3 rounded-lg bg-success/5 border border-success/20"
+              >
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-success/10 text-success text-sm font-medium flex items-center justify-center">
+                  {index + 1}
+                </span>
+                <span className="text-muted-foreground">{strategy}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {commonMistakes.length === 0 && practiceStrategies.length === 0 && (
+        <div className="text-center py-8 text-muted-foreground">
+          <p>Tips and practice strategies will be added soon.</p>
+        </div>
+      )}
     </div>
   );
 }
@@ -643,6 +769,7 @@ export default function MethodStudyPage(): React.ReactElement {
             <IntroductionTab
               content={studyContent}
               whenToUse={studyContent.whenToUse}
+              whenNotToUse={studyContent.whenNotToUse}
             />
           )}
           {activeTab === 'foundation' && (
@@ -650,6 +777,12 @@ export default function MethodStudyPage(): React.ReactElement {
           )}
           {activeTab === 'deep-dive' && (
             <DeepDiveTab content={studyContent.deepDiveContent} />
+          )}
+          {activeTab === 'tips' && (
+            <TipsTab
+              commonMistakes={studyContent.commonMistakes}
+              practiceStrategies={studyContent.practiceStrategies}
+            />
           )}
           {activeTab === 'examples' && <ExamplesTab methodName={methodName} />}
           {activeTab === 'practice' && <PracticeTab methodName={methodName} />}

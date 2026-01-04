@@ -166,8 +166,11 @@ export async function recordProblemsCompleted(
   const state = await getGoalsState();
   const today = getTodayDateString();
 
+  // Sanitize input to prevent negative progress
+  const sanitizedCount = Math.max(0, Math.floor(problemsCompleted));
+
   // Update completed count
-  state.dailyGoal.completedToday += problemsCompleted;
+  state.dailyGoal.completedToday += sanitizedCount;
   state.dailyGoal.date = today;
 
   // Update last practice date

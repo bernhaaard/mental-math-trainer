@@ -388,10 +388,7 @@ export abstract class BaseMethod {
    */
   private getOptimalPartition(n: number): { type: 'additive' | 'subtractive'; part1: number; part2: number; displayText: string } {
     const upperRound = Math.ceil(n / 10) * 10;
-    const lowerRound = Math.floor(n / 10) * 10;
-
     const distanceToUpper = upperRound - n;
-    const distanceToLower = n - lowerRound;
 
     // Prefer subtractive if close to upper round (within 5)
     if (distanceToUpper > 0 && distanceToUpper <= 5) {

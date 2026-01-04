@@ -5,8 +5,7 @@
  * Handles the main practice loop: problem display, answer input, feedback, and navigation.
  */
 
-import { useState, useEffect, useCallback, useReducer, useMemo, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ProblemDisplay } from '@/components/features/practice/ProblemDisplay';
@@ -15,191 +14,19 @@ import { FeedbackDisplay } from '@/components/features/practice/FeedbackDisplay'
 import { SolutionWalkthrough } from '@/components/features/practice/SolutionWalkthrough';
 import { ProgressBar } from '@/components/features/practice/ProgressBar';
 import { KeyboardShortcutHelp, KeyboardShortcut } from '@/components/ui';
-import { useKeyboardShortcuts, type ShortcutConfig } from '@/lib/hooks/useKeyboardShortcuts';
 import type { Problem } from '@/lib/types/problem';
-import { DifficultyLevel } from '@/lib/types/problem';
-import type { SessionConfig, ProblemAttempt, SessionStatistics, MethodStats, PracticeSession } from '@/lib/types/session';
-import { MethodName } from '@/lib/types/method';
-import { MethodSelector, type MethodRanking } from '@/lib/core/methods/method-selector';
+import type { SessionConfig } from '@/lib/types/session';
+import { MethodSelector } from '@/lib/core/methods/method-selector';
 import { generateMethodAwareProblem } from '@/lib/core/problem-generator';
-import { saveSession } from '@/lib/storage/statistics-store';
 
-// ============================================================================
-// Types and State Management
-// ============================================================================
-
-type SessionPhase = 'answering' | 'feedback' | 'reviewing' | 'paused';
-
-interface ActiveSessionState {
-  phase: SessionPhase;
-  previousPhase: SessionPhase | null; // Track phase before pausing for proper resume
-  currentProblem: Problem | null;
-  currentSolution: MethodRanking | null;
-  problems: ProblemAttempt[];
-  currentProblemStartTime: number;
-  hintsUsed: number;
-  showError: boolean;
-  generationError: boolean; // Issue #39: Track failed problem generation
-}
-
-// Key for persisting session state in sessionStorage (Issue #37)
-const SESSION_STATE_STORAGE_KEY = 'practiceSessionState';
-
-// Interface for persisted session state (serializable version)
-interface PersistedSessionState {
-  phase: SessionPhase;
-  previousPhase: SessionPhase | null;
-  currentProblem: Problem | null;
-  currentSolution: MethodRanking | null;
-  problems: ProblemAttempt[];
-  hintsUsed: number;
-  sessionTimer: number;
-  sessionStartTime: string; // ISO string for Date serialization
-  config: SessionConfig;
-}
-
-type SessionAction =
-  | { type: 'SET_PROBLEM'; problem: Problem; solution: MethodRanking }
-  | { type: 'SUBMIT_ANSWER'; answer: number }
-  | { type: 'SKIP_PROBLEM' }
-  | { type: 'REQUEST_HINT' }
-  | { type: 'VIEW_SOLUTION' }
-  | { type: 'NEXT_PROBLEM' }
-  | { type: 'TOGGLE_PAUSE' }
-  | { type: 'SHOW_ERROR' }
-  | { type: 'CLEAR_ERROR' }
-  | { type: 'RESUME_FROM_PAUSE' }
-  | { type: 'RESTORE_STATE'; restoredState: Partial<ActiveSessionState> }
-  | { type: 'SET_GENERATION_ERROR' } // Issue #39: Handle failed generation
-  | { type: 'CLEAR_GENERATION_ERROR' };
-
-function sessionReducer(state: ActiveSessionState, action: SessionAction): ActiveSessionState {
-  switch (action.type) {
-    case 'SET_PROBLEM':
-      return {
-        ...state,
-        phase: 'answering',
-        currentProblem: action.problem,
-        currentSolution: action.solution,
-        currentProblemStartTime: Date.now(),
-        hintsUsed: 0,
-        showError: false
-      };
-
-    case 'SUBMIT_ANSWER': {
-      if (!state.currentProblem || !state.currentSolution) return state;
-
-      const timeTaken = Date.now() - state.currentProblemStartTime;
-      const isCorrect = action.answer === state.currentProblem.answer;
-
-      const attempt: ProblemAttempt = {
-        problem: state.currentProblem,
-        userAnswers: [action.answer],
-        correctAnswer: state.currentProblem.answer,
-        timeTaken,
-        hintsUsed: state.hintsUsed,
-        skipped: false,
-        solution: state.currentSolution.optimal.solution,
-        errorMagnitude: Math.abs(action.answer - state.currentProblem.answer)
-      };
-
-      return {
-        ...state,
-        phase: 'feedback',
-        problems: [...state.problems, attempt],
-        showError: !isCorrect
-      };
-    }
-
-    case 'SKIP_PROBLEM': {
-      if (!state.currentProblem || !state.currentSolution) return state;
-
-      const timeTaken = Date.now() - state.currentProblemStartTime;
-
-      const attempt: ProblemAttempt = {
-        problem: state.currentProblem,
-        userAnswers: [],
-        correctAnswer: state.currentProblem.answer,
-        timeTaken,
-        hintsUsed: state.hintsUsed,
-        skipped: true,
-        solution: state.currentSolution.optimal.solution,
-        errorMagnitude: 0
-      };
-
-      return {
-        ...state,
-        phase: 'feedback',
-        problems: [...state.problems, attempt]
-      };
-    }
-
-    case 'REQUEST_HINT':
-      return {
-        ...state,
-        hintsUsed: state.hintsUsed + 1
-      };
-
-    case 'VIEW_SOLUTION':
-      return {
-        ...state,
-        phase: 'reviewing'
-      };
-
-    case 'NEXT_PROBLEM':
-      return {
-        ...state,
-        phase: 'answering',
-        currentProblem: null,
-        currentSolution: null
-      };
-
-    case 'TOGGLE_PAUSE':
-      if (state.phase === 'paused') {
-        // Resuming: restore previous phase
-        return {
-          ...state,
-          phase: state.previousPhase || 'answering',
-          previousPhase: null
-        };
-      } else {
-        // Pausing: save current phase
-        return {
-          ...state,
-          previousPhase: state.phase,
-          phase: 'paused'
-        };
-      }
-
-    case 'RESUME_FROM_PAUSE':
-      return {
-        ...state,
-        phase: state.previousPhase || 'answering',
-        previousPhase: null
-      };
-
-    case 'SHOW_ERROR':
-      return { ...state, showError: true };
-
-    case 'CLEAR_ERROR':
-      return { ...state, showError: false };
-
-    case 'RESTORE_STATE':
-      return {
-        ...state,
-        ...action.restoredState
-      };
-
-    case 'SET_GENERATION_ERROR':
-      return { ...state, generationError: true };
-
-    case 'CLEAR_GENERATION_ERROR':
-      return { ...state, generationError: false };
-
-    default:
-      return state;
-  }
-}
+// Import extracted hooks and utilities
+import {
+  useSessionState,
+  useSessionTimer,
+  useSessionPersistence,
+  useSessionKeyboard
+} from './hooks';
+import { calculateStatistics } from './utils';
 
 // ============================================================================
 // Helper Functions
@@ -221,289 +48,69 @@ function generateProblem(config: SessionConfig, problemNumber: number): Problem 
   );
 }
 
-function calculateStatistics(problems: ProblemAttempt[]): SessionStatistics {
-  if (problems.length === 0) {
-    return {
-      totalProblems: 0,
-      correctAnswers: 0,
-      accuracy: 0,
-      averageTime: 0,
-      averageError: 0,
-      methodBreakdown: {}
-    };
-  }
-
-  const correctAnswers = problems.filter(
-    p => !p.skipped && p.userAnswers[0] === p.correctAnswer
-  ).length;
-
-  const accuracy = (correctAnswers / problems.length) * 100;
-  const totalTime = problems.reduce((sum, p) => sum + p.timeTaken, 0);
-  const averageTime = totalTime / problems.length;
-
-  const incorrectProblems = problems.filter(
-    p => !p.skipped && p.userAnswers[0] !== p.correctAnswer
-  );
-  const averageError =
-    incorrectProblems.length > 0
-      ? incorrectProblems.reduce((sum, p) => sum + p.errorMagnitude, 0) /
-        incorrectProblems.length
-      : 0;
-
-  // Calculate method breakdown
-  const methodBreakdown: Partial<Record<MethodName, MethodStats>> = {};
-
-  problems.forEach(problem => {
-    const method = problem.solution.method;
-    if (!methodBreakdown[method]) {
-      methodBreakdown[method] = {
-        method,
-        problemsSolved: 0,
-        correctAnswers: 0,
-        accuracy: 0,
-        averageTime: 0
-      };
-    }
-
-    const stats = methodBreakdown[method]!;
-    stats.problemsSolved++;
-
-    if (!problem.skipped && problem.userAnswers[0] === problem.correctAnswer) {
-      stats.correctAnswers++;
-    }
-  });
-
-  // Calculate averages
-  Object.values(methodBreakdown).forEach(stats => {
-    if (stats) {
-      const methodProblems = problems.filter(p => p.solution.method === stats.method);
-      stats.accuracy = (stats.correctAnswers / stats.problemsSolved) * 100;
-      stats.averageTime = methodProblems.reduce((sum, p) => sum + p.timeTaken, 0) / methodProblems.length;
-    }
-  });
-
-  return {
-    totalProblems: problems.length,
-    correctAnswers,
-    accuracy,
-    averageTime,
-    averageError,
-    methodBreakdown
-  };
-}
-
-/**
- * Clear persisted session state from sessionStorage (Issue #37)
- */
-function clearPersistedSessionState(): void {
-  if (typeof window !== 'undefined') {
-    sessionStorage.removeItem(SESSION_STATE_STORAGE_KEY);
-  }
-}
-
 // ============================================================================
 // Main Component
 // ============================================================================
 
-const DEFAULT_CONFIG: SessionConfig = {
-  difficulty: DifficultyLevel.Beginner,
-  methods: [],
-  problemCount: 10,
-  allowNegatives: false
-};
-
 export default function ActiveSessionPage() {
-  const router = useRouter();
   const [methodSelector] = useState(() => new MethodSelector());
-
-  // Track whether we have a valid config from sessionStorage
-  // null = still checking, true = valid config found, false = no config (redirect needed)
-  const [hasValidConfig, setHasValidConfig] = useState<boolean | null>(null);
-
-  // Config is loaded synchronously via lazy initialization, so we can start as true
-  // This flag is used to ensure we don't generate problems before hydration
-  const [configLoaded, setConfigLoaded] = useState(typeof window !== 'undefined');
-
-  // Track if state has been restored from sessionStorage (Issue #37)
-  const [stateRestored, setStateRestored] = useState(false);
 
   // Keyboard shortcuts help modal state
   const [showShortcutHelp, setShowShortcutHelp] = useState(false);
 
-  // Screen reader announcement ref
-  const announcementRef = useRef<HTMLDivElement>(null);
-
   // Answer input ref for focus management
   const answerInputRef = useRef<AnswerInputHandle>(null);
 
-  // Track if session has been saved to prevent duplicate saves
-  const sessionSavedRef = useRef(false);
-
-  // Track session start time
-  const sessionStartTimeRef = useRef<Date>(new Date());
-
-  // Session configuration - loaded from sessionStorage using lazy initialization
-  const [config] = useState<SessionConfig>(() => {
-    if (typeof window !== 'undefined') {
-      const storedConfig = sessionStorage.getItem('practiceSessionConfig');
-      if (storedConfig) {
-        try {
-          return JSON.parse(storedConfig) as SessionConfig;
-        } catch (error) {
-          console.error('Failed to parse session config:', error);
-        }
-      }
+  // Use extracted state management hook
+  const {
+    state,
+    dispatch,
+    isSessionEnded,
+    setIsSessionEnded,
+    sessionSavedRef,
+    sessionStartTimeRef,
+    handlers: {
+      handleSubmitAnswer,
+      handleSkip,
+      handleRequestHint,
+      handleViewSolution,
+      handleTogglePause,
+      handleCloseWalkthrough,
+      handleEndSession
     }
-    return DEFAULT_CONFIG;
+  } = useSessionState();
+
+  // Use extracted timer hook
+  const {
+    sessionTimer,
+    setSessionTimer,
+    problemElapsedTime,
+    formatTime
+  } = useSessionTimer({
+    phase: state.phase,
+    currentProblemStartTime: state.currentProblemStartTime,
+    isSessionEnded
   });
 
-  // Mark config as loaded after hydration (for SSR compatibility)
-  useEffect(() => {
-    if (!configLoaded) {
-      setConfigLoaded(true);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Use extracted persistence hook
+  const {
+    config,
+    configLoaded,
+    stateRestored,
+    hasValidConfig
+  } = useSessionPersistence({
+    state,
+    dispatch,
+    sessionTimer,
+    setSessionTimer,
+    isSessionEnded,
+    sessionSavedRef,
+    sessionStartTimeRef
+  });
 
-  // Check for valid configuration and redirect if not found
-  // This handles direct navigation to /practice/session without going through configuration
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const storedConfig = sessionStorage.getItem('practiceSessionConfig');
-
-    if (!storedConfig) {
-      // No config found - redirect to practice configuration page
-      setHasValidConfig(false);
-      router.replace('/practice');
-      return;
-    }
-
-    try {
-      const parsed = JSON.parse(storedConfig) as SessionConfig;
-      // Validate that the config has required fields
-      if (!parsed.difficulty || !Array.isArray(parsed.methods)) {
-        setHasValidConfig(false);
-        router.replace('/practice');
-        return;
-      }
-      setHasValidConfig(true);
-    } catch {
-      // Invalid JSON - redirect
-      setHasValidConfig(false);
-      router.replace('/practice');
-    }
-  }, [router]);
-
-  const [state, dispatch] = useReducer(sessionReducer, undefined, () => ({
-    phase: 'answering' as SessionPhase,
-    previousPhase: null,
-    currentProblem: null,
-    currentSolution: null,
-    problems: [],
-    currentProblemStartTime: Date.now(),
-    hintsUsed: 0,
-    showError: false,
-    generationError: false
-  }));
-
-  const [sessionTimer, setSessionTimer] = useState(0);
-  const [problemElapsedTime, setProblemElapsedTime] = useState(0);
-  const [isSessionEnded, setIsSessionEnded] = useState(false);
-
-  // Restore session state from sessionStorage on mount (Issue #37)
-  useEffect(() => {
-    if (typeof window === 'undefined' || stateRestored || hasValidConfig !== true) return;
-
-    try {
-      const saved = sessionStorage.getItem(SESSION_STATE_STORAGE_KEY);
-      if (saved) {
-        const parsed: PersistedSessionState = JSON.parse(saved);
-
-        // Verify the config matches (don't restore if user started a new session with different config)
-        const configMatches =
-          JSON.stringify(parsed.config) === JSON.stringify(config);
-
-        if (configMatches && parsed.problems.length > 0) {
-          // Restore state
-          dispatch({
-            type: 'RESTORE_STATE',
-            restoredState: {
-              phase: parsed.phase,
-              previousPhase: parsed.previousPhase,
-              currentProblem: parsed.currentProblem,
-              currentSolution: parsed.currentSolution,
-              problems: parsed.problems,
-              hintsUsed: parsed.hintsUsed,
-              currentProblemStartTime: Date.now() // Reset to prevent time drift
-            }
-          });
-
-          // Restore timer
-          setSessionTimer(parsed.sessionTimer);
-
-          // Restore session start time
-          sessionStartTimeRef.current = new Date(parsed.sessionStartTime);
-
-          console.log('Session state restored from browser navigation');
-        }
-      }
-    } catch (error) {
-      console.error('Failed to restore session state:', error);
-      // Clear corrupted state
-      clearPersistedSessionState();
-    }
-
-    setStateRestored(true);
-  }, [config, stateRestored, hasValidConfig]);
-
-  // Persist session state to sessionStorage periodically (Issue #37)
-  useEffect(() => {
-    if (typeof window === 'undefined' || !stateRestored) return;
-    if (isSessionEnded) {
-      // Clear persisted state when session ends
-      clearPersistedSessionState();
-      return;
-    }
-
-    // Only persist if we have meaningful progress
-    if (state.problems.length === 0 && !state.currentProblem) return;
-
-    const stateToSave: PersistedSessionState = {
-      phase: state.phase,
-      previousPhase: state.previousPhase,
-      currentProblem: state.currentProblem,
-      currentSolution: state.currentSolution,
-      problems: state.problems,
-      hintsUsed: state.hintsUsed,
-      sessionTimer,
-      sessionStartTime: sessionStartTimeRef.current.toISOString(),
-      config
-    };
-
-    try {
-      sessionStorage.setItem(SESSION_STATE_STORAGE_KEY, JSON.stringify(stateToSave));
-    } catch (error) {
-      console.error('Failed to persist session state:', error);
-    }
-  }, [state, sessionTimer, config, isSessionEnded, stateRestored]);
-
-  // Warn about losing progress on beforeunload (Issue #37)
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      // Only warn if there's progress to lose and session isn't ended
-      if (state.problems.length > 0 && !isSessionEnded) {
-        e.preventDefault();
-        // Modern browsers require returnValue to be set
-        e.returnValue = '';
-      }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [state.problems.length, isSessionEnded]);
+  // Calculate whether session should end based on problem count
+  const shouldEndSession = config.problemCount !== 'infinite' &&
+    state.problems.length >= config.problemCount;
 
   // Generate next problem
   const generateNextProblem = useCallback(() => {
@@ -538,7 +145,7 @@ export default function ActiveSessionPage() {
         dispatch({ type: 'SET_GENERATION_ERROR' });
       }
     }
-  }, [config, methodSelector, state.problems.length]);
+  }, [config, methodSelector, state.problems.length, dispatch]);
 
   // Initialize first problem (only after config is loaded and state restoration is done)
   useEffect(() => {
@@ -546,43 +153,6 @@ export default function ActiveSessionPage() {
       generateNextProblem();
     }
   }, [configLoaded, stateRestored, state.currentProblem, isSessionEnded, generateNextProblem]);
-
-  // Session timer - only runs during 'answering' phase
-  // Pauses during feedback, reviewing, and paused phases (Issue #30)
-  useEffect(() => {
-    // Timer should only run when actively answering a problem
-    const isTimerActive = state.phase === 'answering' && !isSessionEnded;
-
-    if (!isTimerActive) return;
-
-    const interval = setInterval(() => {
-      setSessionTimer(prev => prev + 1);
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [state.phase, isSessionEnded]);
-
-  // Problem elapsed time tracker
-  // Uses interval callback (async) to update state, avoiding sync setState in effect
-  useEffect(() => {
-    if (state.phase !== 'answering' || isSessionEnded) {
-      return;
-    }
-
-    // Start counting from the problem start time
-    const startTime = state.currentProblemStartTime;
-
-    const interval = setInterval(() => {
-      setProblemElapsedTime(Math.floor((Date.now() - startTime) / 1000));
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [state.phase, state.currentProblemStartTime, isSessionEnded]);
-
-  // Derive whether session should end - computed during render, no effect needed
-  // The actual state update is handled in handleNext
-  const shouldEndSession = config.problemCount !== 'infinite' &&
-    state.problems.length >= config.problemCount;
 
   // Focus management: Return focus to input when entering 'answering' phase
   // This ensures keyboard navigation flows properly between phases
@@ -597,47 +167,6 @@ export default function ActiveSessionPage() {
     return undefined;
   }, [state.phase, state.currentProblem, isSessionEnded]);
 
-  // Save session to IndexedDB when it ends
-  useEffect(() => {
-    if ((isSessionEnded || shouldEndSession) && !sessionSavedRef.current && state.problems.length > 0) {
-      sessionSavedRef.current = true;
-
-      // Clear persisted session state when session ends (Issue #37)
-      clearPersistedSessionState();
-
-      const session: PracticeSession = {
-        id: `session-${Date.now()}`,
-        startedAt: sessionStartTimeRef.current,
-        endedAt: new Date(),
-        configuration: config,
-        problems: state.problems,
-        statistics: calculateStatistics(state.problems)
-      };
-
-      // Save session to IndexedDB (fire and forget)
-      saveSession(session).catch(err => {
-        console.error('Failed to save session:', err);
-      });
-    }
-  }, [isSessionEnded, shouldEndSession, state.problems, config]);
-
-  // Handlers
-  const handleSubmitAnswer = useCallback((answer: number) => {
-    dispatch({ type: 'SUBMIT_ANSWER', answer });
-  }, []);
-
-  const handleSkip = useCallback(() => {
-    dispatch({ type: 'SKIP_PROBLEM' });
-  }, []);
-
-  const handleRequestHint = useCallback(() => {
-    dispatch({ type: 'REQUEST_HINT' });
-  }, []);
-
-  const handleViewSolution = useCallback(() => {
-    dispatch({ type: 'VIEW_SOLUTION' });
-  }, []);
-
   const handleNext = useCallback(() => {
     if (
       config.problemCount !== 'infinite' &&
@@ -648,19 +177,7 @@ export default function ActiveSessionPage() {
       dispatch({ type: 'NEXT_PROBLEM' });
       generateNextProblem();
     }
-  }, [config.problemCount, state.problems.length, generateNextProblem]);
-
-  const handleEndSession = useCallback(() => {
-    setIsSessionEnded(true);
-  }, []);
-
-  const handleTogglePause = useCallback(() => {
-    dispatch({ type: 'TOGGLE_PAUSE' });
-  }, []);
-
-  const handleCloseWalkthrough = useCallback(() => {
-    dispatch({ type: 'NEXT_PROBLEM' });
-  }, []);
+  }, [config.problemCount, state.problems.length, generateNextProblem, setIsSessionEnded, dispatch]);
 
   // Toggle shortcut help modal
   const handleToggleShortcutHelp = useCallback(() => {
@@ -672,155 +189,26 @@ export default function ActiveSessionPage() {
     setShowShortcutHelp(false);
   }, []);
 
-  // Screen reader announcement helper
-  const announceToScreenReader = useCallback((message: string) => {
-    if (announcementRef.current) {
-      announcementRef.current.textContent = message;
-    }
-  }, []);
-
-  // Keyboard shortcuts configuration
-  // These are memoized to prevent unnecessary re-renders
-  const keyboardShortcuts: ShortcutConfig[] = useMemo(() => {
-    const shortcuts: ShortcutConfig[] = [
-      // Navigation shortcuts
-      {
-        key: 'n',
-        action: () => {
-          if (state.phase === 'feedback' || state.phase === 'reviewing') {
-            handleNext();
-            announceToScreenReader('Moving to next problem');
-          }
-        },
-        description: 'Next problem',
-        category: 'navigation',
-        enabled: state.phase === 'feedback' || state.phase === 'reviewing'
-      },
-      {
-        key: 's',
-        action: () => {
-          if (state.phase === 'feedback') {
-            handleViewSolution();
-            announceToScreenReader('Viewing solution');
-          }
-        },
-        description: 'View solution',
-        category: 'navigation',
-        enabled: state.phase === 'feedback'
-      },
-
-      // Input shortcuts
-      {
-        key: 'Escape',
-        action: () => {
-          if (showShortcutHelp) {
-            handleCloseShortcutHelp();
-            announceToScreenReader('Closed keyboard shortcuts help');
-          } else if (state.phase === 'reviewing') {
-            handleCloseWalkthrough();
-            announceToScreenReader('Closed solution walkthrough');
-          } else if (state.phase === 'paused') {
-            dispatch({ type: 'RESUME_FROM_PAUSE' });
-            announceToScreenReader('Session resumed');
-          } else if (state.phase === 'answering') {
-            handleSkip();
-            announceToScreenReader('Problem skipped');
-          }
-        },
-        description: 'Skip problem / Close modal',
-        category: 'input',
-        allowInInput: true,
-        enabled: true
-      },
-      {
-        key: 'h',
-        action: () => {
-          if (state.phase === 'answering') {
-            handleRequestHint();
-            announceToScreenReader('Hint requested');
-          }
-        },
-        description: 'Request hint',
-        category: 'input',
-        enabled: state.phase === 'answering'
-      },
-
-      // Session shortcuts
-      {
-        key: ' ', // Space bar
-        action: () => {
-          if (state.phase !== 'reviewing' && !showShortcutHelp) {
-            handleTogglePause();
-            announceToScreenReader(state.phase === 'paused' ? 'Session resumed' : 'Session paused');
-          }
-        },
-        description: 'Pause/Resume session',
-        category: 'session',
-        enabled: state.phase !== 'reviewing' && !showShortcutHelp
-      },
-      {
-        key: 'q',
-        action: () => {
-          if (!showShortcutHelp) {
-            handleEndSession();
-            announceToScreenReader('Session ended');
-          }
-        },
-        description: 'End session',
-        category: 'session',
-        enabled: !showShortcutHelp
-      },
-      {
-        key: 'q',
-        ctrl: true,
-        action: () => {
-          handleEndSession();
-          announceToScreenReader('Session ended');
-        },
-        description: 'End session',
-        category: 'session',
-        enabled: true
-      },
-      {
-        key: '?',
-        action: () => {
-          handleToggleShortcutHelp();
-          announceToScreenReader(showShortcutHelp ? 'Closed keyboard shortcuts' : 'Opened keyboard shortcuts');
-        },
-        description: 'Show keyboard shortcuts',
-        category: 'session',
-        enabled: true
-      }
-    ];
-
-    return shortcuts;
-  }, [
-    state.phase,
+  // Use extracted keyboard shortcuts hook
+  const {
+    getGroupedShortcuts,
+    announcementRef
+  } = useSessionKeyboard({
+    phase: state.phase,
+    isSessionEnded,
+    shouldEndSession: shouldEndSession,
     showShortcutHelp,
-    handleNext,
-    handleViewSolution,
-    handleCloseShortcutHelp,
-    handleCloseWalkthrough,
-    handleSkip,
-    handleRequestHint,
-    handleTogglePause,
-    handleEndSession,
-    handleToggleShortcutHelp,
-    announceToScreenReader
-  ]);
-
-  // Initialize keyboard shortcuts hook
-  const { getGroupedShortcuts } = useKeyboardShortcuts(keyboardShortcuts, {
-    enabled: !isSessionEnded && !shouldEndSession
-    // Note: Screen reader announcements are handled within individual shortcut actions
+    onNext: handleNext,
+    onViewSolution: handleViewSolution,
+    onCloseShortcutHelp: handleCloseShortcutHelp,
+    onCloseWalkthrough: handleCloseWalkthrough,
+    onSkip: handleSkip,
+    onRequestHint: handleRequestHint,
+    onTogglePause: handleTogglePause,
+    onEndSession: handleEndSession,
+    onToggleShortcutHelp: handleToggleShortcutHelp,
+    dispatch
   });
-
-  // Format time (seconds to MM:SS)
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
 
   // Session ended - redirect to summary
   if (isSessionEnded || shouldEndSession) {
@@ -1094,7 +482,7 @@ export default function ActiveSessionPage() {
           {/* Show the problem for context */}
           <div className="text-center">
             <div className="text-3xl font-bold font-mono text-foreground">
-              {state.currentProblem.num1} × {state.currentProblem.num2}
+              {state.currentProblem.num1} x {state.currentProblem.num2}
             </div>
           </div>
 

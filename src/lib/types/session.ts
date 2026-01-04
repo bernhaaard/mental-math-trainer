@@ -86,6 +86,12 @@ export interface SessionStatistics {
   averageError: number;
   /** Statistics broken down by method (not all methods may have been practiced) */
   methodBreakdown: Partial<Record<MethodName, MethodStats>>;
+  /** Total hints used across all problems (Issue #70) */
+  totalHintsUsed: number;
+  /** Number of problems where hints were used (Issue #70) */
+  problemsWithHints: number;
+  /** Average hints per problem (Issue #70) */
+  averageHintsPerProblem: number;
 }
 
 /**

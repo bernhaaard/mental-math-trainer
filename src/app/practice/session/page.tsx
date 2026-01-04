@@ -14,6 +14,7 @@ import { AnswerInput, type AnswerInputHandle } from '@/components/features/pract
 import { FeedbackDisplay } from '@/components/features/practice/FeedbackDisplay';
 import { SolutionWalkthrough } from '@/components/features/practice/SolutionWalkthrough';
 import { ProgressBar } from '@/components/features/practice/ProgressBar';
+import { HintDisplay } from '@/components/features/practice/HintDisplay';
 import { KeyboardShortcutHelp, KeyboardShortcut } from '@/components/ui';
 import { useKeyboardShortcuts, type ShortcutConfig } from '@/lib/hooks/useKeyboardShortcuts';
 import type { Problem } from '@/lib/types/problem';
@@ -23,6 +24,7 @@ import { MethodName } from '@/lib/types/method';
 import { MethodSelector, type MethodRanking } from '@/lib/core/methods/method-selector';
 import { generateMethodAwareProblem } from '@/lib/core/problem-generator';
 import { saveSession } from '@/lib/storage/statistics-store';
+import { HintSystem, type HintResult, type HintState, HintLevel } from '@/lib/core/hints';
 
 // ============================================================================
 // Types and State Management
@@ -40,6 +42,9 @@ interface ActiveSessionState {
   hintsUsed: number;
   showError: boolean;
   generationError: boolean; // Issue #39: Track failed problem generation
+  // Progressive hints state (Issue #70)
+  hintResult: HintResult | null;
+  hintState: HintState;
 }
 
 // Key for persisting session state in sessionStorage (Issue #37)
@@ -56,13 +61,16 @@ interface PersistedSessionState {
   sessionTimer: number;
   sessionStartTime: string; // ISO string for Date serialization
   config: SessionConfig;
+  // Progressive hints state (Issue #70)
+  hintResult: HintResult | null;
+  hintState: HintState;
 }
 
 type SessionAction =
-  | { type: 'SET_PROBLEM'; problem: Problem; solution: MethodRanking }
+  | { type: 'SET_PROBLEM'; problem: Problem; solution: MethodRanking; hintResult: HintResult }
   | { type: 'SUBMIT_ANSWER'; answer: number }
   | { type: 'SKIP_PROBLEM' }
-  | { type: 'REQUEST_HINT' }
+  | { type: 'REQUEST_HINT'; newHintState: HintState }
   | { type: 'VIEW_SOLUTION' }
   | { type: 'NEXT_PROBLEM' }
   | { type: 'TOGGLE_PAUSE' }
@@ -83,7 +91,15 @@ function sessionReducer(state: ActiveSessionState, action: SessionAction): Activ
         currentSolution: action.solution,
         currentProblemStartTime: Date.now(),
         hintsUsed: 0,
-        showError: false
+        showError: false,
+        // Reset hint state for new problem (Issue #70)
+        hintResult: action.hintResult,
+        hintState: {
+          currentLevel: HintLevel.None,
+          revealedHints: [],
+          hasMoreHints: action.hintResult.maxHints > 0,
+          totalHints: action.hintResult.maxHints
+        }
       };
 
     case 'SUBMIT_ANSWER': {
@@ -137,7 +153,9 @@ function sessionReducer(state: ActiveSessionState, action: SessionAction): Activ
     case 'REQUEST_HINT':
       return {
         ...state,
-        hintsUsed: state.hintsUsed + 1
+        hintsUsed: state.hintsUsed + 1,
+        // Update progressive hint state (Issue #70)
+        hintState: action.newHintState
       };
 
     case 'VIEW_SOLUTION':
@@ -151,7 +169,15 @@ function sessionReducer(state: ActiveSessionState, action: SessionAction): Activ
         ...state,
         phase: 'answering',
         currentProblem: null,
-        currentSolution: null
+        currentSolution: null,
+        // Reset hint state for next problem (Issue #70)
+        hintResult: null,
+        hintState: {
+          currentLevel: HintLevel.None,
+          revealedHints: [],
+          hasMoreHints: false,
+          totalHints: 0
+        }
       };
 
     case 'TOGGLE_PAUSE':
@@ -229,7 +255,11 @@ function calculateStatistics(problems: ProblemAttempt[]): SessionStatistics {
       accuracy: 0,
       averageTime: 0,
       averageError: 0,
-      methodBreakdown: {}
+      methodBreakdown: {},
+      // Hint statistics (Issue #70)
+      totalHintsUsed: 0,
+      problemsWithHints: 0,
+      averageHintsPerProblem: 0
     };
   }
 
@@ -249,6 +279,13 @@ function calculateStatistics(problems: ProblemAttempt[]): SessionStatistics {
       ? incorrectProblems.reduce((sum, p) => sum + p.errorMagnitude, 0) /
         incorrectProblems.length
       : 0;
+
+  // Calculate hint statistics (Issue #70)
+  const totalHintsUsed = problems.reduce((sum, p) => sum + p.hintsUsed, 0);
+  const problemsWithHints = problems.filter(p => p.hintsUsed > 0).length;
+  const averageHintsPerProblem = problems.length > 0
+    ? totalHintsUsed / problems.length
+    : 0;
 
   // Calculate method breakdown
   const methodBreakdown: Partial<Record<MethodName, MethodStats>> = {};
@@ -288,7 +325,11 @@ function calculateStatistics(problems: ProblemAttempt[]): SessionStatistics {
     accuracy,
     averageTime,
     averageError,
-    methodBreakdown
+    methodBreakdown,
+    // Hint statistics (Issue #70)
+    totalHintsUsed,
+    problemsWithHints,
+    averageHintsPerProblem
   };
 }
 
@@ -395,6 +436,9 @@ export default function ActiveSessionPage() {
     }
   }, [router]);
 
+  // Initialize hint system (Issue #70)
+  const [hintSystem] = useState(() => new HintSystem());
+
   const [state, dispatch] = useReducer(sessionReducer, undefined, () => ({
     phase: 'answering' as SessionPhase,
     previousPhase: null,
@@ -404,7 +448,15 @@ export default function ActiveSessionPage() {
     currentProblemStartTime: Date.now(),
     hintsUsed: 0,
     showError: false,
-    generationError: false
+    generationError: false,
+    // Progressive hints initial state (Issue #70)
+    hintResult: null,
+    hintState: {
+      currentLevel: HintLevel.None,
+      revealedHints: [],
+      hasMoreHints: false,
+      totalHints: 0
+    }
   }));
 
   const [sessionTimer, setSessionTimer] = useState(0);
@@ -435,7 +487,10 @@ export default function ActiveSessionPage() {
               currentSolution: parsed.currentSolution,
               problems: parsed.problems,
               hintsUsed: parsed.hintsUsed,
-              currentProblemStartTime: Date.now() // Reset to prevent time drift
+              currentProblemStartTime: Date.now(), // Reset to prevent time drift
+              // Restore hint state (Issue #70)
+              hintResult: parsed.hintResult,
+              hintState: parsed.hintState
             }
           });
 
@@ -478,7 +533,10 @@ export default function ActiveSessionPage() {
       hintsUsed: state.hintsUsed,
       sessionTimer,
       sessionStartTime: sessionStartTimeRef.current.toISOString(),
-      config
+      config,
+      // Persist hint state (Issue #70)
+      hintResult: state.hintResult,
+      hintState: state.hintState
     };
 
     try {
@@ -520,7 +578,9 @@ export default function ActiveSessionPage() {
         problem.num2,
         config.methods
       );
-      dispatch({ type: 'SET_PROBLEM', problem, solution });
+      // Generate hints for the problem (Issue #70)
+      const hintResult = hintSystem.generateHints(solution, problem.num1, problem.num2);
+      dispatch({ type: 'SET_PROBLEM', problem, solution, hintResult });
     } catch (error) {
       console.error('Failed to generate solution:', error);
       // Try again with new numbers
@@ -531,14 +591,16 @@ export default function ActiveSessionPage() {
           newProblem.num2,
           config.methods
         );
-        dispatch({ type: 'SET_PROBLEM', problem: newProblem, solution });
+        // Generate hints for the problem (Issue #70)
+        const hintResult = hintSystem.generateHints(solution, newProblem.num1, newProblem.num2);
+        dispatch({ type: 'SET_PROBLEM', problem: newProblem, solution, hintResult });
       } catch (retryError) {
         console.error('Failed to generate solution on retry:', retryError);
         // Issue #39: Show error state instead of infinite loading
         dispatch({ type: 'SET_GENERATION_ERROR' });
       }
     }
-  }, [config, methodSelector, state.problems.length]);
+  }, [config, methodSelector, hintSystem, state.problems.length]);
 
   // Initialize first problem (only after config is loaded and state restoration is done)
   useEffect(() => {
@@ -631,8 +693,12 @@ export default function ActiveSessionPage() {
   }, []);
 
   const handleRequestHint = useCallback(() => {
-    dispatch({ type: 'REQUEST_HINT' });
-  }, []);
+    // Calculate new hint state using the HintSystem (Issue #70)
+    if (state.hintResult) {
+      const newHintState = hintSystem.revealNextHint(state.hintState, state.hintResult);
+      dispatch({ type: 'REQUEST_HINT', newHintState });
+    }
+  }, [hintSystem, state.hintResult, state.hintState]);
 
   const handleViewSolution = useCallback(() => {
     dispatch({ type: 'VIEW_SOLUTION' });
@@ -1129,12 +1195,23 @@ export default function ActiveSessionPage() {
             onRequestHint={handleRequestHint}
             disabled={state.phase !== 'answering'}
             allowSkip={true}
-            allowHints={true}
+            allowHints={state.hintState.hasMoreHints || state.hintState.currentLevel === HintLevel.None}
             hintsUsed={state.hintsUsed}
             showError={state.showError}
             autoFocus={true}
             resetKey={state.currentProblem?.id}
           />
+
+          {/* Progressive Hints Display (Issue #70) */}
+          {state.hintState.currentLevel > HintLevel.None && (
+            <HintDisplay
+              hintState={state.hintState}
+              hintResult={state.hintResult}
+              onRequestHint={handleRequestHint}
+              disabled={state.phase !== 'answering'}
+              compact={false}
+            />
+          )}
 
           {/* Keyboard shortcuts hint */}
           <div className="text-center text-sm text-muted-foreground">

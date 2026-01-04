@@ -8,7 +8,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import type { SessionConfig, ProblemAttempt, PracticeSession } from '@/lib/types/session';
-import type { DifficultyLevel } from '@/lib/types/problem';
+import { DifficultyLevel } from '@/lib/types/problem';
 import type { ActiveSessionState, SessionAction, SessionPhase } from './useSessionState';
 import type { MethodRanking } from '@/lib/core/methods/method-selector';
 import { saveSession } from '@/lib/storage/statistics-store';
@@ -58,7 +58,7 @@ export interface UseSessionPersistenceReturn {
 
 // Default configuration
 const DEFAULT_CONFIG: SessionConfig = {
-  difficulty: 'beginner' as unknown as DifficultyLevel,
+  difficulty: DifficultyLevel.Beginner,
   methods: [],
   problemCount: 10,
   allowNegatives: false

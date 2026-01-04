@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { DailyProgressSection } from "@/components/features/goals";
 
 export default function Home() {
   return (
@@ -11,6 +12,10 @@ export default function Home() {
           Train your mental math skills with proven calculation methods.
           Master distributive property, difference of squares, and more.
         </p>
+
+        {/* Daily Progress Section */}
+        <DailyProgressSection />
+
         <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:justify-center">
           <Link
             href="/practice"

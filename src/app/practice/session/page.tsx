@@ -18,6 +18,8 @@ import type { Problem } from '@/lib/types/problem';
 import type { SessionConfig } from '@/lib/types/session';
 import { MethodSelector } from '@/lib/core/methods/method-selector';
 import { generateMethodAwareProblem } from '@/lib/core/problem-generator';
+import { saveSession } from '@/lib/storage/statistics-store';
+import { recordProblemsCompleted } from '@/lib/storage/goals-store';
 
 // Import extracted hooks and utilities
 import {
@@ -166,6 +168,16 @@ export default function ActiveSessionPage() {
     }
     return undefined;
   }, [state.phase, state.currentProblem, isSessionEnded]);
+
+  // Record completed problems for daily goals when session ends
+  useEffect(() => {
+    if ((isSessionEnded || shouldEndSession) && !sessionSavedRef.current && state.problems.length > 0) {
+      // Record completed problems for daily goals
+      recordProblemsCompleted(state.problems.length).catch(err => {
+        console.error('Failed to record daily goal progress:', err);
+      });
+    }
+  }, [isSessionEnded, shouldEndSession, state.problems.length]);
 
   const handleNext = useCallback(() => {
     if (

@@ -134,11 +134,48 @@ const DEFAULT_TOUR_STEPS: TourStep[] = [
 ];
 
 /**
+ * Safe localStorage getter that handles private browsing mode and disabled storage.
+ * Returns null if localStorage is unavailable.
+ */
+function safeLocalStorageGet(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    // localStorage unavailable (private browsing, storage disabled, etc.)
+    return null;
+  }
+}
+
+/**
+ * Safe localStorage setter that handles private browsing mode and disabled storage.
+ * Silently fails if localStorage is unavailable.
+ */
+function safeLocalStorageSet(key: string, value: string): void {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // localStorage unavailable (private browsing, storage disabled, etc.)
+  }
+}
+
+/**
+ * Safe localStorage remover that handles private browsing mode and disabled storage.
+ * Silently fails if localStorage is unavailable.
+ */
+function safeLocalStorageRemove(key: string): void {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // localStorage unavailable (private browsing, storage disabled, etc.)
+  }
+}
+
+/**
  * Checks if the tour has been completed by the user.
  */
 export function isTourCompleted(): boolean {
   if (typeof window === 'undefined') return true;
-  return localStorage.getItem(TOUR_COMPLETED_KEY) === 'true';
+  return safeLocalStorageGet(TOUR_COMPLETED_KEY) === 'true';
 }
 
 /**
@@ -146,7 +183,7 @@ export function isTourCompleted(): boolean {
  */
 export function markTourCompleted(): void {
   if (typeof window === 'undefined') return;
-  localStorage.setItem(TOUR_COMPLETED_KEY, 'true');
+  safeLocalStorageSet(TOUR_COMPLETED_KEY, 'true');
 }
 
 /**
@@ -154,8 +191,8 @@ export function markTourCompleted(): void {
  */
 export function resetTourStatus(): void {
   if (typeof window === 'undefined') return;
-  localStorage.removeItem(TOUR_COMPLETED_KEY);
-  localStorage.removeItem(TOUR_STARTED_KEY);
+  safeLocalStorageRemove(TOUR_COMPLETED_KEY);
+  safeLocalStorageRemove(TOUR_STARTED_KEY);
 }
 
 /**
@@ -163,7 +200,7 @@ export function resetTourStatus(): void {
  */
 export function isFirstVisit(): boolean {
   if (typeof window === 'undefined') return false;
-  return localStorage.getItem(TOUR_STARTED_KEY) !== 'true';
+  return safeLocalStorageGet(TOUR_STARTED_KEY) !== 'true';
 }
 
 /**
@@ -171,7 +208,7 @@ export function isFirstVisit(): boolean {
  */
 export function markTourStarted(): void {
   if (typeof window === 'undefined') return;
-  localStorage.setItem(TOUR_STARTED_KEY, 'true');
+  safeLocalStorageSet(TOUR_STARTED_KEY, 'true');
 }
 
 /**

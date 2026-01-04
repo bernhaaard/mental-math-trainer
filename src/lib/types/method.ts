@@ -14,7 +14,9 @@ export enum MethodName {
   DifferenceSquares = 'difference-squares',
   Factorization = 'factorization',
   Squaring = 'squaring',
-  Near100 = 'near-100'
+  Near100 = 'near-100',
+  SumToTen = 'sum-to-ten',
+  SquaringEndIn5 = 'squaring-end-5'
 }
 
 /**

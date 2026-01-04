@@ -31,23 +31,23 @@ function formatCompactTime(seconds: number): string {
 }
 
 /**
- * Get color class based on accuracy percentage.
+ * Get color class based on accuracy percentage using design tokens.
  */
 function getAccuracyColor(accuracy: number): string {
-  if (accuracy >= 90) return 'text-green-400';
-  if (accuracy >= 70) return 'text-blue-400';
-  if (accuracy >= 50) return 'text-yellow-400';
-  return 'text-red-400';
+  if (accuracy >= 90) return 'text-accuracy-excellent';
+  if (accuracy >= 70) return 'text-accuracy-good';
+  if (accuracy >= 50) return 'text-accuracy-fair';
+  return 'text-accuracy-poor';
 }
 
 /**
- * Get progress bar gradient based on accuracy.
+ * Get progress bar gradient based on accuracy using design tokens.
  */
 function getProgressGradient(accuracy: number): string {
-  if (accuracy >= 90) return 'from-green-600 to-green-500';
-  if (accuracy >= 70) return 'from-blue-600 to-blue-500';
-  if (accuracy >= 50) return 'from-yellow-600 to-yellow-500';
-  return 'from-red-600 to-red-500';
+  if (accuracy >= 90) return 'from-accuracy-excellent to-accuracy-excellent/80';
+  if (accuracy >= 70) return 'from-accuracy-good to-accuracy-good/80';
+  if (accuracy >= 50) return 'from-accuracy-fair to-accuracy-fair/80';
+  return 'from-accuracy-poor to-accuracy-poor/80';
 }
 
 /**
@@ -160,7 +160,7 @@ export function ProgressBar({
                 </span>
               </div>
               <div className="mt-1">
-                <span className="font-mono text-2xl font-bold text-blue-400">
+                <span className="font-mono text-2xl font-bold text-info">
                   {formatCompactTime(averageTime)}
                 </span>
               </div>

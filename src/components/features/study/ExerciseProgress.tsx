@@ -107,18 +107,18 @@ export function ExerciseProgress({
     };
   }, [exercises]);
 
-  // Difficulty badge colors
+  // Difficulty badge colors using design tokens
   const difficultyColors: Record<ExerciseDifficulty, { bg: string; text: string; border: string }> = {
-    easy: { bg: 'bg-green-500/20', text: 'text-green-400', border: 'border-green-500/30' },
-    medium: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', border: 'border-yellow-500/30' },
-    hard: { bg: 'bg-red-500/20', text: 'text-red-400', border: 'border-red-500/30' }
+    easy: { bg: 'bg-success-muted', text: 'text-success', border: 'border-success/30' },
+    medium: { bg: 'bg-warning-muted', text: 'text-warning', border: 'border-warning/30' },
+    hard: { bg: 'bg-error-muted', text: 'text-error', border: 'border-error/30' }
   };
 
-  // Status indicator colors
+  // Status indicator colors using design tokens
   const statusColors: Record<ExerciseStatus, string> = {
     pending: 'bg-muted border-border',
     current: 'bg-accent border-accent animate-pulse',
-    completed: 'bg-green-500 border-green-500',
+    completed: 'bg-success border-success',
     skipped: 'bg-muted-foreground/50 border-muted-foreground'
   };
 
@@ -148,7 +148,7 @@ export function ExerciseProgress({
         {/* Streak and Score */}
         <div className="flex items-center gap-4">
           {streak > 0 && (
-            <div className="flex items-center gap-1.5 rounded-full bg-orange-500/20 px-3 py-1.5 text-orange-400">
+            <div className="flex items-center gap-1.5 rounded-full bg-warning-muted px-3 py-1.5 text-warning">
               <svg
                 className="h-4 w-4"
                 fill="currentColor"
@@ -187,7 +187,7 @@ export function ExerciseProgress({
       <div className="space-y-2">
         <div className="h-3 w-full overflow-hidden rounded-full bg-muted">
           <div
-            className="h-full bg-gradient-to-r from-green-500 to-green-400 transition-all duration-500"
+            className="h-full bg-gradient-to-r from-success to-success/80 transition-all duration-500"
             style={{ width: `${stats.progressPercent}%` }}
             role="progressbar"
             aria-valuenow={stats.progressPercent}
@@ -241,7 +241,7 @@ export function ExerciseProgress({
               {/* Completed checkmark overlay */}
               {exercise.status === 'completed' && (
                 <svg
-                  className="absolute -right-1 -top-1 h-4 w-4 rounded-full bg-background text-green-500"
+                  className="absolute -right-1 -top-1 h-4 w-4 rounded-full bg-background text-success"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -303,10 +303,10 @@ export function ExerciseProgress({
                   <div
                     className={`h-full transition-all duration-500 ${
                       difficulty === 'easy'
-                        ? 'bg-green-500'
+                        ? 'bg-success'
                         : difficulty === 'medium'
-                          ? 'bg-yellow-500'
-                          : 'bg-red-500'
+                          ? 'bg-warning'
+                          : 'bg-error'
                     }`}
                     style={{ width: `${percent}%` }}
                   />

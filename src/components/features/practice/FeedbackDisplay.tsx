@@ -78,8 +78,8 @@ export const FeedbackDisplay = memo(function FeedbackDisplay({
       <div
         className={`rounded-2xl border-2 p-8 shadow-2xl backdrop-blur-sm ${
           isCorrect
-            ? 'border-green-500/50 bg-gradient-to-br from-green-900/30 to-green-800/20'
-            : 'border-red-500/50 bg-gradient-to-br from-red-900/30 to-red-800/20'
+            ? 'border-feedback-correct/50 bg-gradient-to-br from-feedback-correct/30 to-feedback-correct/20'
+            : 'border-feedback-incorrect/50 bg-gradient-to-br from-feedback-incorrect/30 to-feedback-incorrect/20'
         }`}
       >
         <div className="space-y-6">
@@ -87,9 +87,9 @@ export const FeedbackDisplay = memo(function FeedbackDisplay({
           <div className="flex items-center justify-center">
             {isCorrect ? (
               <div className="flex items-center gap-4">
-                <div className="rounded-full bg-green-500/20 p-4">
+                <div className="rounded-full bg-feedback-correct-muted p-4">
                   <svg
-                    className="h-16 w-16 text-green-400"
+                    className="h-16 w-16 text-feedback-correct"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -104,19 +104,19 @@ export const FeedbackDisplay = memo(function FeedbackDisplay({
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-3xl font-bold text-green-400">
+                  <h3 className="text-3xl font-bold text-feedback-correct">
                     Correct!
                   </h3>
-                  <p className="text-lg text-green-300/80">
+                  <p className="text-lg text-feedback-correct/80">
                     Well done!
                   </p>
                 </div>
               </div>
             ) : (
               <div className="flex items-center gap-4">
-                <div className="rounded-full bg-red-500/20 p-4">
+                <div className="rounded-full bg-feedback-incorrect-muted p-4">
                   <svg
-                    className="h-16 w-16 text-red-400"
+                    className="h-16 w-16 text-feedback-incorrect"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -131,10 +131,10 @@ export const FeedbackDisplay = memo(function FeedbackDisplay({
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-3xl font-bold text-red-400">
+                  <h3 className="text-3xl font-bold text-feedback-incorrect">
                     Not quite
                   </h3>
-                  <p className="text-lg text-red-300/80">
+                  <p className="text-lg text-feedback-incorrect/80">
                     Let&apos;s review the solution
                   </p>
                 </div>
@@ -151,7 +151,7 @@ export const FeedbackDisplay = memo(function FeedbackDisplay({
               </span>
               <span
                 className={`font-mono text-2xl font-bold ${
-                  isCorrect ? 'text-green-400' : 'text-red-400'
+                  isCorrect ? 'text-feedback-correct' : 'text-feedback-incorrect'
                 }`}
               >
                 {userAnswer.toLocaleString()}
@@ -165,7 +165,7 @@ export const FeedbackDisplay = memo(function FeedbackDisplay({
                   <span className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
                     Correct answer:
                   </span>
-                  <span className="font-mono text-2xl font-bold text-green-400">
+                  <span className="font-mono text-2xl font-bold text-feedback-correct">
                     {correctAnswer.toLocaleString()}
                   </span>
                 </div>
@@ -175,7 +175,7 @@ export const FeedbackDisplay = memo(function FeedbackDisplay({
                   <span className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
                     You were off by:
                   </span>
-                  <span className="font-mono text-xl font-semibold text-orange-400">
+                  <span className="font-mono text-xl font-semibold text-warning">
                     {errorMagnitude.toLocaleString()}
                   </span>
                 </div>
@@ -188,7 +188,7 @@ export const FeedbackDisplay = memo(function FeedbackDisplay({
                 <span className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
                   Time taken:
                 </span>
-                <span className="font-mono text-xl font-semibold text-blue-400">
+                <span className="font-mono text-xl font-semibold text-info">
                   {formatTimeTaken(timeTaken)}
                 </span>
               </div>
@@ -204,7 +204,7 @@ export const FeedbackDisplay = memo(function FeedbackDisplay({
           ref={viewSolutionButtonRef}
           onClick={onViewSolution}
           disabled={disableViewSolution}
-          className="rounded-xl border-2 border-purple-500/30 bg-purple-500/10 px-6 py-4 font-semibold text-purple-300 transition-all duration-200 hover:border-purple-500/50 hover:bg-purple-500/20 focus:outline-none focus:ring-4 focus:ring-purple-500/50 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-xl border-2 border-accent/30 bg-accent/10 px-6 py-4 font-semibold text-accent transition-all duration-200 hover:border-accent/50 hover:bg-accent/20 focus:outline-none focus:ring-4 focus:ring-accent/50 disabled:cursor-not-allowed disabled:opacity-50"
           aria-label="View solution walkthrough (Press S)"
         >
           <span className="flex items-center justify-center gap-2">
@@ -229,7 +229,7 @@ export const FeedbackDisplay = memo(function FeedbackDisplay({
         <button
           ref={nextButtonRef}
           onClick={onNext}
-          className="rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 px-6 py-4 font-semibold text-white shadow-lg transition-all duration-200 hover:from-blue-500 hover:to-blue-400 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-blue-500/50"
+          className="rounded-xl bg-gradient-to-r from-primary to-primary/80 px-6 py-4 font-semibold text-primary-foreground shadow-lg transition-all duration-200 hover:from-primary/90 hover:to-primary/70 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-primary/50"
           aria-label="Next problem (Press N)"
         >
           <span className="flex items-center justify-center gap-2">

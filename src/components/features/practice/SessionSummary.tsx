@@ -28,11 +28,11 @@ export function SessionSummary({
     p => p.skipped || p.userAnswers[0] !== p.correctAnswer
   );
 
-  // Get accuracy color based on percentage
+  // Get accuracy color based on percentage using design tokens
   const getAccuracyColor = (acc: number) => {
-    if (acc >= 90) return 'text-green-600 dark:text-green-400';
-    if (acc >= 70) return 'text-yellow-600 dark:text-yellow-400';
-    return 'text-red-600 dark:text-red-400';
+    if (acc >= 90) return 'text-accuracy-excellent';
+    if (acc >= 70) return 'text-accuracy-fair';
+    return 'text-accuracy-poor';
   };
 
   // Convert methodBreakdown to array for rendering
@@ -88,7 +88,7 @@ export function SessionSummary({
 
           {/* Average Time */}
           <div className="text-center">
-            <div className="text-4xl font-bold text-purple-600 dark:text-purple-400">
+            <div className="text-4xl font-bold text-accent">
               {formatTimeSeconds(averageTime)}
             </div>
             <div className="text-sm text-muted-foreground mt-1">
@@ -98,7 +98,7 @@ export function SessionSummary({
 
           {/* Problems to Review */}
           <div className="text-center">
-            <div className="text-4xl font-bold text-orange-600 dark:text-orange-400">
+            <div className="text-4xl font-bold text-warning">
               {problemsToReview.length}
             </div>
             <div className="text-sm text-muted-foreground mt-1">
@@ -113,10 +113,10 @@ export function SessionSummary({
             <div
               className={`h-full transition-all duration-500 ${
                 accuracy >= 90
-                  ? 'bg-green-500'
+                  ? 'bg-accuracy-excellent'
                   : accuracy >= 70
-                  ? 'bg-yellow-500'
-                  : 'bg-red-500'
+                  ? 'bg-accuracy-fair'
+                  : 'bg-accuracy-poor'
               }`}
               style={{ width: `${accuracy}%` }}
             />
@@ -161,10 +161,10 @@ export function SessionSummary({
                   <div
                     className={`h-full ${
                       stat.accuracy >= 90
-                        ? 'bg-green-500'
+                        ? 'bg-accuracy-excellent'
                         : stat.accuracy >= 70
-                        ? 'bg-yellow-500'
-                        : 'bg-red-500'
+                        ? 'bg-accuracy-fair'
+                        : 'bg-accuracy-poor'
                     }`}
                     style={{ width: `${stat.accuracy}%` }}
                   />
@@ -229,7 +229,7 @@ export function SessionSummary({
 
         <Link
           href="/statistics"
-          className="px-6 py-3 border-2 border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950 font-medium rounded-lg transition-colors text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+          className="px-6 py-3 border-2 border-info text-info hover:bg-info-muted font-medium rounded-lg transition-colors text-center focus:outline-none focus:ring-2 focus:ring-info focus:ring-offset-2"
         >
           View Statistics
         </Link>

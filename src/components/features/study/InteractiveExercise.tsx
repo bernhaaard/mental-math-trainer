@@ -158,11 +158,11 @@ export function InteractiveExercise({
     inputRef.current?.focus();
   }, []);
 
-  // Difficulty badge color
+  // Difficulty badge color using design tokens
   const difficultyColors = {
-    easy: 'bg-green-500/20 text-green-400 border-green-500/30',
-    medium: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-    hard: 'bg-red-500/20 text-red-400 border-red-500/30'
+    easy: 'bg-success-muted text-success border-success/30',
+    medium: 'bg-warning-muted text-warning border-warning/30',
+    hard: 'bg-error-muted text-error border-error/30'
   };
 
   const isActive = state === 'active';
@@ -233,7 +233,7 @@ export function InteractiveExercise({
                   focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/20
                   disabled:cursor-not-allowed disabled:opacity-50
                   ${showError
-                    ? 'animate-shake border-red-500 focus:border-red-500 focus:ring-red-500/20'
+                    ? 'animate-shake border-error focus:border-error focus:ring-error/20'
                     : 'border-border hover:border-muted-foreground'
                   }
                 `}
@@ -279,8 +279,8 @@ export function InteractiveExercise({
 
         {/* Incorrect Feedback */}
         {isIncorrect && (
-          <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-center">
-            <div className="flex items-center justify-center gap-2 text-red-400">
+          <div className="rounded-lg border border-feedback-incorrect/30 bg-feedback-incorrect-muted p-4 text-center">
+            <div className="flex items-center justify-center gap-2 text-feedback-incorrect">
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -292,12 +292,12 @@ export function InteractiveExercise({
         {/* Correct Feedback */}
         {isCorrect && (
           <div className="space-y-4">
-            <div className="rounded-lg border border-green-500/30 bg-green-500/10 p-4 text-center">
+            <div className="rounded-lg border border-feedback-correct/30 bg-feedback-correct-muted p-4 text-center">
               <div className="flex flex-col items-center gap-2">
-                <svg className="h-8 w-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="h-8 w-8 text-feedback-correct" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span className="text-lg font-bold text-green-400">Correct!</span>
+                <span className="text-lg font-bold text-feedback-correct">Correct!</span>
                 <span className="font-mono text-2xl font-bold text-foreground">
                   {correctAnswer.toLocaleString()}
                 </span>

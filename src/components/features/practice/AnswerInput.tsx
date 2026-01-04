@@ -221,7 +221,7 @@ export const AnswerInput = forwardRef<AnswerInputHandle, AnswerInputProps>(
             aria-label="Your answer"
             className={`w-full rounded-xl border-2 bg-card/50 px-6 py-6 text-center font-mono text-4xl font-bold text-foreground placeholder-muted-foreground backdrop-blur-sm transition-all duration-200 focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50 sm:text-5xl md:text-6xl ${
               showError
-                ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
+                ? 'border-error focus:border-error focus:ring-error/20'
                 : 'border-border hover:border-muted-foreground'
             } ${isShaking ? 'animate-shake' : ''}`}
           />
@@ -286,7 +286,7 @@ export const AnswerInput = forwardRef<AnswerInputHandle, AnswerInputProps>(
           <button
             onClick={handleHintRequest}
             disabled={disabled}
-            className="rounded-xl border-2 border-purple-500/30 bg-purple-500/10 px-6 py-4 font-semibold text-purple-300 transition-all duration-200 hover:border-purple-500/50 hover:bg-purple-500/20 focus:outline-none focus:ring-4 focus:ring-purple-500/50 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-xl border-2 border-accent/30 bg-accent/10 px-6 py-4 font-semibold text-accent transition-all duration-200 hover:border-accent/50 hover:bg-accent/20 focus:outline-none focus:ring-4 focus:ring-accent/50 disabled:cursor-not-allowed disabled:opacity-50"
             aria-label={`Request hint (${hintsUsed} used)`}
           >
             <span className="flex items-center justify-center gap-2">

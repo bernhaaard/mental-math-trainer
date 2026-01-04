@@ -32,3 +32,7 @@ export type { ProgressBarProps } from './ProgressBar';
 export { DifficultySelector } from './DifficultySelector';
 export { MethodSelector } from './MethodSelector';
 export { NumberRangeInput } from './NumberRangeInput';
+
+// Hint system components
+export { HintDisplay } from './HintDisplay';
+export type { HintDisplayProps } from './HintDisplay';

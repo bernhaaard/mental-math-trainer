@@ -223,7 +223,10 @@ function PracticePageContent() {
         accuracy: 0,
         averageTime: 0,
         averageError: 0,
-        methodBreakdown: {}
+        methodBreakdown: {},
+        totalHintsUsed: 0,
+        problemsWithHints: 0,
+        averageHintsPerProblem: 0
       };
     }
 
@@ -287,13 +290,21 @@ function PracticePageContent() {
       }
     });
 
+    // Calculate hint statistics
+    const totalHintsUsed = problems.reduce((sum, p) => sum + (p.hintsUsed || 0), 0);
+    const problemsWithHints = problems.filter(p => (p.hintsUsed || 0) > 0).length;
+    const averageHintsPerProblem = problems.length > 0 ? totalHintsUsed / problems.length : 0;
+
     return {
       totalProblems: problems.length,
       correctAnswers,
       accuracy,
       averageTime,
       averageError,
-      methodBreakdown
+      methodBreakdown,
+      totalHintsUsed,
+      problemsWithHints,
+      averageHintsPerProblem
     };
   };
 

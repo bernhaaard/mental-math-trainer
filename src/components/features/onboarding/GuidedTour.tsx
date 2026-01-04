@@ -542,11 +542,30 @@ export function GuidedTour({
   const [isVisible, setIsVisible] = useState(false);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
+  const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(null);
   const tourInitializedRef = useRef(false);
   const delayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Use custom hook for hydration-safe mounting detection
   const mounted = useMounted();
+
+  // Create portal container element for safe DOM rendering
+  useEffect(() => {
+    if (!mounted) return;
+
+    // Create a dedicated container for the portal
+    const container = document.createElement('div');
+    container.id = 'guided-tour-portal';
+    document.body.appendChild(container);
+    setPortalContainer(container);
+
+    return () => {
+      // Clean up the container on unmount
+      if (container.parentNode) {
+        container.parentNode.removeChild(container);
+      }
+    };
+  }, [mounted]);
 
   const steps = DEFAULT_TOUR_STEPS;
   const currentStep = steps[currentStepIndex];
@@ -669,12 +688,12 @@ export function GuidedTour({
     onComplete?.();
   }, [onComplete]);
 
-  // Don't render on server or when not visible
-  if (!mounted || !isVisible || !currentStep) {
+  // Don't render on server, when not visible, or when portal container is not ready
+  if (!mounted || !isVisible || !currentStep || !portalContainer) {
     return null;
   }
 
-  // Use portal to render at document body level
+  // Use portal to render in dedicated container for safe DOM manipulation
   return createPortal(
     <>
       <SpotlightOverlay targetRect={targetRect} onClick={() => {}} />
@@ -689,7 +708,7 @@ export function GuidedTour({
         onComplete={handleComplete}
       />
     </>,
-    document.body
+    portalContainer
   );
 }
 

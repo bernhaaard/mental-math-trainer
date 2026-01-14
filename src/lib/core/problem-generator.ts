@@ -148,6 +148,37 @@ function generateForFactorization(
 }
 
 /**
+ * Generate problem suitable for Multiply by 15 method
+ * One number must be 15, prefer even numbers for easier halving
+ */
+function generateForMultiplyBy15(
+  config: GeneratorConfig
+): { num1: number; num2: number } {
+  const range =
+    typeof config.difficulty === 'string'
+      ? DIFFICULTY_RANGES[config.difficulty]
+      : config.difficulty;
+
+  const minNum =
+    typeof range === 'object' && 'num2Min' in range ? range.num2Min : range.min;
+  const maxNum =
+    typeof range === 'object' && 'num2Max' in range ? range.num2Max : range.max;
+
+  // Generate the other number
+  let other = randomInRange(Math.max(2, minNum), Math.min(maxNum, 200));
+
+  // 60% chance to prefer even numbers (easier halving)
+  if (Math.random() < 0.6 && other % 2 !== 0) {
+    other = other + 1 > maxNum ? other - 1 : other + 1;
+  }
+
+  // Randomly swap order
+  return Math.random() < 0.5
+    ? { num1: 15, num2: other }
+    : { num1: other, num2: 15 };
+}
+
+/**
  * Generate problem for Distributive method (general purpose)
  * Any numbers in range work - this is the fallback
  */
@@ -224,12 +255,42 @@ function generateForSquaringEndIn5(
 }
 
 /**
+ * Generate problem suitable for Near Squares method
+ * Two numbers that differ by a small amount (k <= 5)
+ * Preferring numbers with "nice" squares (multiples of 5, 10, or numbers <= 20)
+ */
+function generateForNearSquares(
+  config: GeneratorConfig
+): { num1: number; num2: number } {
+  // Nice base numbers that have easy-to-remember squares
+  const niceBaseNumbers =
+    typeof config.difficulty === 'string'
+      ? config.difficulty === DifficultyLevel.Beginner
+        ? [5, 10, 12, 15, 20]
+        : config.difficulty === DifficultyLevel.Intermediate
+          ? [12, 15, 20, 25, 30, 40, 50]
+          : [20, 25, 30, 40, 50, 60, 75, 100]
+      : [25, 50, 100]; // default for custom
+
+  const baseIndex = Math.floor(Math.random() * niceBaseNumbers.length);
+  const n = niceBaseNumbers[baseIndex] ?? 25;
+
+  // Generate k between 1 and 5
+  const k = randomInRange(1, 5);
+
+  // Randomly decide order
+  return Math.random() < 0.5
+    ? { num1: n, num2: n + k }
+    : { num1: n + k, num2: n };
+}
+
+/**
  * Method-specific generators map
  */
-const METHOD_GENERATORS: Record<
+const METHOD_GENERATORS: Partial<Record<
   MethodName,
   (config: GeneratorConfig) => { num1: number; num2: number }
-> = {
+>> = {
   [MethodName.DifferenceSquares]: generateForDifferenceSquares,
   [MethodName.Squaring]: generateForSquaring,
   [MethodName.NearPower10]: generateForNearPower10,
@@ -237,7 +298,9 @@ const METHOD_GENERATORS: Record<
   [MethodName.Factorization]: generateForFactorization,
   [MethodName.Distributive]: generateForDistributive,
   [MethodName.SumToTen]: generateForSumToTen,
-  [MethodName.SquaringEndIn5]: generateForSquaringEndIn5
+  [MethodName.SquaringEndIn5]: generateForSquaringEndIn5,
+  [MethodName.MultiplyBy15]: generateForMultiplyBy15,
+  [MethodName.NearSquares]: generateForNearSquares
 };
 
 /**
@@ -261,8 +324,8 @@ export function generateMethodAwareProblem(
   const methodIndex = Math.floor(Math.random() * targetMethods.length);
   const selectedMethod = targetMethods[methodIndex] ?? MethodName.Distributive;
 
-  // Generate numbers using method-specific generator
-  const generator = METHOD_GENERATORS[selectedMethod];
+  // Generate numbers using method-specific generator (fallback to distributive)
+  const generator = METHOD_GENERATORS[selectedMethod] ?? generateForDistributive;
   let { num1, num2 } = generator(config);
 
   // Apply negatives if allowed (30% chance each)

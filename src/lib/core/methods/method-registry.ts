@@ -16,6 +16,8 @@ import { SquaringMethod } from './squaring';
 import { Near100Method } from './near-100';
 import { SumToTenMethod } from './sum-to-ten';
 import { SquaringEnd5Method } from './squaring-end-5';
+import { MultiplyBy15Method } from './multiply-by-15';
+import { NearSquaresMethod } from './near-squares';
 
 /**
  * Singleton instances of all calculation methods.
@@ -29,7 +31,9 @@ const methodInstances: CalculationMethod[] = [
   new SquaringMethod(),
   new Near100Method(),
   new SumToTenMethod(),
-  new SquaringEnd5Method()
+  new SquaringEnd5Method(),
+  new MultiplyBy15Method(),
+  new NearSquaresMethod()
 ];
 
 /**

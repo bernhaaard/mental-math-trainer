@@ -191,7 +191,7 @@ describe('analyzeMethodProficiency', () => {
       const stats = createMockUserStats();
       const result = analyzeMethodProficiency(stats);
 
-      expect(result.proficiencies).toHaveLength(6); // All methods
+      expect(result.proficiencies).toHaveLength(Object.keys(MethodName).length); // All methods
       expect(result.hasEnoughData).toBe(false);
       expect(result.dataStatusMessage).toContain('Start practicing');
     });
@@ -545,12 +545,14 @@ describe('edge cases', () => {
         [MethodName.Factorization]: createMockMethodStats(),
         [MethodName.Squaring]: createMockMethodStats(),
         [MethodName.Near100]: createMockMethodStats(),
+        [MethodName.SumToTen]: createMockMethodStats(),
+        [MethodName.SquaringEndIn5]: createMockMethodStats(),
       },
     });
 
     const result = analyzeMethodProficiency(stats);
 
-    expect(result.proficiencies.length).toBe(6);
+    expect(result.proficiencies.length).toBe(Object.keys(MethodName).length);
     expect(result.proficiencies.every(p => p.problemsSolved > 0)).toBe(true);
   });
 

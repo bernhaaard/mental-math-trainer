@@ -9,9 +9,9 @@ import { MethodName } from '../../../types';
 
 describe('method-registry', () => {
   describe('getMethodInstances', () => {
-    it('should return all 8 calculation methods', () => {
+    it('should return all calculation methods', () => {
       const methods = getMethodInstances();
-      expect(methods).toHaveLength(8);
+      expect(methods).toHaveLength(Object.keys(MethodName).length);
     });
 
     it('should include all expected method types', () => {
@@ -26,6 +26,8 @@ describe('method-registry', () => {
       expect(methodNames).toContain(MethodName.Near100);
       expect(methodNames).toContain(MethodName.SumToTen);
       expect(methodNames).toContain(MethodName.SquaringEndIn5);
+      expect(methodNames).toContain(MethodName.MultiplyBy111);
+      expect(methodNames).toContain(MethodName.NearSquares);
     });
 
     it('should return method instances with required interface', () => {

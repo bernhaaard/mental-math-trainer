@@ -16,7 +16,9 @@ export enum MethodName {
   Squaring = 'squaring',
   Near100 = 'near-100',
   SumToTen = 'sum-to-ten',
-  SquaringEndIn5 = 'squaring-end-5'
+  SquaringEndIn5 = 'squaring-end-5',
+  MultiplyBy111 = 'multiply-by-111',
+  NearSquares = 'near-squares'
 }
 
 /**

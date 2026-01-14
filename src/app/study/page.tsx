@@ -200,6 +200,98 @@ function FactorizationIcon(): React.ReactElement {
 }
 
 /**
+ * SVG icon for the Sum to Ten method.
+ */
+function SumToTenIcon(): React.ReactElement {
+  return (
+    <svg
+      className="h-8 w-8"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="9" />
+      <text x="12" y="15" textAnchor="middle" fontSize="8" fill="currentColor" stroke="none">
+        +10
+      </text>
+    </svg>
+  );
+}
+
+/**
+ * SVG icon for the Squaring Numbers Ending in 5 method.
+ */
+function SquaringEnd5Icon(): React.ReactElement {
+  return (
+    <svg
+      className="h-8 w-8"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <rect x="4" y="4" width="16" height="16" rx="2" />
+      <text x="12" y="15" textAnchor="middle" fontSize="7" fill="currentColor" stroke="none">
+        n5²
+      </text>
+    </svg>
+  );
+}
+
+/**
+ * SVG icon for the Multiply by 111 method.
+ */
+function MultiplyBy111Icon(): React.ReactElement {
+  return (
+    <svg
+      className="h-8 w-8"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="9" />
+      <text x="12" y="15" textAnchor="middle" fontSize="7" fill="currentColor" stroke="none">
+        111
+      </text>
+    </svg>
+  );
+}
+
+/**
+ * SVG icon for the Near Squares method.
+ */
+function NearSquaresIcon(): React.ReactElement {
+  return (
+    <svg
+      className="h-8 w-8"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <rect x="4" y="4" width="16" height="16" rx="2" />
+      <text x="12" y="15" textAnchor="middle" fontSize="6" fill="currentColor" stroke="none">
+        n(n+k)
+      </text>
+    </svg>
+  );
+}
+
+/**
  * Method configurations in the recommended learning order.
  */
 const METHODS: MethodConfig[] = [
@@ -262,6 +354,46 @@ const METHODS: MethodConfig[] = [
     difficulty: 'Advanced',
     difficultyVariant: 'error',
     order: 6
+  },
+  {
+    name: MethodName.SumToTen,
+    displayName: 'Sum to Ten',
+    description:
+      'When units digits sum to 10 and tens digits match, use the shortcut: tens × (tens+1), then units product.',
+    icon: <SumToTenIcon />,
+    difficulty: 'Intermediate',
+    difficultyVariant: 'warning',
+    order: 7
+  },
+  {
+    name: MethodName.SquaringEndIn5,
+    displayName: 'Squaring Numbers Ending in 5',
+    description:
+      'For any number ending in 5 squared: multiply the prefix by (prefix+1) and append 25.',
+    icon: <SquaringEnd5Icon />,
+    difficulty: 'Beginner',
+    difficultyVariant: 'success',
+    order: 8
+  },
+  {
+    name: MethodName.MultiplyBy111,
+    displayName: 'Multiply by 111',
+    description:
+      'Special shortcut for multiplying by 111: triple the number pattern with digit carries.',
+    icon: <MultiplyBy111Icon />,
+    difficulty: 'Intermediate',
+    difficultyVariant: 'warning',
+    order: 9
+  },
+  {
+    name: MethodName.NearSquares,
+    displayName: 'Near Squares',
+    description:
+      'For n × (n+k), use n² + k×n. Great for numbers close to perfect squares.',
+    icon: <NearSquaresIcon />,
+    difficulty: 'Intermediate',
+    difficultyVariant: 'warning',
+    order: 10
   }
 ];
 
@@ -353,6 +485,30 @@ const LEARNING_PATH = [
     name: MethodName.Factorization,
     label: 'Factorization',
     level: 'Mastery'
+  },
+  {
+    num: 7,
+    name: MethodName.SumToTen,
+    label: 'Sum to Ten',
+    level: 'Shortcut'
+  },
+  {
+    num: 8,
+    name: MethodName.SquaringEndIn5,
+    label: 'Squaring End in 5',
+    level: 'Shortcut'
+  },
+  {
+    num: 9,
+    name: MethodName.MultiplyBy111,
+    label: 'Multiply by 111',
+    level: 'Special'
+  },
+  {
+    num: 10,
+    name: MethodName.NearSquares,
+    label: 'Near Squares',
+    level: 'Advanced'
   }
 ];
 

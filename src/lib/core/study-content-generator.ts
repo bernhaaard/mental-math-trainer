@@ -2069,6 +2069,142 @@ The best mental calculators fluidly combine methods, choosing the approach that 
 
     prerequisites: [MethodName.Distributive],
     nextMethods: []
+  },
+
+  [MethodName.SumToTen]: {
+    method: MethodName.SumToTen,
+    introduction: `
+## Sum to Ten: A Powerful Pattern-Based Shortcut
+
+When two numbers have the same tens digit and their units digits sum to 10, there's a beautiful shortcut. For example, 23 × 27: both have tens digit 2, and 3 + 7 = 10.
+
+The formula: **tens × (tens + 1), then append the product of units**.
+
+For 23 × 27: 2 × 3 = 6, then 3 × 7 = 21, giving us **621**.
+    `.trim(),
+    mathematicalFoundation: `
+### Why It Works
+
+Let the numbers be (10t + u₁) and (10t + u₂) where u₁ + u₂ = 10.
+
+(10t + u₁)(10t + u₂) = 100t² + 10t(u₁ + u₂) + u₁u₂
+                     = 100t² + 10t(10) + u₁u₂
+                     = 100t² + 100t + u₁u₂
+                     = 100t(t + 1) + u₁u₂
+
+This shows the result is t(t+1) in the hundreds position, with u₁u₂ as the units portion.
+    `.trim(),
+    deepDiveContent: `
+### Extensions and Variations
+
+This pattern works for 3-digit numbers too: 123 × 127 = 12 × 13 = 156, then 3 × 7 = 21, so 15621.
+
+The key insight is recognizing the pattern in real-world problems. Mental math champions scan for this pattern before applying other methods.
+    `.trim(),
+    whenToUse: ['Numbers with same tens digit and units summing to 10'],
+    whenNotToUse: ['When units digits do not sum to 10', 'When tens digits differ'],
+    commonMistakes: ['Forgetting to multiply tens by (tens + 1)', 'Not checking that units sum to 10'],
+    practiceStrategies: ['Practice recognizing sum-to-ten patterns quickly', 'Start with 2-digit numbers before 3-digit'],
+    prerequisites: [MethodName.Distributive],
+    nextMethods: []
+  },
+
+  [MethodName.SquaringEndIn5]: {
+    method: MethodName.SquaringEndIn5,
+    introduction: `
+## Squaring Numbers Ending in 5
+
+Any number ending in 5, when squared, follows a simple pattern: multiply the prefix by (prefix + 1), then append 25.
+
+For 35²: 3 × 4 = 12, append 25 → **1225**.
+For 75²: 7 × 8 = 56, append 25 → **5625**.
+    `.trim(),
+    mathematicalFoundation: `
+### Algebraic Proof
+
+Let n = 10a + 5 (a number ending in 5, where a is the prefix).
+
+n² = (10a + 5)² = 100a² + 100a + 25 = 100a(a + 1) + 25
+
+This shows the result is a(a+1) × 100, plus 25 at the end.
+    `.trim(),
+    deepDiveContent: `
+### Speed and Efficiency
+
+This method is extremely fast—just one multiplication followed by appending 25. It's one of the first shortcuts mental math practitioners memorize because of its reliability and speed.
+    `.trim(),
+    whenToUse: ['Any number ending in 5 being squared'],
+    whenNotToUse: ['When multiplying different numbers', 'When the number does not end in 5'],
+    commonMistakes: ['Forgetting to add 1 to the prefix', 'Not appending 25'],
+    practiceStrategies: ['Drill until automatic', 'Extend to 3-digit numbers'],
+    prerequisites: [],
+    nextMethods: [MethodName.Squaring]
+  },
+
+  [MethodName.MultiplyBy111]: {
+    method: MethodName.MultiplyBy111,
+    introduction: `
+## Multiply by 111: The Triple Pattern
+
+Multiplying by 111 creates a beautiful repeating pattern. For single digits, it's simple: 7 × 111 = 777.
+
+For two-digit numbers, add adjacent digits with carries: 23 × 111 = 2553.
+    `.trim(),
+    mathematicalFoundation: `
+### Why 111 Works
+
+111 = 100 + 10 + 1, so n × 111 = n × 100 + n × 10 + n = n00 + n0 + n.
+
+For 23: 2300 + 230 + 23 = 2553.
+
+The digit pattern emerges from overlapping additions at each place value.
+    `.trim(),
+    deepDiveContent: `
+### Extending to Larger Numbers
+
+The pattern extends to 3-digit numbers too, though carries become more complex. The key is adding adjacent digits systematically from right to left.
+    `.trim(),
+    whenToUse: ['When one factor is 111'],
+    whenNotToUse: ['When neither number is 111 or close to it'],
+    commonMistakes: ['Missing carries when digits sum to 10 or more'],
+    practiceStrategies: ['Start with single digits', 'Practice carrying'],
+    prerequisites: [MethodName.Distributive],
+    nextMethods: []
+  },
+
+  [MethodName.NearSquares]: {
+    method: MethodName.NearSquares,
+    introduction: `
+## Near Squares: Leveraging Perfect Squares
+
+When you need to calculate n × (n + k) where k is small, use the identity:
+n × (n + k) = n² + kn
+
+For 20 × 22: 20² + 2×20 = 400 + 40 = **440**.
+    `.trim(),
+    mathematicalFoundation: `
+### The Identity
+
+n × (n + k) = n² + kn
+
+This is simply the distributive property: n(n + k) = n·n + n·k = n² + kn.
+
+It's efficient when you know n² and kn is easy to calculate.
+    `.trim(),
+    deepDiveContent: `
+### Choosing When to Use
+
+This method shines when:
+1. n² is a known perfect square (or easily calculated)
+2. k is small (1, 2, 3, 4, 5)
+3. kn is a round number or easy to compute
+    `.trim(),
+    whenToUse: ['Numbers close to perfect squares', 'When one factor is n and other is n+k with small k'],
+    whenNotToUse: ['When numbers are far apart', 'When neither is near a perfect square'],
+    commonMistakes: ['Miscalculating n²', 'Forgetting to add kn'],
+    practiceStrategies: ['Memorize perfect squares to 20', 'Practice n² + kn mentally'],
+    prerequisites: [MethodName.Squaring],
+    nextMethods: []
   }
 };
 
@@ -2086,7 +2222,11 @@ const EXAMPLE_PAIRS: Record<MethodName, Array<[number, number]>> = {
   [MethodName.NearPower10]: [[98, 47], [102, 35], [997, 23]],
   [MethodName.Squaring]: [[35, 35], [47, 47], [85, 85]],
   [MethodName.Near100]: [[97, 94], [103, 98], [88, 92]],
-  [MethodName.Factorization]: [[25, 48], [35, 24], [125, 56]]
+  [MethodName.Factorization]: [[25, 48], [35, 24], [125, 56]],
+  [MethodName.SumToTen]: [[23, 27], [34, 36], [68, 62]],
+  [MethodName.SquaringEndIn5]: [[25, 25], [35, 35], [75, 75]],
+  [MethodName.MultiplyBy111]: [[111, 23], [45, 111], [111, 67]],
+  [MethodName.NearSquares]: [[20, 22], [49, 51], [30, 32]]
 };
 
 /**
@@ -2151,6 +2291,27 @@ const PEDAGOGICAL_NOTES: Record<MethodName, string[]> = {
     'Step 6: Multiply by the power of 10 (trivial—just append zeros), then multiply by the remaining factor.',
     'Step 7: For 100×12 = 1200. The original 25×48 is now solved with minimal mental effort.',
     'Verification: Your answer should be reasonable. For 25×48, estimate: 25×50=1250, so 1200 makes sense.'
+  ],
+  [MethodName.SumToTen]: [
+    'Step 1: Verify the pattern: same tens digit, units sum to 10.',
+    'Step 2: Multiply tens digit by (tens digit + 1).',
+    'Step 3: Multiply the units digits together.',
+    'Step 4: Combine: hundreds from step 2, units from step 3.'
+  ],
+  [MethodName.SquaringEndIn5]: [
+    'Step 1: Identify the prefix (digits before the 5).',
+    'Step 2: Multiply prefix by (prefix + 1).',
+    'Step 3: Append 25 to get the final answer.'
+  ],
+  [MethodName.MultiplyBy111]: [
+    'Step 1: Think of 111 as 100 + 10 + 1.',
+    'Step 2: For single digits, result is the digit repeated three times.',
+    'Step 3: For multi-digit numbers, add adjacent digits with carries.'
+  ],
+  [MethodName.NearSquares]: [
+    'Step 1: Identify the base number n and the offset k.',
+    'Step 2: Calculate n² (should be memorized or easy to compute).',
+    'Step 3: Add k × n to get the final answer.'
   ]
 };
 
@@ -2218,6 +2379,26 @@ const COMMON_MISTAKES: Record<MethodName, string[]> = {
     'Overcomplicating the factorization. Sometimes one simple split is enough. For 25×48, you only need 48=4×12.',
     'Missing complementary factors. For 35×18, both numbers contribute to the 10: 35=5×7 and 18=2×9, so (5×2)×7×9 = 10×63 = 630.',
     'Using factorization when another method is faster. For 25×99, the near-power-of-10 method (25×100-25=2475) beats factorization.'
+  ],
+  [MethodName.SumToTen]: [
+    'Not verifying that units sum to exactly 10.',
+    'Forgetting to multiply tens by (tens + 1), not just squaring.',
+    'Wrong combination of the two parts in the final answer.'
+  ],
+  [MethodName.SquaringEndIn5]: [
+    'Forgetting to add 1 to the prefix before multiplying.',
+    'Appending 5 instead of 25.',
+    'Applying to numbers that do not end in 5.'
+  ],
+  [MethodName.MultiplyBy111]: [
+    'Missing carries when adjacent digits sum to 10 or more.',
+    'Applying to the wrong number.',
+    'Forgetting middle digit additions for 2+ digit numbers.'
+  ],
+  [MethodName.NearSquares]: [
+    'Miscalculating n² (the base square).',
+    'Forgetting to add k×n to the square.',
+    'Using this method when k is too large to be efficient.'
   ]
 };
 
@@ -2263,6 +2444,26 @@ const EXERCISE_PAIRS: Record<MethodName, ExerciseConfig[]> = {
     { nums: [25, 12], difficulty: 'easy' },
     { nums: [25, 48], difficulty: 'medium' },
     { nums: [125, 56], difficulty: 'hard' }
+  ],
+  [MethodName.SumToTen]: [
+    { nums: [23, 27], difficulty: 'easy' },
+    { nums: [34, 36], difficulty: 'medium' },
+    { nums: [68, 62], difficulty: 'hard' }
+  ],
+  [MethodName.SquaringEndIn5]: [
+    { nums: [15, 15], difficulty: 'easy' },
+    { nums: [35, 35], difficulty: 'medium' },
+    { nums: [95, 95], difficulty: 'hard' }
+  ],
+  [MethodName.MultiplyBy111]: [
+    { nums: [111, 5], difficulty: 'easy' },
+    { nums: [111, 23], difficulty: 'medium' },
+    { nums: [111, 67], difficulty: 'hard' }
+  ],
+  [MethodName.NearSquares]: [
+    { nums: [10, 12], difficulty: 'easy' },
+    { nums: [20, 22], difficulty: 'medium' },
+    { nums: [49, 51], difficulty: 'hard' }
   ]
 };
 

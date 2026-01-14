@@ -116,7 +116,11 @@ export const SolutionWalkthrough = memo(function SolutionWalkthrough({
       'difference-squares': 'Difference of Squares',
       factorization: 'Factorization',
       squaring: 'Squaring',
-      'near-100': 'Near 100'
+      'near-100': 'Near 100',
+      'sum-to-ten': 'Sum to Ten',
+      'squaring-end-5': 'Squaring End in 5',
+      'multiply-by-111': 'Multiply by 111',
+      'near-squares': 'Near Squares'
     };
     return displayNames[methodName];
   };

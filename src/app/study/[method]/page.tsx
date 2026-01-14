@@ -24,6 +24,10 @@ import { NearPower10Method } from '@/lib/core/methods/near-power-10';
 import { SquaringMethod } from '@/lib/core/methods/squaring';
 import { Near100Method } from '@/lib/core/methods/near-100';
 import { FactorizationMethod } from '@/lib/core/methods/factorization';
+import { SumToTenMethod } from '@/lib/core/methods/sum-to-ten';
+import { SquaringEnd5Method } from '@/lib/core/methods/squaring-end-5';
+import { MultiplyBy111Method } from '@/lib/core/methods/multiply-by-111';
+import { NearSquaresMethod } from '@/lib/core/methods/near-squares';
 
 /**
  * Tab identifiers for navigation.
@@ -60,7 +64,11 @@ const METHOD_ORDER: MethodName[] = [
   MethodName.NearPower10,
   MethodName.Squaring,
   MethodName.Near100,
-  MethodName.Factorization
+  MethodName.Factorization,
+  MethodName.SumToTen,
+  MethodName.SquaringEndIn5,
+  MethodName.MultiplyBy111,
+  MethodName.NearSquares
 ];
 
 /**
@@ -72,7 +80,11 @@ const METHOD_DISPLAY_NAMES: Record<MethodName, string> = {
   [MethodName.NearPower10]: 'Near Powers of 10',
   [MethodName.Squaring]: 'Squaring',
   [MethodName.Near100]: 'Near 100',
-  [MethodName.Factorization]: 'Factorization'
+  [MethodName.Factorization]: 'Factorization',
+  [MethodName.SumToTen]: 'Sum to Ten',
+  [MethodName.SquaringEndIn5]: 'Squaring Numbers Ending in 5',
+  [MethodName.MultiplyBy111]: 'Multiply by 111',
+  [MethodName.NearSquares]: 'Near Squares'
 };
 
 /**
@@ -92,7 +104,11 @@ function getStudyContent(methodName: MethodName): StudyContent {
     [MethodName.NearPower10]: new NearPower10Method(),
     [MethodName.Squaring]: new SquaringMethod(),
     [MethodName.Near100]: new Near100Method(),
-    [MethodName.Factorization]: new FactorizationMethod()
+    [MethodName.Factorization]: new FactorizationMethod(),
+    [MethodName.SumToTen]: new SumToTenMethod(),
+    [MethodName.SquaringEndIn5]: new SquaringEnd5Method(),
+    [MethodName.MultiplyBy111]: new MultiplyBy111Method(),
+    [MethodName.NearSquares]: new NearSquaresMethod()
   };
 
   return methodMap[methodName].generateStudyContent();
@@ -522,6 +538,26 @@ function ExamplesTab({ methodName }: { methodName: MethodName }): React.ReactEle
       { num1: 24, num2: 35 },
       { num1: 15, num2: 48 },
       { num1: 36, num2: 25 }
+    ],
+    [MethodName.SumToTen]: [
+      { num1: 23, num2: 27 },
+      { num1: 34, num2: 36 },
+      { num1: 68, num2: 62 }
+    ],
+    [MethodName.SquaringEndIn5]: [
+      { num1: 25, num2: 25 },
+      { num1: 35, num2: 35 },
+      { num1: 75, num2: 75 }
+    ],
+    [MethodName.MultiplyBy111]: [
+      { num1: 111, num2: 23 },
+      { num1: 45, num2: 111 },
+      { num1: 111, num2: 67 }
+    ],
+    [MethodName.NearSquares]: [
+      { num1: 20, num2: 22 },
+      { num1: 49, num2: 51 },
+      { num1: 30, num2: 32 }
     ]
   };
 

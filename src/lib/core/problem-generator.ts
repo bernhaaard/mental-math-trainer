@@ -186,9 +186,11 @@ function generateForSumToTen(
   const tensDigit = randomInRange(1, 9);
   // Choose a units digit pair that sums to 10
   // Note: [5, 5] excluded because n5×n5 should use SquaringEnd5 method instead
-  const unitsPairs = [[1, 9], [2, 8], [3, 7], [4, 6]];
+  const unitsPairs: [number, number][] = [[1, 9], [2, 8], [3, 7], [4, 6]];
   const pairIndex = Math.floor(Math.random() * unitsPairs.length);
-  const [u1, u2] = unitsPairs[pairIndex] ?? [3, 7];
+  const pair = unitsPairs[pairIndex] ?? [3, 7];
+  const u1 = pair[0];
+  const u2 = pair[1];
 
   const num1 = tensDigit * 10 + u1;
   const num2 = tensDigit * 10 + u2;

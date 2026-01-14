@@ -116,8 +116,7 @@ export class SquaringEnd5Method extends BaseMethod {
    */
   generateSolution(num1: number, num2: number): Solution {
     const abs = Math.abs(num1);
-    // For squaring, sign is always positive (negative² = positive)
-    const sign = 1;
+    // Note: For squaring, result is always positive ((-n)² = n²)
 
     // Extract the prefix (everything before the 5)
     const n = Math.floor(abs / 10);
@@ -126,8 +125,7 @@ export class SquaringEnd5Method extends BaseMethod {
     const firstPart = n * (n + 1);
 
     // The result is firstPart followed by 25
-    const absResult = firstPart * 100 + 25;
-    const finalResult = sign * absResult;
+    const finalResult = firstPart * 100 + 25;
 
     const steps: CalculationStep[] = [];
 
@@ -150,17 +148,17 @@ export class SquaringEnd5Method extends BaseMethod {
     // Step 3: Append 25 (multiply by 100 and add 25)
     steps.push({
       expression: `${firstPart} * 100 + 25`,
-      result: absResult,
-      explanation: `Append 25 to get the answer: ${firstPart} * 100 + 25 = ${absResult}`,
+      result: finalResult,
+      explanation: `Append 25 to get the answer: ${firstPart} * 100 + 25 = ${finalResult}`,
       depth: 0
     });
 
     // Step 4: Handle negative (though squaring is always positive)
     if (num1 < 0) {
       steps.push({
-        expression: `0 - (0 - ${absResult})`,
+        expression: `0 - (0 - ${finalResult})`,
         result: finalResult,
-        explanation: `Squaring a negative gives positive: (-${abs})^2 = ${absResult}`,
+        explanation: `Squaring a negative gives positive: (-${abs})^2 = ${finalResult}`,
         depth: 0
       });
     }

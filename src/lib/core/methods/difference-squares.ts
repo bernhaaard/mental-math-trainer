@@ -67,7 +67,12 @@ export class DifferenceSquaresMethod extends BaseMethod {
     const absAvg = Math.abs(avg);
     const isRound = absAvg % 5 === 0 || absAvg <= 20;
 
-    return isRound;
+    // Also accept perfect squares (4, 9, 16, 25, 36, 49, 64, 81, 100, 121, 144, ...)
+    // These are easy to work with because we know their square roots
+    const sqrt = Math.sqrt(absAvg);
+    const isPerfectSquare = Number.isInteger(sqrt) && sqrt >= 2;
+
+    return isRound || isPerfectSquare;
   }
 
   /**
@@ -101,7 +106,14 @@ export class DifferenceSquaresMethod extends BaseMethod {
     } else if (avg % 5 === 0) {
       cost += 2;
     } else {
-      cost += 4;
+      // Check if it's a perfect square (which are memorizable)
+      const sqrt = Math.sqrt(Math.abs(avg));
+      if (Number.isInteger(sqrt)) {
+        // Small perfect squares (up to 12^2=144) are commonly memorized
+        cost += sqrt <= 12 ? 2.5 : 3.5;
+      } else {
+        cost += 4;
+      }
     }
 
     // Cost increases with distance (more to subtract)
@@ -143,6 +155,13 @@ export class DifferenceSquaresMethod extends BaseMethod {
     // Very good for multiples of 5
     if (avg % 5 === 0 && diff <= 5) {
       return 0.7;
+    }
+
+    // Good for perfect squares (memorizable)
+    const sqrt = Math.sqrt(Math.abs(avg));
+    if (Number.isInteger(sqrt) && diff <= 5) {
+      // Small perfect squares (up to 12^2=144) are commonly memorized
+      return sqrt <= 12 ? 0.65 : 0.55;
     }
 
     // Still good for small numbers

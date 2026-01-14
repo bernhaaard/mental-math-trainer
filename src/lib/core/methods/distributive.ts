@@ -130,10 +130,12 @@ export class DistributiveMethod extends BaseMethod {
     // Choose optimal partition for the first number
     const partition = this.chooseOptimalPartition(absNum1);
 
-    // Get all parts for the partition
-    const allParts = partition.type === 'multi-additive'
+    // Get all parts for the partition, filtering out zero parts
+    // This prevents useless steps like "(70 + 0)" becoming "70 × n + 0 × n"
+    const rawParts = partition.type === 'multi-additive'
       ? [partition.part1, partition.part2, ...(partition.additionalParts || [])]
       : [partition.part1, partition.part2];
+    const allParts = rawParts.filter(part => part !== 0);
 
     // Calculate products for all parts
     const products = allParts.map(part => part * absNum2);
@@ -159,24 +161,27 @@ export class DistributiveMethod extends BaseMethod {
       depth: 0
     });
 
-    // Step 2: Apply distributive property
-    if (partition.type === 'multi-additive') {
-      // Multi-part distributive: (a + b + c) * d = a*d + b*d + c*d
-      const distributiveExpr = allParts.map(p => `${p} * ${absNum2}`).join(' + ');
-      steps.push({
-        expression: distributiveExpr,
-        result: intermediateResult,
-        explanation: `Apply distributive property to each place value`,
-        depth: 0
-      });
-    } else {
-      const distributiveOp = partition.type === 'additive' ? '+' : '-';
-      steps.push({
-        expression: `${partition.part1} * ${absNum2} ${distributiveOp} ${partition.part2} * ${absNum2}`,
-        result: intermediateResult,
-        explanation: `Apply distributive property: a(b ${distributiveOp} c) = ab ${distributiveOp} ac`,
-        depth: 0
-      });
+    // Step 2: Apply distributive property (skip if only one effective part)
+    const hasSinglePart = allParts.length === 1;
+    if (!hasSinglePart) {
+      if (partition.type === 'multi-additive') {
+        // Multi-part distributive: (a + b + c) * d = a*d + b*d + c*d
+        const distributiveExpr = allParts.map(p => `${p} * ${absNum2}`).join(' + ');
+        steps.push({
+          expression: distributiveExpr,
+          result: intermediateResult,
+          explanation: `Apply distributive property to each place value`,
+          depth: 0
+        });
+      } else {
+        const distributiveOp = partition.type === 'additive' ? '+' : '-';
+        steps.push({
+          expression: `${partition.part1} * ${absNum2} ${distributiveOp} ${partition.part2} * ${absNum2}`,
+          result: intermediateResult,
+          explanation: `Apply distributive property: a(b ${distributiveOp} c) = ab ${distributiveOp} ac`,
+          depth: 0
+        });
+      }
     }
 
     // Step 3: Calculate sub-products with sub-steps
@@ -197,48 +202,70 @@ export class DistributiveMethod extends BaseMethod {
       };
     });
 
-    if (partition.type === 'multi-additive') {
-      // Show sum of all products
-      const productsExpr = products.join(' + ');
+    // For single-part (round numbers), just show direct multiplication
+    if (hasSinglePart) {
+      // Round number - no distribution needed, just calculate
       steps.push({
-        expression: productsExpr,
+        expression: `${allParts[0]} * ${absNum2}`,
         result: intermediateResult,
-        explanation: `Calculate each product separately`,
+        explanation: `Direct multiplication with round number`,
         depth: 0,
         subSteps
       });
     } else {
-      const distributiveOp = partition.type === 'additive' ? '+' : '-';
-      steps.push({
-        expression: `${firstProduct} ${distributiveOp} ${secondProduct}`,
-        result: intermediateResult,
-        explanation: `Calculate each product separately`,
-        depth: 0,
-        subSteps
-      });
+      if (partition.type === 'multi-additive') {
+        // Show sum of all products
+        const productsExpr = products.join(' + ');
+        steps.push({
+          expression: productsExpr,
+          result: intermediateResult,
+          explanation: `Calculate each product separately`,
+          depth: 0,
+          subSteps
+        });
+      } else {
+        const distributiveOp = partition.type === 'additive' ? '+' : '-';
+        steps.push({
+          expression: `${firstProduct} ${distributiveOp} ${secondProduct}`,
+          result: intermediateResult,
+          explanation: `Calculate each product separately`,
+          depth: 0,
+          subSteps
+        });
+      }
     }
 
-    // Step 4: Final calculation
-    if (resultSign < 0) {
-      // Need to show the sign correction
-      steps.push({
-        expression: `${intermediateResult}`,
-        result: intermediateResult,
-        explanation: partition.type === 'subtractive' ? 'Subtract the partial products' : 'Add the partial products',
-        depth: 0
-      });
+    // Step 4: Final calculation (skip for single-part as result is already shown)
+    if (!hasSinglePart) {
+      if (resultSign < 0) {
+        // Need to show the sign correction
+        steps.push({
+          expression: `${intermediateResult}`,
+          result: intermediateResult,
+          explanation: partition.type === 'subtractive' ? 'Subtract the partial products' : 'Add the partial products',
+          depth: 0
+        });
 
+        steps.push({
+          expression: `-1 * ${intermediateResult}`,
+          result: finalResult,
+          explanation: `Apply the negative sign from the original multiplication`,
+          depth: 0
+        });
+      } else {
+        steps.push({
+          expression: `${finalResult}`,
+          result: finalResult,
+          explanation: partition.type === 'subtractive' ? 'Subtract the partial products' : 'Add the partial products',
+          depth: 0
+        });
+      }
+    } else if (resultSign < 0) {
+      // Single-part with negative result
       steps.push({
         expression: `-1 * ${intermediateResult}`,
         result: finalResult,
         explanation: `Apply the negative sign from the original multiplication`,
-        depth: 0
-      });
-    } else {
-      steps.push({
-        expression: `${finalResult}`,
-        result: finalResult,
-        explanation: partition.type === 'subtractive' ? 'Subtract the partial products' : 'Add the partial products',
         depth: 0
       });
     }
@@ -286,6 +313,22 @@ export class DistributiveMethod extends BaseMethod {
   private chooseOptimalPartition(n: number): Partition {
     const { tens, ones } = this.decompose(n);
     const digitCount = this.countDigits(n);
+
+    // Guard: If ones digit is 0, the number is already a multiple of 10
+    // Don't produce useless partitions like (70 + 0)
+    // Instead, treat it as if near to the lower round (which it IS)
+    if (ones === 0 && digitCount <= 2) {
+      // For round 2-digit numbers like 70, partition using decade structure
+      // 70 = (7 * 10), but we can express as (60 + 10) or just keep as is
+      // Actually, for multiplication 70 × n, we don't need to partition 70 at all
+      // Return a "trivial" partition that keeps the number as-is
+      return {
+        type: 'additive',
+        part1: n,
+        part2: 0,
+        displayText: `${n}`  // No partition needed - number is already round
+      };
+    }
 
     // For 3+ digit numbers, first check for near-1000 partitions (Issue #104)
     // then fall back to full place-value decomposition (Issue #33)
@@ -386,6 +429,10 @@ export class DistributiveMethod extends BaseMethod {
    * @private
    */
   private explainPartition(n: number, partition: Partition): string {
+    // Handle round numbers (no partition needed)
+    if (partition.part2 === 0) {
+      return `${n} is already a round number - no partition needed`;
+    }
     if (partition.type === 'multi-additive') {
       const allParts = [partition.part1, partition.part2, ...(partition.additionalParts || [])];
       return `Partition ${n} by full place value into ${allParts.join(' + ')}`;

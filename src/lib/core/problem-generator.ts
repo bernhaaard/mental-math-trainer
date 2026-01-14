@@ -148,34 +148,21 @@ function generateForFactorization(
 }
 
 /**
- * Generate problem suitable for Multiply by 15 method
- * One number must be 15, prefer even numbers for easier halving
+ * Generate problem suitable for Multiply by 111 method
+ * One number must be 111, preferring 2-digit numbers for the pattern
+ * 111 × ab = ab × 100 + ab × 10 + ab = aabb + 0ab0 = result
  */
-function generateForMultiplyBy15(
-  config: GeneratorConfig
+function generateForMultiplyBy111(
+  _config: GeneratorConfig
 ): { num1: number; num2: number } {
-  const range =
-    typeof config.difficulty === 'string'
-      ? DIFFICULTY_RANGES[config.difficulty]
-      : config.difficulty;
-
-  const minNum =
-    typeof range === 'object' && 'num2Min' in range ? range.num2Min : range.min;
-  const maxNum =
-    typeof range === 'object' && 'num2Max' in range ? range.num2Max : range.max;
-
-  // Generate the other number
-  let other = randomInRange(Math.max(2, minNum), Math.min(maxNum, 200));
-
-  // 60% chance to prefer even numbers (easier halving)
-  if (Math.random() < 0.6 && other % 2 !== 0) {
-    other = other + 1 > maxNum ? other - 1 : other + 1;
-  }
+  // For multiply by 111, 2-digit numbers work best
+  // The result follows a nice pattern: 111 × ab creates a palindrome-like result
+  const other = randomInRange(10, 99);
 
   // Randomly swap order
   return Math.random() < 0.5
-    ? { num1: 15, num2: other }
-    : { num1: other, num2: 15 };
+    ? { num1: 111, num2: other }
+    : { num1: other, num2: 111 };
 }
 
 /**
@@ -299,7 +286,7 @@ const METHOD_GENERATORS: Partial<Record<
   [MethodName.Distributive]: generateForDistributive,
   [MethodName.SumToTen]: generateForSumToTen,
   [MethodName.SquaringEndIn5]: generateForSquaringEndIn5,
-  [MethodName.MultiplyBy15]: generateForMultiplyBy15,
+  [MethodName.MultiplyBy111]: generateForMultiplyBy111,
   [MethodName.NearSquares]: generateForNearSquares
 };
 

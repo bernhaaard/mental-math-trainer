@@ -15,7 +15,7 @@ export { SquaringMethod } from './squaring';
 export { Near100Method } from './near-100';
 export { SumToTenMethod } from './sum-to-ten';
 export { SquaringEnd5Method } from './squaring-end-5';
-export { MultiplyBy15Method } from './multiply-by-15';
+export { MultiplyBy111Method } from './multiply-by-111';
 export { NearSquaresMethod } from './near-squares';
 
 // Method registry and selector

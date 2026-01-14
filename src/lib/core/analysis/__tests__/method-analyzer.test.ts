@@ -226,14 +226,17 @@ describe('analyzeMethodProficiency', () => {
       // insufficient data methods should be recommended after unpracticed ones
       const stats = createMockUserStats({
         methodStatistics: {
-          // All other methods are unpracticed (not in methodStatistics)
-          // Distributive has insufficient data (3 problems, needs 5)
+          // All methods have insufficient data (3 problems, needs 5)
           [MethodName.Distributive]: createMockMethodStats({ problemsSolved: 3 }),
           [MethodName.Squaring]: createMockMethodStats({ problemsSolved: 3 }),
           [MethodName.Near100]: createMockMethodStats({ problemsSolved: 3 }),
           [MethodName.Factorization]: createMockMethodStats({ problemsSolved: 3 }),
           [MethodName.NearPower10]: createMockMethodStats({ problemsSolved: 3 }),
           [MethodName.DifferenceSquares]: createMockMethodStats({ problemsSolved: 3 }),
+          [MethodName.SumToTen]: createMockMethodStats({ problemsSolved: 3 }),
+          [MethodName.SquaringEndIn5]: createMockMethodStats({ problemsSolved: 3 }),
+          [MethodName.MultiplyBy111]: createMockMethodStats({ problemsSolved: 3 }),
+          [MethodName.NearSquares]: createMockMethodStats({ problemsSolved: 3 }),
         },
       });
 
@@ -547,6 +550,8 @@ describe('edge cases', () => {
         [MethodName.Near100]: createMockMethodStats(),
         [MethodName.SumToTen]: createMockMethodStats(),
         [MethodName.SquaringEndIn5]: createMockMethodStats(),
+        [MethodName.MultiplyBy111]: createMockMethodStats(),
+        [MethodName.NearSquares]: createMockMethodStats(),
       },
     });
 

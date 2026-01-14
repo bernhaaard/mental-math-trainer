@@ -122,7 +122,19 @@ export class NearPower10Method extends BaseMethod {
     // Cost 3: Final addition/subtraction (simple operation)
     const addSubCost = 0.3;
 
-    return powerMultCost + adjustmentCost + addSubCost;
+    // Cost 4: Penalty when both numbers are near the same power of 10
+    // In this case, Near-100 or Difference-of-Squares is usually simpler
+    // (e.g., 97×103 = 100²-3² is easier than 100×103-3×103)
+    const otherInfo = this.findNearestPowerOf10(other);
+    const otherAbsDiff = Math.abs(otherInfo.diff);
+    let symmetryPenalty = 0;
+    if (otherInfo.power === power && otherAbsDiff <= power * 0.15) {
+      // Both numbers near same power - add significant penalty
+      // to let Near-100 or Difference-of-Squares handle these cases
+      symmetryPenalty = 2.0;
+    }
+
+    return powerMultCost + adjustmentCost + addSubCost + symmetryPenalty;
   }
 
   /**

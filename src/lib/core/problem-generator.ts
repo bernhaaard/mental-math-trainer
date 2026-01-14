@@ -175,6 +175,56 @@ function generateForDistributive(
 }
 
 /**
+ * Generate problem suitable for Sum-to-Ten method
+ * Numbers where units digits sum to 10 and tens digits are equal
+ * e.g., 23 × 27 (3+7=10, both have 2 in tens place)
+ */
+function generateForSumToTen(
+  _config: GeneratorConfig
+): { num1: number; num2: number } {
+  // Choose a tens digit (1-9)
+  const tensDigit = randomInRange(1, 9);
+  // Choose a units digit pair that sums to 10
+  // Note: [5, 5] excluded because n5×n5 should use SquaringEnd5 method instead
+  const unitsPairs = [[1, 9], [2, 8], [3, 7], [4, 6]];
+  const pairIndex = Math.floor(Math.random() * unitsPairs.length);
+  const [u1, u2] = unitsPairs[pairIndex] ?? [3, 7];
+
+  const num1 = tensDigit * 10 + u1;
+  const num2 = tensDigit * 10 + u2;
+
+  return { num1, num2 };
+}
+
+/**
+ * Generate problem suitable for Squaring numbers ending in 5
+ * Number must end in 5: n5 × n5
+ */
+function generateForSquaringEndIn5(
+  config: GeneratorConfig
+): { num1: number; num2: number } {
+  const range =
+    typeof config.difficulty === 'string'
+      ? DIFFICULTY_RANGES[config.difficulty]
+      : config.difficulty;
+
+  const minNum =
+    typeof range === 'object' && 'num1Min' in range ? range.num1Min : range.min;
+  const maxNum =
+    typeof range === 'object' && 'num1Max' in range ? range.num1Max : range.max;
+
+  // Generate numbers ending in 5 within range
+  const minBase = Math.ceil(minNum / 10);
+  const maxBase = Math.floor(maxNum / 10);
+  const cappedMaxBase = Math.min(maxBase, 19); // Cap at 195
+
+  const base = randomInRange(Math.max(1, minBase), cappedMaxBase);
+  const n = base * 10 + 5; // e.g., 15, 25, 35, ...
+
+  return { num1: n, num2: n };
+}
+
+/**
  * Method-specific generators map
  */
 const METHOD_GENERATORS: Record<
@@ -186,7 +236,9 @@ const METHOD_GENERATORS: Record<
   [MethodName.NearPower10]: generateForNearPower10,
   [MethodName.Near100]: generateForNear100,
   [MethodName.Factorization]: generateForFactorization,
-  [MethodName.Distributive]: generateForDistributive
+  [MethodName.Distributive]: generateForDistributive,
+  [MethodName.SumToTen]: generateForSumToTen,
+  [MethodName.SquaringEndIn5]: generateForSquaringEndIn5
 };
 
 /**

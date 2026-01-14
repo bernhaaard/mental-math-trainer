@@ -11,7 +11,7 @@ import { MethodName } from '../types/method';
 import { DifficultyLevel } from '../types/problem';
 
 const DB_NAME = 'mental-math-trainer';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STATS_STORE = 'statistics';
 const SESSIONS_STORE = 'sessions';
 

@@ -13,6 +13,8 @@ export { NearPower10Method } from './near-power-10';
 export { FactorizationMethod } from './factorization';
 export { SquaringMethod } from './squaring';
 export { Near100Method } from './near-100';
+export { SumToTenMethod } from './sum-to-ten';
+export { SquaringEnd5Method } from './squaring-end-5';
 
 // Method registry and selector
 export { getMethodInstances } from './method-registry';

@@ -287,8 +287,34 @@ export class DistributiveMethod extends BaseMethod {
     const { tens, ones } = this.decompose(n);
     const digitCount = this.countDigits(n);
 
-    // For 3+ digit numbers, use full place-value decomposition (Issue #33)
+    // For 3+ digit numbers, first check for near-1000 partitions (Issue #104)
+    // then fall back to full place-value decomposition (Issue #33)
     if (digitCount >= 3) {
+      // Check for near-1000 partition (e.g., 997 = 1000 - 3)
+      const lowerRound1000 = Math.floor(n / 1000) * 1000;
+      const upperRound1000 = lowerRound1000 + 1000;
+      const distToUpper1000 = upperRound1000 - n;
+      const distToLower1000 = n - lowerRound1000;
+
+      if (distToUpper1000 > 0 && distToUpper1000 <= 5 && upperRound1000 <= 2000) {
+        return {
+          type: 'subtractive',
+          part1: upperRound1000,
+          part2: distToUpper1000,
+          displayText: `(${upperRound1000} - ${distToUpper1000})`
+        };
+      }
+
+      if (lowerRound1000 > 0 && distToLower1000 > 0 && distToLower1000 <= 5) {
+        return {
+          type: 'additive',
+          part1: lowerRound1000,
+          part2: distToLower1000,
+          displayText: `(${lowerRound1000} + ${distToLower1000})`
+        };
+      }
+
+      // Use full place-value decomposition for other 3+ digit numbers
       const parts = this.decomposeFullPlaceValue(n);
       const firstPart = parts[0];
       const secondPart = parts[1];
@@ -304,7 +330,19 @@ export class DistributiveMethod extends BaseMethod {
       }
     }
 
-    // Find nearest round number
+    // For 2-digit numbers: check near-100 first, then near-10 (Issue #104)
+    // Check for near-100 partition (e.g., 97 = 100 - 3)
+    const distToHundred = 100 - n;
+    if (n >= 85 && distToHundred > 0 && distToHundred <= 5) {
+      return {
+        type: 'subtractive',
+        part1: 100,
+        part2: distToHundred,
+        displayText: `(100 - ${distToHundred})`
+      };
+    }
+
+    // Find nearest round number (multiple of 10)
     const lowerRound = Math.floor(n / 10) * 10;
     const upperRound = lowerRound + 10;
 
@@ -352,12 +390,22 @@ export class DistributiveMethod extends BaseMethod {
       const allParts = [partition.part1, partition.part2, ...(partition.additionalParts || [])];
       return `Partition ${n} by full place value into ${allParts.join(' + ')}`;
     } else if (partition.type === 'additive') {
-      if (partition.part1 % 10 === 0 && partition.part1 !== this.decompose(n).tens) {
+      if (partition.part1 % 1000 === 0) {
+        return `Partition ${n} as ${partition.part1} + ${partition.part2} (near round thousand)`;
+      } else if (partition.part1 % 100 === 0) {
+        return `Partition ${n} as ${partition.part1} + ${partition.part2} (near round hundred)`;
+      } else if (partition.part1 % 10 === 0 && partition.part1 !== this.decompose(n).tens) {
         return `Partition ${n} as ${partition.part1} + ${partition.part2} (near round number)`;
       } else {
         return `Partition ${n} by place value into ${partition.part1} + ${partition.part2}`;
       }
     } else {
+      // Subtractive partition
+      if (partition.part1 % 1000 === 0) {
+        return `Partition ${n} as ${partition.part1} - ${partition.part2} (near round thousand)`;
+      } else if (partition.part1 % 100 === 0) {
+        return `Partition ${n} as ${partition.part1} - ${partition.part2} (near round hundred)`;
+      }
       return `Partition ${n} as ${partition.part1} - ${partition.part2} (subtractive is simpler)`;
     }
   }

@@ -499,4 +499,126 @@ describe('DistributiveMethod', () => {
       });
     });
   });
+
+  describe('near-100 round number partitions (Issue #104)', () => {
+    it('should prefer (100 - 3) for 97', () => {
+      const solution = method.generateSolution(97, 12);
+      const firstStep = solution.steps[0];
+
+      expect(firstStep?.expression).toContain('100');
+      expect(firstStep?.expression).toContain('-');
+      expect(firstStep?.expression).toContain('3');
+      expect(solution.validated).toBe(true);
+
+      const finalResult = solution.steps[solution.steps.length - 1]?.result;
+      expect(finalResult).toBe(1164);
+    });
+
+    it('should prefer (100 - 2) for 98', () => {
+      const solution = method.generateSolution(98, 7);
+      const firstStep = solution.steps[0];
+
+      expect(firstStep?.expression).toContain('100');
+      expect(firstStep?.expression).toContain('-');
+      expect(firstStep?.expression).toContain('2');
+      expect(solution.validated).toBe(true);
+
+      const finalResult = solution.steps[solution.steps.length - 1]?.result;
+      expect(finalResult).toBe(686);
+    });
+
+    it('should prefer (100 - 1) for 99', () => {
+      const solution = method.generateSolution(99, 8);
+      const firstStep = solution.steps[0];
+
+      expect(firstStep?.expression).toContain('100');
+      expect(firstStep?.expression).toContain('-');
+      expect(firstStep?.expression).toContain('1');
+      expect(solution.validated).toBe(true);
+
+      const finalResult = solution.steps[solution.steps.length - 1]?.result;
+      expect(finalResult).toBe(792);
+    });
+
+    it('should prefer (100 - 5) for 95', () => {
+      const solution = method.generateSolution(95, 6);
+      const firstStep = solution.steps[0];
+
+      expect(firstStep?.expression).toContain('100');
+      expect(firstStep?.expression).toContain('-');
+      expect(firstStep?.expression).toContain('5');
+      expect(solution.validated).toBe(true);
+
+      const finalResult = solution.steps[solution.steps.length - 1]?.result;
+      expect(finalResult).toBe(570);
+    });
+  });
+
+  describe('near-1000 round number partitions (Issue #104)', () => {
+    it('should prefer (1000 - 3) for 997', () => {
+      const solution = method.generateSolution(997, 5);
+      const firstStep = solution.steps[0];
+
+      expect(firstStep?.expression).toContain('1000');
+      expect(firstStep?.expression).toContain('-');
+      expect(firstStep?.expression).toContain('3');
+      expect(solution.validated).toBe(true);
+
+      const finalResult = solution.steps[solution.steps.length - 1]?.result;
+      expect(finalResult).toBe(4985);
+    });
+
+    it('should prefer (1000 - 2) for 998', () => {
+      const solution = method.generateSolution(998, 4);
+      const firstStep = solution.steps[0];
+
+      expect(firstStep?.expression).toContain('1000');
+      expect(firstStep?.expression).toContain('-');
+      expect(firstStep?.expression).toContain('2');
+      expect(solution.validated).toBe(true);
+
+      const finalResult = solution.steps[solution.steps.length - 1]?.result;
+      expect(finalResult).toBe(3992);
+    });
+
+    it('should prefer (1000 + 3) for 1003', () => {
+      const solution = method.generateSolution(1003, 6);
+      const firstStep = solution.steps[0];
+
+      expect(firstStep?.expression).toContain('1000');
+      expect(firstStep?.expression).toContain('+');
+      expect(firstStep?.expression).toContain('3');
+      expect(solution.validated).toBe(true);
+
+      const finalResult = solution.steps[solution.steps.length - 1]?.result;
+      expect(finalResult).toBe(6018);
+    });
+  });
+
+  describe('mathematical correctness with near-100/1000 partitions', () => {
+    const testCases = [
+      { num1: 97, num2: 12, expected: 1164 },
+      { num1: 98, num2: 23, expected: 2254 },
+      { num1: 99, num2: 34, expected: 3366 },
+      { num1: 96, num2: 15, expected: 1440 },
+      { num1: 95, num2: 18, expected: 1710 },
+      { num1: 997, num2: 5, expected: 4985 },
+      { num1: 998, num2: 6, expected: 5988 },
+      { num1: 999, num2: 7, expected: 6993 },
+      { num1: 1001, num2: 8, expected: 8008 },
+      { num1: 1002, num2: 9, expected: 9018 },
+    ];
+
+    testCases.forEach(({ num1, num2, expected }) => {
+      it(`should correctly calculate ${num1} x ${num2} = ${expected}`, () => {
+        const solution = method.generateSolution(num1, num2);
+
+        expect(solution.validated).toBe(true);
+        expect(solution.validationErrors).toHaveLength(0);
+
+        const finalResult = solution.steps[solution.steps.length - 1]?.result;
+        expect(finalResult).toBe(expected);
+      });
+    });
+  });
 });

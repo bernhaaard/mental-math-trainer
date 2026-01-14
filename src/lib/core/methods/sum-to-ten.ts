@@ -96,18 +96,26 @@ export class SumToTenMethod extends BaseMethod {
   computeCost(num1: number, _num2: number): number {
     // This method is very efficient when applicable
     // Cost components:
-    // - 1 multiplication: tens × (tens+1) - typically single-digit × single-digit
+    // - 1 multiplication: base × (base+1)
     // - 1 multiplication: units1 × units2 - always single-digit × single-digit
     // - 1 concatenation: trivial
 
     const absNum1 = Math.abs(num1);
-    const tens = Math.floor(absNum1 / 10) % 10;
+    const base = Math.floor(absNum1 / 10);  // Full prefix before units
 
-    // Slightly higher cost if tens × (tens+1) involves larger numbers
-    const tensMultCost = tens >= 5 ? 1.5 : 1.0;
+    // Cost increases with base size
+    // Single digit base (2-digit numbers): very low cost
+    // Double digit base (3-digit numbers): moderate cost
+    let baseMultCost: number;
+    if (base < 10) {
+      baseMultCost = base >= 5 ? 1.5 : 1.0;
+    } else {
+      // 3+ digit numbers: higher cost for larger base multiplication
+      baseMultCost = 3.0 + Math.log10(base);
+    }
 
     // Base cost is very low
-    return 2.0 + tensMultCost;
+    return 2.0 + baseMultCost;
   }
 
   /**
@@ -140,36 +148,41 @@ export class SumToTenMethod extends BaseMethod {
     const sign = (num1 < 0 ? -1 : 1) * (num2 < 0 ? -1 : 1);
 
     // Extract components
-    const prefix = Math.floor(absNum1 / 100); // 0 for 2-digit numbers
-    const tens = Math.floor(absNum1 / 10) % 10;
+    // For Sum-to-Ten, we need the full "base" (everything except units digit)
+    // e.g., 124 → base = 12, units = 4
+    // e.g., 44 → base = 4, units = 4
+    const base = Math.floor(absNum1 / 10);  // Full prefix before units
     const units1 = absNum1 % 10;
     const units2 = absNum2 % 10;
 
-    // Calculate the two parts
-    const firstPart = tens * (tens + 1);  // n × (n+1)
+    // Calculate the two parts using the Sum-to-Ten formula:
+    // (10n + a)(10n + b) = 100n(n+1) + ab  where a + b = 10
+    const firstPart = base * (base + 1);  // n × (n+1) - where n is the full base
     const secondPart = units1 * units2;   // units product
 
-    // Combine: firstPart as hundreds, secondPart as units
-    // Handle case where secondPart < 10 (need to preserve place value)
-    const combinedValue = prefix * 10000 + firstPart * 100 + secondPart;
-    const absResult = combinedValue;
+    // Combine: firstPart × 100 + secondPart
+    // e.g., 124 × 126: 12 × 13 = 156, 4 × 6 = 24 → 156 × 100 + 24 = 15624
+    const absResult = firstPart * 100 + secondPart;
     const finalResult = sign * absResult;
 
     const steps: CalculationStep[] = [];
+
+    // For explanation, extract the tens digit for display
+    const tensDigit = base % 10;
 
     // Step 1: Recognize the pattern
     steps.push({
       expression: `${num1} * ${num2}`,
       result: finalResult,
-      explanation: `Recognize Sum-to-Ten pattern: same tens digit (${tens}), units sum to 10 (${units1} + ${units2} = 10)`,
+      explanation: `Recognize Sum-to-Ten pattern: same tens digit (${tensDigit}), units sum to 10 (${units1} + ${units2} = 10)`,
       depth: 0
     });
 
-    // Step 2: Calculate tens * (tens+1)
+    // Step 2: Calculate base * (base+1)
     steps.push({
-      expression: `${tens} * ${tens + 1}`,
+      expression: `${base} * ${base + 1}`,
       result: firstPart,
-      explanation: `Multiply tens digit by next number: ${tens} * ${tens + 1} = ${firstPart}`,
+      explanation: `Multiply base by next number: ${base} × ${base + 1} = ${firstPart}`,
       depth: 0
     });
 
@@ -177,27 +190,18 @@ export class SumToTenMethod extends BaseMethod {
     steps.push({
       expression: `${units1} * ${units2}`,
       result: secondPart,
-      explanation: `Multiply units: ${units1} * ${units2} = ${secondPart}`,
+      explanation: `Multiply units: ${units1} × ${units2} = ${secondPart}`,
       depth: 0
     });
 
     // Step 4: Combine the parts
     const secondPartStr = secondPart < 10 ? `0${secondPart}` : `${secondPart}`;
-    if (prefix > 0) {
-      steps.push({
-        expression: `${prefix} * 10000 + ${firstPart} * 100 + ${secondPart}`,
-        result: absResult,
-        explanation: `Combine: ${prefix} (hundreds prefix) + ${firstPart} (first part) + ${secondPartStr} (units product) = ${absResult}`,
-        depth: 0
-      });
-    } else {
-      steps.push({
-        expression: `${firstPart} * 100 + ${secondPart}`,
-        result: absResult,
-        explanation: `Concatenate: ${firstPart} followed by ${secondPartStr} = ${absResult}`,
-        depth: 0
-      });
-    }
+    steps.push({
+      expression: `${firstPart} * 100 + ${secondPart}`,
+      result: absResult,
+      explanation: `Concatenate: ${firstPart} followed by ${secondPartStr} = ${absResult}`,
+      depth: 0
+    });
 
     // Step 5: Apply sign if negative
     if (sign < 0) {
@@ -211,7 +215,7 @@ export class SumToTenMethod extends BaseMethod {
 
     const solution: Solution = {
       method: this.name,
-      optimalReason: `Numbers ${absNum1} and ${absNum2} have the same tens digit (${tens}) and units that sum to 10 (${units1} + ${units2}), making Sum-to-Ten ideal`,
+      optimalReason: `Numbers ${absNum1} and ${absNum2} have the same tens digit (${tensDigit}) and units that sum to 10 (${units1} + ${units2}), making Sum-to-Ten ideal`,
       steps,
       alternatives: [],
       validated: false,

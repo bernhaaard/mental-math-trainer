@@ -148,24 +148,6 @@ function generateForFactorization(
 }
 
 /**
- * Generate problem suitable for Multiply by 111 method
- * One number must be 111, preferring 2-digit numbers for the pattern
- * 111 × ab = ab × 100 + ab × 10 + ab = aabb + 0ab0 = result
- */
-function generateForMultiplyBy111(
-  _config: GeneratorConfig
-): { num1: number; num2: number } {
-  // For multiply by 111, 2-digit numbers work best
-  // The result follows a nice pattern: 111 × ab creates a palindrome-like result
-  const other = randomInRange(10, 99);
-
-  // Randomly swap order
-  return Math.random() < 0.5
-    ? { num1: 111, num2: other }
-    : { num1: other, num2: 111 };
-}
-
-/**
  * Generate problem for Distributive method (general purpose)
  * Any numbers in range work - this is the fallback
  */
@@ -203,7 +185,8 @@ function generateForSumToTen(
   // Choose a tens digit (1-9)
   const tensDigit = randomInRange(1, 9);
   // Choose a units digit pair that sums to 10
-  const unitsPairs = [[1, 9], [2, 8], [3, 7], [4, 6], [5, 5]];
+  // Note: [5, 5] excluded because n5×n5 should use SquaringEnd5 method instead
+  const unitsPairs = [[1, 9], [2, 8], [3, 7], [4, 6]];
   const pairIndex = Math.floor(Math.random() * unitsPairs.length);
   const [u1, u2] = unitsPairs[pairIndex] ?? [3, 7];
 
@@ -242,42 +225,12 @@ function generateForSquaringEndIn5(
 }
 
 /**
- * Generate problem suitable for Near Squares method
- * Two numbers that differ by a small amount (k <= 5)
- * Preferring numbers with "nice" squares (multiples of 5, 10, or numbers <= 20)
- */
-function generateForNearSquares(
-  config: GeneratorConfig
-): { num1: number; num2: number } {
-  // Nice base numbers that have easy-to-remember squares
-  const niceBaseNumbers =
-    typeof config.difficulty === 'string'
-      ? config.difficulty === DifficultyLevel.Beginner
-        ? [5, 10, 12, 15, 20]
-        : config.difficulty === DifficultyLevel.Intermediate
-          ? [12, 15, 20, 25, 30, 40, 50]
-          : [20, 25, 30, 40, 50, 60, 75, 100]
-      : [25, 50, 100]; // default for custom
-
-  const baseIndex = Math.floor(Math.random() * niceBaseNumbers.length);
-  const n = niceBaseNumbers[baseIndex] ?? 25;
-
-  // Generate k between 1 and 5
-  const k = randomInRange(1, 5);
-
-  // Randomly decide order
-  return Math.random() < 0.5
-    ? { num1: n, num2: n + k }
-    : { num1: n + k, num2: n };
-}
-
-/**
  * Method-specific generators map
  */
-const METHOD_GENERATORS: Partial<Record<
+const METHOD_GENERATORS: Record<
   MethodName,
   (config: GeneratorConfig) => { num1: number; num2: number }
->> = {
+> = {
   [MethodName.DifferenceSquares]: generateForDifferenceSquares,
   [MethodName.Squaring]: generateForSquaring,
   [MethodName.NearPower10]: generateForNearPower10,
@@ -285,9 +238,7 @@ const METHOD_GENERATORS: Partial<Record<
   [MethodName.Factorization]: generateForFactorization,
   [MethodName.Distributive]: generateForDistributive,
   [MethodName.SumToTen]: generateForSumToTen,
-  [MethodName.SquaringEndIn5]: generateForSquaringEndIn5,
-  [MethodName.MultiplyBy111]: generateForMultiplyBy111,
-  [MethodName.NearSquares]: generateForNearSquares
+  [MethodName.SquaringEndIn5]: generateForSquaringEndIn5
 };
 
 /**
@@ -311,8 +262,8 @@ export function generateMethodAwareProblem(
   const methodIndex = Math.floor(Math.random() * targetMethods.length);
   const selectedMethod = targetMethods[methodIndex] ?? MethodName.Distributive;
 
-  // Generate numbers using method-specific generator (fallback to distributive)
-  const generator = METHOD_GENERATORS[selectedMethod] ?? generateForDistributive;
+  // Generate numbers using method-specific generator
+  const generator = METHOD_GENERATORS[selectedMethod];
   let { num1, num2 } = generator(config);
 
   // Apply negatives if allowed (30% chance each)

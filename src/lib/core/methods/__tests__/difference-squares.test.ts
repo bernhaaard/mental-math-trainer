@@ -68,11 +68,37 @@ describe('DifferenceSquaresMethod', () => {
       });
     });
 
-    describe('should return false for non-symmetric pairs', () => {
-      it('47 × 51 (not symmetric - midpoint 49)', () => {
-        expect(method.isApplicable(47, 51)).toBe(false);
+    describe('should return true for perfect square midpoints', () => {
+      it('47 × 51 (midpoint 49 = 7^2)', () => {
+        expect(method.isApplicable(47, 51)).toBe(true);
       });
 
+      it('46 × 52 (midpoint 49 = 7^2)', () => {
+        expect(method.isApplicable(46, 52)).toBe(true);
+      });
+
+      it('61 × 67 (midpoint 64 = 8^2)', () => {
+        expect(method.isApplicable(61, 67)).toBe(true);
+      });
+
+      it('78 × 84 (midpoint 81 = 9^2)', () => {
+        expect(method.isApplicable(78, 84)).toBe(true);
+      });
+
+      it('33 × 39 (midpoint 36 = 6^2)', () => {
+        expect(method.isApplicable(33, 39)).toBe(true);
+      });
+
+      it('118 × 124 (midpoint 121 = 11^2)', () => {
+        expect(method.isApplicable(118, 124)).toBe(true);
+      });
+
+      it('141 × 147 (midpoint 144 = 12^2)', () => {
+        expect(method.isApplicable(141, 147)).toBe(true);
+      });
+    });
+
+    describe('should return false for non-symmetric pairs', () => {
       it('23 × 45 (not symmetric - midpoint 34)', () => {
         expect(method.isApplicable(23, 45)).toBe(false);
       });
@@ -96,13 +122,17 @@ describe('DifferenceSquaresMethod', () => {
       });
     });
 
-    describe('should return false when midpoint is not round', () => {
-      it('46 × 52 (midpoint 49, not multiple of 5)', () => {
-        expect(method.isApplicable(46, 52)).toBe(false);
+    describe('should return false when midpoint is not round or perfect square', () => {
+      it('41 × 43 (midpoint 42, not multiple of 5 or perfect square)', () => {
+        expect(method.isApplicable(41, 43)).toBe(false);
       });
 
-      it('41 × 43 (midpoint 42, not multiple of 5)', () => {
-        expect(method.isApplicable(41, 43)).toBe(false);
+      it('56 × 58 (midpoint 57, not multiple of 5 or perfect square)', () => {
+        expect(method.isApplicable(56, 58)).toBe(false);
+      });
+
+      it('73 × 75 (midpoint 74, not multiple of 5 or perfect square)', () => {
+        expect(method.isApplicable(73, 75)).toBe(false);
       });
     });
   });
@@ -121,6 +151,17 @@ describe('DifferenceSquaresMethod', () => {
       const cost5 = method.computeCost(23, 27); // around 25
 
       expect(cost5).toBeGreaterThan(cost10);
+    });
+
+    it('should return reasonable cost for perfect square midpoints', () => {
+      const cost49 = method.computeCost(47, 51); // midpoint 49 = 7^2
+      const cost64 = method.computeCost(61, 67); // midpoint 64 = 8^2
+      const cost81 = method.computeCost(78, 84); // midpoint 81 = 9^2
+
+      // Perfect squares should have moderate cost (between multiples of 5 and random numbers)
+      expect(cost49).toBeLessThan(6);
+      expect(cost64).toBeLessThan(6);
+      expect(cost81).toBeLessThan(6);
     });
 
     it('should increase cost with larger distance', () => {
@@ -149,6 +190,20 @@ describe('DifferenceSquaresMethod', () => {
       const quality = method.qualityScore(23, 27);
       expect(quality).toBeGreaterThanOrEqual(0.7);
       expect(quality).toBeLessThan(0.9);
+    });
+
+    it('should return good quality for perfect square midpoints', () => {
+      const quality49 = method.qualityScore(47, 51); // midpoint 49 = 7^2
+      const quality64 = method.qualityScore(61, 67); // midpoint 64 = 8^2
+      const quality81 = method.qualityScore(78, 84); // midpoint 81 = 9^2
+
+      // Perfect squares should have decent quality (0.5-0.7 range)
+      expect(quality49).toBeGreaterThanOrEqual(0.5);
+      expect(quality49).toBeLessThan(0.9);
+      expect(quality64).toBeGreaterThanOrEqual(0.5);
+      expect(quality64).toBeLessThan(0.9);
+      expect(quality81).toBeGreaterThanOrEqual(0.5);
+      expect(quality81).toBeLessThan(0.9);
     });
 
     it('should return decent quality for small numbers', () => {
@@ -228,6 +283,38 @@ describe('DifferenceSquaresMethod', () => {
 
         const finalResult = solution.steps[solution.steps.length - 1]?.result;
         expect(finalResult).toBe(9996);
+      });
+    });
+
+    describe('should generate valid solutions for perfect square midpoints', () => {
+      it('47 × 51 = 2397 (midpoint 49 = 7^2)', () => {
+        const solution = method.generateSolution(47, 51);
+
+        expect(solution.validated).toBe(true);
+        expect(solution.validationErrors).toHaveLength(0);
+
+        const finalResult = solution.steps[solution.steps.length - 1]?.result;
+        expect(finalResult).toBe(2397);
+      });
+
+      it('61 × 67 = 4087 (midpoint 64 = 8^2)', () => {
+        const solution = method.generateSolution(61, 67);
+
+        expect(solution.validated).toBe(true);
+        expect(solution.validationErrors).toHaveLength(0);
+
+        const finalResult = solution.steps[solution.steps.length - 1]?.result;
+        expect(finalResult).toBe(4087);
+      });
+
+      it('78 × 84 = 6552 (midpoint 81 = 9^2)', () => {
+        const solution = method.generateSolution(78, 84);
+
+        expect(solution.validated).toBe(true);
+        expect(solution.validationErrors).toHaveLength(0);
+
+        const finalResult = solution.steps[solution.steps.length - 1]?.result;
+        expect(finalResult).toBe(6552);
       });
     });
 
@@ -397,11 +484,19 @@ describe('DifferenceSquaresMethod', () => {
   describe('comprehensive validation', () => {
     it('should pass validation for all test cases', () => {
       const testCases = [
+        // Round number midpoints
         [47, 53], [48, 52], [45, 55],
         [95, 105], [98, 102],
         [23, 27], [21, 29],
         [18, 22], [8, 12],
-        [68, 72], [40, 60]
+        [68, 72], [40, 60],
+        // Perfect square midpoints
+        [47, 51], [46, 52], // midpoint 49 = 7^2
+        [61, 67], // midpoint 64 = 8^2
+        [78, 84], // midpoint 81 = 9^2
+        [33, 39], // midpoint 36 = 6^2
+        [118, 124], // midpoint 121 = 11^2
+        [141, 147]  // midpoint 144 = 12^2
       ];
 
       testCases.forEach(([num1, num2]) => {

@@ -53,6 +53,52 @@ describe('NearPower10Method', () => {
       expect(method.isApplicable(85, 47)).toBe(false);
       expect(method.isApplicable(115, 47)).toBe(false);
     });
+
+    describe('boundary tests at exact thresholds', () => {
+      it('should be applicable at exactly 10% below 100', () => {
+        // 100 - 10% = 90, which should be at the boundary
+        expect(method.isApplicable(90, 47)).toBe(true);
+      });
+
+      it('should be applicable at exactly 10% above 100', () => {
+        // 100 + 10% = 110, which should be at the boundary
+        expect(method.isApplicable(110, 47)).toBe(true);
+      });
+
+      it('should NOT be applicable just beyond 10% threshold', () => {
+        // 89 is 11% below 100, should not be applicable
+        expect(method.isApplicable(89, 47)).toBe(false);
+        // 111 is 11% above 100, should not be applicable
+        expect(method.isApplicable(111, 47)).toBe(false);
+      });
+
+      it('should be applicable at exactly 10% below 1000', () => {
+        // 1000 - 10% = 900
+        expect(method.isApplicable(900, 5)).toBe(true);
+      });
+
+      it('should be applicable at exactly 10% above 1000', () => {
+        // 1000 + 10% = 1100
+        expect(method.isApplicable(1100, 5)).toBe(true);
+      });
+
+      it('should NOT be applicable beyond 10% of 1000', () => {
+        // 1000 - 11% = 890, too far
+        expect(method.isApplicable(890, 5)).toBe(false);
+        // 1000 + 11% = 1110, too far
+        expect(method.isApplicable(1110, 5)).toBe(false);
+      });
+
+      it('should be applicable at exactly 10% below 10', () => {
+        // 10 - 10% = 9
+        expect(method.isApplicable(9, 47)).toBe(true);
+      });
+
+      it('should be applicable at exactly 10% above 10', () => {
+        // 10 + 10% = 11
+        expect(method.isApplicable(11, 47)).toBe(true);
+      });
+    });
   });
 
   describe('generateSolution', () => {
@@ -254,6 +300,90 @@ describe('NearPower10Method', () => {
       // Cost should be similar (uses min of both)
       expect(Math.abs(cost1 - cost2)).toBeLessThan(0.1);
     });
+
+    // Issue #110: Power of 10 multiplication should be nearly free
+    describe('power-of-10 multiplication cost', () => {
+      it('should treat exact power of 10 multiplication as nearly free', () => {
+        // 100 x 47: only cost is the power mult (~0.1) + add/sub (~0.3)
+        const cost = method.computeCost(100, 47);
+        // Total should be around 0.4 (0.1 power + 0 adjustment + 0.3 add/sub)
+        expect(cost).toBeLessThan(0.5);
+      });
+
+      it('should have very low cost for diff=1 (just add/subtract the other number)', () => {
+        // 99 x 47: 100 x 47 - 1 x 47
+        // Cost: 0.1 (power) + 0.2 (diff=1) + 0.3 (add/sub) = 0.6
+        const cost = method.computeCost(99, 47);
+        expect(cost).toBeLessThan(0.7);
+        expect(cost).toBeGreaterThan(0.5); // Higher than exact power
+      });
+
+      it('should have low cost for diff=2 (just double the other number)', () => {
+        // 98 x 47: 100 x 47 - 2 x 47
+        // Cost: 0.1 (power) + 0.4 (diff=2) + 0.3 (add/sub) = 0.8
+        const cost = method.computeCost(98, 47);
+        expect(cost).toBeLessThan(0.9);
+        expect(cost).toBeGreaterThan(0.7); // Higher than diff=1
+      });
+
+      it('should have progressively higher cost for larger diffs', () => {
+        const cost1 = method.computeCost(99, 47);  // diff = 1
+        const cost2 = method.computeCost(98, 47);  // diff = 2
+        const cost5 = method.computeCost(95, 47);  // diff = 5
+        const cost10 = method.computeCost(90, 47); // diff = 10
+
+        expect(cost1).toBeLessThan(cost2);
+        expect(cost2).toBeLessThan(cost5);
+        expect(cost5).toBeLessThan(cost10);
+      });
+
+      it('should recognize that power of 10 mult is same cost regardless of power', () => {
+        // Multiplying by 10, 100, or 1000 should all be nearly free
+        const cost10 = method.computeCost(10, 47);
+        const cost100 = method.computeCost(100, 47);
+        const cost1000 = method.computeCost(1000, 47);
+
+        // All should be very low (just power mult + add/sub, no adjustment)
+        expect(cost10).toBeLessThan(0.5);
+        expect(cost100).toBeLessThan(0.5);
+        expect(cost1000).toBeLessThan(0.5);
+
+        // And they should all be approximately equal
+        expect(Math.abs(cost10 - cost100)).toBeLessThan(0.1);
+        expect(Math.abs(cost100 - cost1000)).toBeLessThan(0.1);
+      });
+
+      it('should have cost dominated by adjustment, not power multiplication', () => {
+        // For 98 x 47, the cost should be mostly from 2 x 47, not from 100 x 47
+        // If we compare to a larger diff like 90 x 47 (diff=10), the difference
+        // should reflect the harder adjustment (10 x 47 vs 2 x 47)
+        const cost98 = method.computeCost(98, 47);
+        const cost90 = method.computeCost(90, 47);
+
+        // Cost difference should reflect adjustment difficulty, not power difficulty
+        // 90 has diff=10, 98 has diff=2, so cost difference should be significant
+        expect(cost90 - cost98).toBeGreaterThan(0.5);
+      });
+
+      it('should consider the other operand when calculating adjustment cost', () => {
+        // 99 x 5 (diff=1, other=5) should be cheaper than 99 x 999 (diff=1, other=999)
+        // because 1 x 5 is easier than 1 x 999
+        const costSmallOther = method.computeCost(99, 5);
+        const costLargeOther = method.computeCost(99, 999);
+
+        // For diff=1, the adjustment is just adding/subtracting the other number
+        // This should be similar regardless of other's size (it's just one operation)
+        // But for larger diffs, the other's size matters more
+        const cost5diff5 = method.computeCost(95, 5);   // 5 x 5 = 25
+        const cost5diff999 = method.computeCost(95, 999); // 5 x 999
+
+        // The difference should be larger for diff=5 than diff=1
+        const diff1 = Math.abs(costLargeOther - costSmallOther);
+        const diff5 = Math.abs(cost5diff999 - cost5diff5);
+
+        expect(diff5).toBeGreaterThan(diff1);
+      });
+    });
   });
 
   describe('qualityScore', () => {
@@ -347,6 +477,41 @@ describe('NearPower10Method', () => {
       // We can't easily test this without mocking the validator,
       // but we document the expected behavior
       expect(true).toBe(true);
+    });
+  });
+
+  describe('method selection integration', () => {
+    it('should be the optimal choice for 98 × 47', () => {
+      // 98 × 47 is the canonical example for Near Power of 10
+      // It should be applicable with low cost
+      expect(method.isApplicable(98, 47)).toBe(true);
+
+      const cost = method.computeCost(98, 47);
+      expect(cost).toBeLessThan(1.0); // Should be very efficient
+
+      const quality = method.qualityScore(98, 47);
+      expect(quality).toBeGreaterThan(0.7);
+
+      const solution = method.generateSolution(98, 47);
+      expect(solution.validated).toBe(true);
+      expect(solution.steps[solution.steps.length - 1]?.result).toBe(4606);
+    });
+
+    it('should have low cost for power-of-10 adjustment scenarios', () => {
+      // Verify the cost model reflects the intuition that:
+      // - 100 × n is essentially free (just append zeros)
+      // - The main cost is the adjustment (2 × n for 98)
+
+      const costExact = method.computeCost(100, 47);
+      const cost99 = method.computeCost(99, 47);
+      const cost98 = method.computeCost(98, 47);
+
+      // Exact power should have lowest cost
+      expect(costExact).toBeLessThan(cost99);
+      expect(cost99).toBeLessThan(cost98);
+
+      // But all should be quite low
+      expect(cost98).toBeLessThan(1.0);
     });
   });
 

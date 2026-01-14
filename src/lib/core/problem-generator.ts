@@ -225,6 +225,61 @@ function generateForSquaringEndIn5(
 }
 
 /**
+ * Generate problem suitable for Multiply-by-111 method
+ * One number should be 111, the other is a 2-3 digit number
+ */
+function generateForMultiplyBy111(
+  config: GeneratorConfig
+): { num1: number; num2: number } {
+  const range =
+    typeof config.difficulty === 'string'
+      ? DIFFICULTY_RANGES[config.difficulty]
+      : config.difficulty;
+
+  const minNum =
+    typeof range === 'object' && 'num1Min' in range ? range.num1Min : range.min;
+  const maxNum =
+    typeof range === 'object' && 'num1Max' in range ? range.num1Max : range.max;
+
+  // Generate a multiplier (2-3 digits for reasonable results)
+  const cappedMin = Math.max(11, minNum);
+  const cappedMax = Math.min(999, maxNum);
+  const multiplier = randomInRange(cappedMin, cappedMax);
+
+  // Randomly decide which position 111 takes
+  return Math.random() < 0.5
+    ? { num1: 111, num2: multiplier }
+    : { num1: multiplier, num2: 111 };
+}
+
+/**
+ * Generate problem suitable for Near-Squares method
+ * Numbers should be n × (n + k) where k is small (1-5)
+ */
+function generateForNearSquares(
+  config: GeneratorConfig
+): { num1: number; num2: number } {
+  const range =
+    typeof config.difficulty === 'string'
+      ? DIFFICULTY_RANGES[config.difficulty]
+      : config.difficulty;
+
+  const minNum =
+    typeof range === 'object' && 'num1Min' in range ? range.num1Min : range.min;
+  const maxNum =
+    typeof range === 'object' && 'num1Max' in range ? range.num1Max : range.max;
+
+  // Generate base number n
+  const cappedMax = Math.min(maxNum, 100);
+  const n = randomInRange(Math.max(5, minNum), cappedMax);
+
+  // Generate small offset k (1-5)
+  const k = randomInRange(1, 5);
+
+  return { num1: n, num2: n + k };
+}
+
+/**
  * Method-specific generators map
  */
 const METHOD_GENERATORS: Record<
@@ -238,7 +293,9 @@ const METHOD_GENERATORS: Record<
   [MethodName.Factorization]: generateForFactorization,
   [MethodName.Distributive]: generateForDistributive,
   [MethodName.SumToTen]: generateForSumToTen,
-  [MethodName.SquaringEndIn5]: generateForSquaringEndIn5
+  [MethodName.SquaringEndIn5]: generateForSquaringEndIn5,
+  [MethodName.MultiplyBy111]: generateForMultiplyBy111,
+  [MethodName.NearSquares]: generateForNearSquares
 };
 
 /**

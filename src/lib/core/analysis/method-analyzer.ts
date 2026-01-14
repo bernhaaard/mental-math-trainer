@@ -106,6 +106,10 @@ const METHOD_DISPLAY_NAMES: Record<MethodName, string> = {
   [MethodName.Factorization]: 'Factorization',
   [MethodName.Squaring]: 'Squaring',
   [MethodName.Near100]: 'Near 100',
+  [MethodName.SumToTen]: 'Sum to Ten',
+  [MethodName.SquaringEndIn5]: 'Squaring Numbers Ending in 5',
+  [MethodName.MultiplyBy111]: 'Multiply by 111',
+  [MethodName.NearSquares]: 'Near Squares',
 };
 
 /**

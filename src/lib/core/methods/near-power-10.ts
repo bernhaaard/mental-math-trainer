@@ -13,6 +13,46 @@ import { MethodName, type Solution, type CalculationStep, type StudyContent } fr
 import { SolutionValidator } from '../validator';
 
 /**
+ * Configuration constants for Near Power of 10 method.
+ * These thresholds control when the method is applicable and its cost model.
+ */
+const CONFIG = {
+  /** Maximum distance from power of 10 as a ratio (10% of the power) */
+  APPLICABILITY_THRESHOLD: 0.1,
+
+  /** Threshold for detecting both numbers near same power (15% of power) */
+  SYMMETRY_THRESHOLD: 0.15,
+
+  /** Quality scores based on distance from power */
+  QUALITY: {
+    EXACT_POWER: 0.95,      // One number is exactly a power of 10
+    CLOSE_TO_POWER: 0.8,    // Distance <= 3 from power
+    APPLICABLE: 0.6         // Applicable but not optimal
+  },
+
+  /** Cost model constants */
+  COST: {
+    /** Cost of multiplying by power of 10 (essentially free - positional shift) */
+    POWER_MULT: 0.1,
+    /** Cost of final addition/subtraction */
+    ADD_SUB: 0.3,
+    /** Penalty when both numbers near same power (prefer Near-100 or DoS) */
+    SYMMETRY_PENALTY: 2.0,
+
+    /** Adjustment costs based on difference from power */
+    ADJUSTMENT: {
+      DIFF_1: 0.2,          // Just add/subtract the other number
+      DIFF_2: 0.4,          // Double the other number
+      DIFF_3_5_BASE: 0.5,   // Base cost for diff 3-5
+      DIFF_3_5_MULT: 0.1,   // Per-unit multiplier for diff 3-5
+      LARGE_DIFF_BASE: 1.0, // Base cost for diff > 5
+      LARGE_DIFF_MULT: 0.15,// Per-unit multiplier for diff > 5
+      DIGIT_PENALTY: 0.2    // Extra cost per additional digit in other number
+    }
+  }
+} as const;
+
+/**
  * Near Powers of 10 calculation method.
  *
  * Optimal when one number is close to 10, 100, 1000, etc.
@@ -60,7 +100,7 @@ export class NearPower10Method extends BaseMethod {
   isApplicable(num1: number, num2: number): boolean {
     const check = (n: number): boolean => {
       const { power, diff } = this.findNearestPowerOf10(n);
-      return Math.abs(diff) <= power * 0.1; // Within 10%
+      return Math.abs(diff) <= power * CONFIG.APPLICABILITY_THRESHOLD;
     };
     return check(num1) || check(num2);
   }
@@ -108,19 +148,19 @@ export class NearPower10Method extends BaseMethod {
     const absDiff = Math.abs(diff);
 
     // If not applicable (too far from power), return high cost
-    if (absDiff > power * 0.1) {
+    if (absDiff > power * CONFIG.APPLICABILITY_THRESHOLD) {
       return Infinity;
     }
 
     // Cost 1: Multiplying by power of 10 is essentially free
-    const powerMultCost = 0.1;
+    const powerMultCost = CONFIG.COST.POWER_MULT;
 
     // Cost 2: The adjustment multiplication (diff x other)
     // This is the main cognitive cost
     const adjustmentCost = this.calculateAdjustmentCost(absDiff, Math.abs(other));
 
     // Cost 3: Final addition/subtraction (simple operation)
-    const addSubCost = 0.3;
+    const addSubCost = CONFIG.COST.ADD_SUB;
 
     // Cost 4: Penalty when both numbers are near the same power of 10
     // In this case, Near-100 or Difference-of-Squares is usually simpler
@@ -128,10 +168,10 @@ export class NearPower10Method extends BaseMethod {
     const otherInfo = this.findNearestPowerOf10(other);
     const otherAbsDiff = Math.abs(otherInfo.diff);
     let symmetryPenalty = 0;
-    if (otherInfo.power === power && otherAbsDiff <= power * 0.15) {
+    if (otherInfo.power === power && otherAbsDiff <= power * CONFIG.SYMMETRY_THRESHOLD) {
       // Both numbers near same power - add significant penalty
       // to let Near-100 or Difference-of-Squares handle these cases
-      symmetryPenalty = 2.0;
+      symmetryPenalty = CONFIG.COST.SYMMETRY_PENALTY;
     }
 
     return powerMultCost + adjustmentCost + addSubCost + symmetryPenalty;
@@ -149,6 +189,8 @@ export class NearPower10Method extends BaseMethod {
    * @private
    */
   private calculateAdjustmentCost(diff: number, other: number): number {
+    const { ADJUSTMENT } = CONFIG.COST;
+
     // diff = 0 means exact power of 10, no adjustment needed
     if (diff === 0) {
       return 0;
@@ -156,23 +198,23 @@ export class NearPower10Method extends BaseMethod {
 
     // diff = 1: just add/subtract the other number (trivial)
     if (diff === 1) {
-      return 0.2;
+      return ADJUSTMENT.DIFF_1;
     }
 
     // diff = 2: double the other number (easy)
     if (diff === 2) {
-      return 0.4;
+      return ADJUSTMENT.DIFF_2;
     }
 
     // diff = 3-5: still manageable
     if (diff <= 5) {
-      return 0.5 + diff * 0.1;
+      return ADJUSTMENT.DIFF_3_5_BASE + diff * ADJUSTMENT.DIFF_3_5_MULT;
     }
 
     // diff > 5: requires more complex multiplication
     // Factor in the digits of "other" as well
     const otherDigits = this.countDigits(other);
-    return 1.0 + diff * 0.15 + (otherDigits - 1) * 0.2;
+    return ADJUSTMENT.LARGE_DIFF_BASE + diff * ADJUSTMENT.LARGE_DIFF_MULT + (otherDigits - 1) * ADJUSTMENT.DIGIT_PENALTY;
   }
 
   /**
@@ -187,9 +229,9 @@ export class NearPower10Method extends BaseMethod {
     const { diff: diff2 } = this.findNearestPowerOf10(num2);
 
     // High quality if one is exactly power of 10 or very close
-    if (diff1 === 0 || diff2 === 0) return 0.95;
-    if (Math.abs(diff1) <= 3 || Math.abs(diff2) <= 3) return 0.8;
-    return 0.6;
+    if (diff1 === 0 || diff2 === 0) return CONFIG.QUALITY.EXACT_POWER;
+    if (Math.abs(diff1) <= 3 || Math.abs(diff2) <= 3) return CONFIG.QUALITY.CLOSE_TO_POWER;
+    return CONFIG.QUALITY.APPLICABLE;
   }
 
   /**

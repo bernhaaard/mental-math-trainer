@@ -53,6 +53,52 @@ describe('NearPower10Method', () => {
       expect(method.isApplicable(85, 47)).toBe(false);
       expect(method.isApplicable(115, 47)).toBe(false);
     });
+
+    describe('boundary tests at exact thresholds', () => {
+      it('should be applicable at exactly 10% below 100', () => {
+        // 100 - 10% = 90, which should be at the boundary
+        expect(method.isApplicable(90, 47)).toBe(true);
+      });
+
+      it('should be applicable at exactly 10% above 100', () => {
+        // 100 + 10% = 110, which should be at the boundary
+        expect(method.isApplicable(110, 47)).toBe(true);
+      });
+
+      it('should NOT be applicable just beyond 10% threshold', () => {
+        // 89 is 11% below 100, should not be applicable
+        expect(method.isApplicable(89, 47)).toBe(false);
+        // 111 is 11% above 100, should not be applicable
+        expect(method.isApplicable(111, 47)).toBe(false);
+      });
+
+      it('should be applicable at exactly 10% below 1000', () => {
+        // 1000 - 10% = 900
+        expect(method.isApplicable(900, 5)).toBe(true);
+      });
+
+      it('should be applicable at exactly 10% above 1000', () => {
+        // 1000 + 10% = 1100
+        expect(method.isApplicable(1100, 5)).toBe(true);
+      });
+
+      it('should NOT be applicable beyond 10% of 1000', () => {
+        // 1000 - 11% = 890, too far
+        expect(method.isApplicable(890, 5)).toBe(false);
+        // 1000 + 11% = 1110, too far
+        expect(method.isApplicable(1110, 5)).toBe(false);
+      });
+
+      it('should be applicable at exactly 10% below 10', () => {
+        // 10 - 10% = 9
+        expect(method.isApplicable(9, 47)).toBe(true);
+      });
+
+      it('should be applicable at exactly 10% above 10', () => {
+        // 10 + 10% = 11
+        expect(method.isApplicable(11, 47)).toBe(true);
+      });
+    });
   });
 
   describe('generateSolution', () => {
@@ -431,6 +477,41 @@ describe('NearPower10Method', () => {
       // We can't easily test this without mocking the validator,
       // but we document the expected behavior
       expect(true).toBe(true);
+    });
+  });
+
+  describe('method selection integration', () => {
+    it('should be the optimal choice for 98 × 47', () => {
+      // 98 × 47 is the canonical example for Near Power of 10
+      // It should be applicable with low cost
+      expect(method.isApplicable(98, 47)).toBe(true);
+
+      const cost = method.computeCost(98, 47);
+      expect(cost).toBeLessThan(1.0); // Should be very efficient
+
+      const quality = method.qualityScore(98, 47);
+      expect(quality).toBeGreaterThan(0.7);
+
+      const solution = method.generateSolution(98, 47);
+      expect(solution.validated).toBe(true);
+      expect(solution.steps[solution.steps.length - 1]?.result).toBe(4606);
+    });
+
+    it('should have low cost for power-of-10 adjustment scenarios', () => {
+      // Verify the cost model reflects the intuition that:
+      // - 100 × n is essentially free (just append zeros)
+      // - The main cost is the adjustment (2 × n for 98)
+
+      const costExact = method.computeCost(100, 47);
+      const cost99 = method.computeCost(99, 47);
+      const cost98 = method.computeCost(98, 47);
+
+      // Exact power should have lowest cost
+      expect(costExact).toBeLessThan(cost99);
+      expect(cost99).toBeLessThan(cost98);
+
+      // But all should be quite low
+      expect(cost98).toBeLessThan(1.0);
     });
   });
 

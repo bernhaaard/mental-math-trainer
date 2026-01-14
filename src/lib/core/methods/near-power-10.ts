@@ -69,27 +69,98 @@ export class NearPower10Method extends BaseMethod {
    * Compute cognitive cost for this method.
    * Lower cost when number is very close to power of 10.
    *
+   * The key insight: multiplying by 10/100/1000 is essentially "free"
+   * (just shifting decimal places), so the real cost comes from:
+   * 1. The adjustment multiplication (diff x other)
+   * 2. The final addition/subtraction
+   *
+   * Example: 98 x 47 = 100 x 47 - 2 x 47
+   * - 100 x 47 = 4700 -> nearly free (positional shift)
+   * - 2 x 47 = 94 -> main cognitive cost
+   * - 4700 - 94 = 4606 -> simple subtraction
+   *
    * @param num1 - First multiplicand
    * @param num2 - Second multiplicand
    * @returns Cost score (lower is better)
    */
   computeCost(num1: number, num2: number): number {
-    const cost1 = this.costForNumber(num1);
-    const cost2 = this.costForNumber(num2);
+    // Check both numbers and use the one that gives lower cost
+    const cost1 = this.costForPair(num1, num2);
+    const cost2 = this.costForPair(num2, num1);
     return Math.min(cost1, cost2);
   }
 
   /**
-   * Calculate cost for a single number based on proximity to power of 10.
+   * Calculate cost when using nearNumber as the near-power-of-10 number.
    *
-   * @param n - Number to evaluate
+   * Cost components:
+   * 1. Power multiplication: ~0.1 (essentially free - positional shift)
+   * 2. Adjustment multiplication: depends on diff x other
+   * 3. Final add/subtract: small constant
+   *
+   * @param nearNumber - The number near a power of 10
+   * @param other - The other multiplicand
    * @returns Cost score
    * @private
    */
-  private costForNumber(n: number): number {
-    const { power, diff } = this.findNearestPowerOf10(n);
-    // Cost based on how close to power and size of diff
-    return Math.abs(diff) + this.countDigits(power) * 0.5;
+  private costForPair(nearNumber: number, other: number): number {
+    const { power, diff } = this.findNearestPowerOf10(nearNumber);
+    const absDiff = Math.abs(diff);
+
+    // If not applicable (too far from power), return high cost
+    if (absDiff > power * 0.1) {
+      return Infinity;
+    }
+
+    // Cost 1: Multiplying by power of 10 is essentially free
+    const powerMultCost = 0.1;
+
+    // Cost 2: The adjustment multiplication (diff x other)
+    // This is the main cognitive cost
+    const adjustmentCost = this.calculateAdjustmentCost(absDiff, Math.abs(other));
+
+    // Cost 3: Final addition/subtraction (simple operation)
+    const addSubCost = 0.3;
+
+    return powerMultCost + adjustmentCost + addSubCost;
+  }
+
+  /**
+   * Calculate the cognitive cost of the adjustment multiplication (diff x other).
+   *
+   * Small differences (1-3) make this trivial.
+   * Larger differences require more mental effort.
+   *
+   * @param diff - The absolute difference from power of 10
+   * @param other - The other multiplicand
+   * @returns Adjustment multiplication cost
+   * @private
+   */
+  private calculateAdjustmentCost(diff: number, other: number): number {
+    // diff = 0 means exact power of 10, no adjustment needed
+    if (diff === 0) {
+      return 0;
+    }
+
+    // diff = 1: just add/subtract the other number (trivial)
+    if (diff === 1) {
+      return 0.2;
+    }
+
+    // diff = 2: double the other number (easy)
+    if (diff === 2) {
+      return 0.4;
+    }
+
+    // diff = 3-5: still manageable
+    if (diff <= 5) {
+      return 0.5 + diff * 0.1;
+    }
+
+    // diff > 5: requires more complex multiplication
+    // Factor in the digits of "other" as well
+    const otherDigits = this.countDigits(other);
+    return 1.0 + diff * 0.15 + (otherDigits - 1) * 0.2;
   }
 
   /**
